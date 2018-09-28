@@ -1,11 +1,77 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="AppTheme.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/md_pink_50</item>
+        <item name="android:textColorPrimary">@color/md_white_1000</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
+    <style name="Editext" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/size_editext</item>
+        <item name="android:background">@drawable/bg_editext_main</item>
+        <item name="android:textColor">@color/md_white_1000</item>
+        <item name="android:textColorHint">@color/md_white_1000</item>
+        <item name="android:textSize">@dimen/size_text</item>
+        <item name="android:ems">10</item>
+        <item name="android:alpha">1</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:imeOptions">actionNext</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:layout_marginRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:layout_marginLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:gravity">left</item>
+    </style>
+
+    <style name="ButtonCustom" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/height_button</item>
+        <item name="android:background">@drawable/bg_button_main</item>
+        <item name="android:gravity">center</item>
+        <item name="android:alpha">0.7</item>
+        <item name="android:textColor">@color/md_white_1000</item>
+        <item name="android:textSize">@dimen/size_text_button</item>
+        <item name="android:fontFamily">@font/font</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="ButtonCustomEnable" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/height_button</item>
+        <item name="android:background">@drawable/bg_button_main_enable</item>
+        <item name="android:gravity">center</item>
+        <item name="android:alpha">0.7</item>
+        <item name="android:textColor">@color/md_white_1000</item>
+        <item name="android:textSize">@dimen/size_text_button</item>
+        <item name="android:fontFamily">@font/font</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="SpnnerCustom" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/height_spinner</item>
+        <item name="android:layout_marginHorizontal">25dp</item>
+        <item name="android:background">@drawable/bg_spinner_main</item>
+        <item name="android:popupBackground">@drawable/bg_spinner_dropdow_main</item>
     </style>
 
 </resources>

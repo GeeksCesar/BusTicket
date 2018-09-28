@@ -9,10 +9,6 @@
     <color name="colorGray">#7b7b7b</color>
     <color name="colorLightGray">#414141</color>
 
-
-
-    <color name="grey_border">#7E7E7E</color>
-
     <array name="reds">
         <item>@color/md_red_1000</item>
         <item>@color/md_red_500</item>
@@ -693,6 +689,7 @@
     <color name="md_falcon_A400_25">#40598bae</color>
 
     <color name="md_statusbar_translucent">#6000</color>
+    <color name="transparent">#40ffffff</color>
 
 </resources>
 

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="@dimen/activity_horizontal_margin"
+    android:paddingVertical="@dimen/activity_horizontal_margin"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Menu.Inicio"
+    android:id="@+id/container">
+
+
+        <RelativeLayout
+            android:id="@+id/contentTicket"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/bg_blue">
+
+                <ImageView
+                    android:id="@+id/ivLogo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/icon_action_tickets"
+                    android:layout_centerInParent="true"/>
+
+
+        </RelativeLayout>
+
+
+    <Button
+        android:id="@+id/btnNameUsuario"
+        style="@style/ButtonCustom"
+        android:layout_alignParentBottom="true"
+        android:text="Nombre"/>
+
+</RelativeLayout>

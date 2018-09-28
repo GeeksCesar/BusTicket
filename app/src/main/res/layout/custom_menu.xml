@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="5dp"
+    android:paddingVertical="5dp">
+
+    <ImageView
+        android:id="@+id/imgIcono"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="2dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/txtTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imgIcono"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:padding="3dip"
+        android:text="CoderzHeaven"
+        android:textColor="@color/md_white_1000"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+
+</RelativeLayout>
