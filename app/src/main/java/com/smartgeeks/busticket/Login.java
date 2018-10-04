@@ -10,8 +10,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -33,7 +31,7 @@ public class Login extends AppCompatActivity {
     ImageView imgBannner ;
     EditText edUsuario, edPassword ;
     Button mSignInButton;
-    CheckBox checkRecordarme ;
+
     private View mProgressView;
 
     ApiService apiService;
@@ -57,21 +55,7 @@ public class Login extends AppCompatActivity {
 
         initWidget();
 
-        checkRecordarme.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-                editor = preferences.edit();
 
-                if (checkRecordarme.isChecked()){
-                    editor.putString(UsuarioPreferences.KEY_SESSION, "SessionSuccess") ;
-                    editor.commit();
-                }else {
-                    editor.putString(UsuarioPreferences.KEY_SESSION, "SessionFailed") ;
-                    editor.commit();
-                }
-            }
-        });
 
 
         mSignInButton.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +70,12 @@ public class Login extends AppCompatActivity {
                     dialogAlert.showDialogErrorConexion(context);
                 }else {
                    // showProgress(true);
-                    signIn(email, password);
+                    if(email.isEmpty() || password.isEmpty()){
+                        dialogAlert.showDialogFailed(context, "Alerta", "Rellene los campos",SweetAlertDialog.WARNING_TYPE) ;
+                    }else {
+                       signIn(email, password);
+                    }
+
                 }
 
             }
@@ -120,6 +109,7 @@ public class Login extends AppCompatActivity {
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                             UsuarioPreferences.getInstance(context).userPreferences(response.body().getUser());
+                            setDataPrefrences();
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
                         }else {
                             dialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
@@ -167,13 +157,21 @@ public class Login extends AppCompatActivity {
         mSignInButton = findViewById(R.id.btnIniciarSession);
         edPassword = findViewById(R.id.edPassword);
         edUsuario = findViewById(R.id.edUsuario);
-        checkRecordarme = findViewById(R.id.cbRecordarme);
-        mProgressView = findViewById(R.id.login_progress) ;
 
+        mProgressView = findViewById(R.id.login_progress) ;
 
        // Animation slideUpIn = AnimationUtils.loadAnimation(context, R.anim.shide_in);
         //imgBannner.startAnimation(slideUpIn);
     }
+
+    private void setDataPrefrences(){
+        preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        editor = preferences.edit();
+
+        editor.putString(UsuarioPreferences.KEY_SESSION, "SessionSuccess");
+        editor.commit();
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -183,4 +181,6 @@ public class Login extends AppCompatActivity {
             call = null ;
         }
     }
+
+
 }

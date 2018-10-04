@@ -6,16 +6,17 @@
     tools:context=".Menu.Ticket"
     android:padding="@dimen/activity_horizontal_margin">
 
-
     <Spinner
         android:id="@+id/spPlaca"
         style="@style/SpnnerCustom"
+        android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
         android:layout_marginTop="@dimen/activity_ontenedor_margin"/>
 
     <Spinner
         android:id="@+id/spRutas"
         style="@style/SpnnerCustom"
         android:layout_marginTop="@dimen/activity_ontenedor_margin"
+        android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
         android:layout_below="@+id/spPlaca"/>
 
 
@@ -23,12 +24,13 @@
         android:id="@+id/spHorarios"
         style="@style/SpnnerCustom"
         android:layout_marginTop="@dimen/activity_ontenedor_margin"
+        android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
         android:layout_below="@+id/spRutas"/>
 
 
     <Button
         android:id="@+id/btnNext"
-       style="@style/ButtonCustomEnable"
+        style="@style/ButtonCustomEnable"
         android:text="Siguiente"
         android:layout_alignParentBottom="true"/>
 

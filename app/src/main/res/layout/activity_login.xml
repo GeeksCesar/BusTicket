@@ -47,7 +47,7 @@
 
             <EditText
                 android:id="@+id/edUsuario"
-               style="@style/Editext"
+                style="@style/Editext"
                 android:drawableLeft="@mipmap/icon_usuario"
                 android:drawablePadding="20dp"
                 android:hint="Usuario"/>
@@ -60,26 +60,17 @@
                 android:layout_marginTop="15dp"
                 android:layout_below="@+id/edUsuario"
                 android:drawablePadding="20dp"
+                android:inputType="textPassword"
                 android:hint="Contraseña"/>
 
-            <CheckBox
-                android:id="@+id/cbRecordarme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Recordar contraseña"
-                android:layout_centerHorizontal="true"
-                android:buttonTint="@color/md_white_1000"
-                android:textColor="@color/md_white_1000"
-                android:textStyle="italic"
-                android:layout_below="@+id/edPassword"/>
-            
+
             <Button
                 android:id="@+id/btnIniciarSession"
                 style="@style/ButtonCustom"
                 android:layout_alignParentBottom="true"
                 android:paddingHorizontal="20dp"
                 android:text="Iniciar Sessión"/>
+
 
         </RelativeLayout>
 

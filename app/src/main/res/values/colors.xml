@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#009750</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#eeff41</color>
+    <color name="colorPrimary">#0096ff</color>
+    <color name="colorPrimaryDark">#0959aa</color>
+    <color name="colorAccent">#7b7b7b</color>
 
-    <color name="colorBlue">#0959aa</color>
-    <color name="colorLightBlue">#0096ff</color>
-    <color name="colorGray">#7b7b7b</color>
+    <color name="colorBlue">#B30959aa</color>
+    <color name="colorLightBlue">#BF0096ff</color>
+    <color name="colorGray">#CC7b7b7b</color>
     <color name="colorLightGray">#414141</color>
+
+    <color name="transparent_blue">#B30096ff</color>
+    <color name="transparent_grey">#B37b7b7b</color>
 
     <array name="reds">
         <item>@color/md_red_1000</item>

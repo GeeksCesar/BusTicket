@@ -1,6 +1,8 @@
 package com.smartgeeks.busticket;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
@@ -16,17 +18,18 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 public class MainActivity extends AppCompatActivity {
 
     Context context ;
 
     int user_id ;
+    SharedPreferences preferences;
 
     ImageButton btnAbrirMenu;
     ImageView ivBanner ;
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case 3:
                         drawer.closeDrawer(navList);
-                        Toast.makeText(context, "Click Cerrar session", Toast.LENGTH_SHORT).show();
+                       cerrarSession();
                         break;
                 }
             }
@@ -161,5 +164,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    private void cerrarSession(){
+        Intent intent = new Intent(context, Login.class);
+        preferences = context.getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        preferences.edit().clear().commit();
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
 }
