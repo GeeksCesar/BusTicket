@@ -26,11 +26,9 @@
 
         </RelativeLayout>
 
-
     <Button
         android:id="@+id/btnNameUsuario"
         style="@style/ButtonCustom"
-        android:layout_alignParentBottom="true"
-        android:text="Nombre"/>
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>
