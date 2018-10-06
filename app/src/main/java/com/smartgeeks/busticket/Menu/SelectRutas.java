@@ -55,6 +55,7 @@ public class SelectRutas extends AppCompatActivity {
 
     public static final String ID = "ID" ;
     public static final String ID_VEHICULO = "ID_VEHICULO" ;
+    public static final String ID_HORARIO = "ID_HORARIO" ;
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
@@ -191,12 +192,12 @@ public class SelectRutas extends AppCompatActivity {
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
 
-
         bundle = getIntent().getExtras();
         int id_ruta = bundle.getInt(ID);
 
         final int id_vehiculo = bundle.getInt(ID_VEHICULO);
 
+        final int id_horario = bundle.getInt(ID_HORARIO);
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -216,6 +217,7 @@ public class SelectRutas extends AppCompatActivity {
                     intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
                     intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
                     intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
                     startActivity(intent);
                 } else if (cbDePie.isChecked()){
                     try {
