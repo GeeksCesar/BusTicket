@@ -121,6 +121,8 @@ public class Ticket extends Fragment {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                    Log.e(Service.TAG, "id_ruta "+id_ruta);
                     Intent intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID, id_ruta);
                     intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
