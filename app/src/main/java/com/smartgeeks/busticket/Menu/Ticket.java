@@ -124,6 +124,7 @@ public class Ticket extends Fragment {
                     Intent intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID, id_ruta);
                     intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
                     startActivity(intent);
                 }
         });

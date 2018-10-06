@@ -42,6 +42,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String CANT_PUESTOS = "CANT_PUESTOS";
     public static final String PRECIO_PASAJE = "PRECIO_PASAJE";
     public static final String ID_VEHICULO = "ID_VEHICULO";
+    public static final String ID_HORARIO = "ID_HORARIO";
 
     private String TAG = "SelectSillas";
 
@@ -49,7 +50,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private  int sillasOcupadas[] = {};
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
-    int cant_puestos, precio_pasaje, id_vehiculo, id_rutaDisponible;
+    int cant_puestos, precio_pasaje, id_vehiculo, id_horario;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     ProgressDialog progress;
@@ -73,6 +74,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         cant_puestos = bundle.getInt(CANT_PUESTOS);
         precio_pasaje = bundle.getInt(PRECIO_PASAJE);
         id_vehiculo = bundle.getInt(ID_VEHICULO);
+        id_horario = bundle.getInt(ID_HORARIO);
 
         initWidgets();
         showProgressDialog();
