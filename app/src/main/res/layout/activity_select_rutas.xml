@@ -174,12 +174,19 @@
 
 
         <Button
-            android:id="@+id/btnNext"
-            style="@style/ButtonCustomEnable"
+            android:id="@+id/btnSiguiente"
+            style="@style/ButtonCustom"
             android:text="Siguiente"
+            android:visibility="gone"
             android:layout_alignParentBottom="true"/>
 
 
+        <Button
+            android:id="@+id/btnFinalizar"
+            style="@style/ButtonCustom"
+            android:text="Finalizar"
+            android:visibility="gone"
+            android:layout_alignParentBottom="true"/>
     </RelativeLayout>
 
 

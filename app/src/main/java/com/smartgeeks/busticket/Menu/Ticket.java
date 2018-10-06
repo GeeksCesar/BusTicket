@@ -94,7 +94,7 @@ public class Ticket extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 id_ruta = Integer.parseInt(getIdRuta(position)) ;
                 Log.d(Service.TAG, "id_ruta: "+id_ruta);
-                getHorario(id_vehiculo);
+                getHorario(id_ruta);
             }
 
             @Override
@@ -103,6 +103,20 @@ public class Ticket extends Fragment {
             }
         });
 
+
+        spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+                id_horario = Integer.parseInt(getIdHorario(position)) ;
+                Log.d(Service.TAG, "id_horario: "+id_horario);
+                btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,21 +134,21 @@ public class Ticket extends Fragment {
     private void getHorario(int id_vehiculo) {
         listHorario.clear();
 
-        String URL = Service.GET_RUTAS + id_vehiculo;
-        Log.d(Service.TAG, "rutas: "+URL);
+        String URL = Service.GET_HORARIO + id_vehiculo;
+        Log.d(Service.TAG, "horarios: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
-                    resultHorarios = jsonObject.getJSONArray("rutas");
+                    resultHorarios = jsonObject.getJSONArray("horarios");
                     Log.d(Service.TAG , "json: "+resultHorarios);
                     if (resultHorarios.length() > 0) {
                         for (int i = 0; i < resultHorarios.length(); i++) {
                             try {
                                 JSONObject json = resultHorarios.getJSONObject(i);
-                                String horario = json.getString("Hora");
+                                String horario = json.getString("hora");
 
                                 listHorario.add(horario);
                             } catch (JSONException e) {
@@ -272,6 +286,18 @@ public class Ticket extends Fragment {
         }
 
         return idRuta;
+    }
+
+    private String getIdHorario(int position){
+        String idHorario = "";
+        try {
+            JSONObject object = resultHorarios.getJSONObject(position);
+            idHorario = object.getString("idHorario");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return idHorario;
     }
 
 }
