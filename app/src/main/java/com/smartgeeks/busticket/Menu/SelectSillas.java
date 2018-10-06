@@ -13,6 +13,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -52,8 +53,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario;
+    String info_ruta;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
+    TextView tvVehiculo, tvRuta, tvHora, tvInicio, tvFin;
     ProgressDialog progress;
 
     //VOLLEY
@@ -76,6 +79,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         precio_pasaje = bundle.getInt(PRECIO_PASAJE);
         id_vehiculo = bundle.getInt(ID_VEHICULO);
         id_horario = bundle.getInt(ID_HORARIO);
+        info_ruta = bundle.getString(SelectRutas.INFO);
 
         initWidgets();
         showProgressDialog();
@@ -85,6 +89,22 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     private void initWidgets() {
         contenedor_bus = findViewById(R.id.contenedor_bus);
+        tvVehiculo = findViewById(R.id.tvVehiculo);
+        tvRuta = findViewById(R.id.tvRuta);
+        tvHora = findViewById(R.id.tvHora);
+        tvInicio = findViewById(R.id.tvInicio);
+        tvFin = findViewById(R.id.tvFin);
+
+        showDataTextView();
+    }
+
+    private void showDataTextView() {
+        String[] split = info_ruta.split(",");
+        tvVehiculo.setText("Vehículo: "+split[0]);
+        tvRuta.setText("Ruta: "+split[1]);
+        tvHora.setText("Hora: "+split[2]);
+        tvInicio.setText("Inicio: "+split[3]);
+        tvFin.setText("Fin: "+split[4]);
     }
 
     private void drawChairBus(int columns_izq, int columns_der, int filas){

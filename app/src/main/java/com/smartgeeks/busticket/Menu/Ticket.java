@@ -49,6 +49,7 @@ public class Ticket extends Fragment {
     StringRequest stringRequest;
 
     int id_vehiculo, id_ruta, id_horario;
+    String placa, ruta, horario;
 
     public Ticket() {
         // Required empty public constructor
@@ -67,7 +68,6 @@ public class Ticket extends Fragment {
         spRuta = view.findViewById(R.id.spRutas);
         spHorarios = view.findViewById(R.id.spHorarios);
 
-
         listPlacas = new ArrayList<String>();
         listRuta = new ArrayList<String>();
         listHorario = new ArrayList<String>();
@@ -81,6 +81,7 @@ public class Ticket extends Fragment {
                 id_vehiculo = Integer.parseInt(getIdVehiculo(position));
 
                 getRutas(id_vehiculo);
+                placa = listPlacas.get(position);
             }
 
             @Override
@@ -95,6 +96,7 @@ public class Ticket extends Fragment {
                 id_ruta = Integer.parseInt(getIdRuta(position)) ;
                 Log.d(Service.TAG, "id_ruta: "+id_ruta);
                 getHorario(id_ruta);
+                ruta = listRuta.get(position);
             }
 
             @Override
@@ -110,6 +112,7 @@ public class Ticket extends Fragment {
                 id_horario = Integer.parseInt(getIdHorario(position)) ;
                 Log.d(Service.TAG, "id_horario: "+id_horario);
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
+                horario = listHorario.get(position);
             }
 
             @Override
@@ -127,6 +130,7 @@ public class Ticket extends Fragment {
                     intent.putExtra(SelectRutas.ID, id_ruta);
                     intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
                     intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
+                    intent.putExtra(SelectRutas.INFO, placa+","+ruta+","+horario);
                     startActivity(intent);
                 }
         });
