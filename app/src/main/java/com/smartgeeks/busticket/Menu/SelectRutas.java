@@ -98,7 +98,7 @@ public class SelectRutas extends AppCompatActivity {
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ruta_inicio = listParaderos.get(position);
+                ruta_inicio = parent.getItemAtPosition(position).toString();
             }
 
             @Override
@@ -109,12 +109,10 @@ public class SelectRutas extends AppCompatActivity {
 
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
                id_paradero = Integer.parseInt(getIdParadero(position)) ;
                 Log.d(Service.TAG, "id_paradero: "+id_paradero);
-
-                ruta_fin = listParaderoFin.get(position);
-
+                ruta_fin = parent.getItemAtPosition(position).toString();
             }
 
             @Override
@@ -221,8 +219,8 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (!cbAsiento.isChecked() && !cbDePie.isChecked()){
-                    dialogAlert.showDialogFailed(context, "Error", "Debes seleccionar la opción de pie o Asiento", SweetAlertDialog.ERROR_TYPE);
+                if (ruta_inicio == ruta_fin){
+                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 }
 

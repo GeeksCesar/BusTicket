@@ -1,8 +1,11 @@
 package com.smartgeeks.busticket.Utils;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.ContextCompat;
+import android.widget.Button;
 
 import com.smartgeeks.busticket.R;
 
@@ -11,10 +14,13 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 public class DialogAlert {
 
     public void showDialogFailed(Context context , String title, String message, int type){
-        new SweetAlertDialog(context, type)
-                .setTitleText(title)
+        SweetAlertDialog alertDialog = new SweetAlertDialog(context, type);
+                alertDialog.setTitleText(title)
                 .setContentText(message)
                 .show();
+
+        Button button =  alertDialog.findViewById(R.id.confirm_button);
+        button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
     }
 
 
