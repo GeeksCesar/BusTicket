@@ -19,7 +19,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,7 +59,7 @@ public class SelectRutas extends AppCompatActivity {
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    Button btnSiguiente, btnMenos, btnMas ;
+    Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
     Spinner spInicio, spFin, spPasajero ;
     CheckBox cbAsiento, cbDePie ;
     TextView tvPrecioPasaje , tvCountItem;
@@ -180,7 +179,8 @@ public class SelectRutas extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(context);
 
 
-        btnSiguiente = findViewById(R.id.btnNext);
+        btnSiguiente = findViewById(R.id.btnSiguiente);
+        btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
         btnMenos= findViewById(R.id.btnRestar);
         spInicio = findViewById(R.id.spInicio);
@@ -191,10 +191,15 @@ public class SelectRutas extends AppCompatActivity {
         tvCountItem = findViewById(R.id.textCount);
         tvPrecioPasaje = findViewById(R.id.tvPrecio);
 
+        btnFinalizar.setVisibility(View.GONE);
+        btnSiguiente.setVisibility(View.GONE);
+
 
         bundle = getIntent().getExtras();
         String id = bundle.getString(ID);
+
         final int id_vehiculo = bundle.getInt(ID_VEHICULO);
+        Log.d(Service.TAG, "id_ "+id);
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -227,7 +232,7 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
-        getParaderos();
+        //getParaderos(id);
         getUsuarios();
 
         validarCheckBox();
@@ -241,6 +246,10 @@ public class SelectRutas extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (cbAsiento.isChecked()){
                     cbDePie.setChecked(false);
+                    btnSiguiente.setVisibility(View.VISIBLE);
+                    btnFinalizar.setVisibility(View.GONE);
+                }else {
+                    btnSiguiente.setVisibility(View.GONE);
                 }
             }
         });
@@ -250,16 +259,20 @@ public class SelectRutas extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (cbDePie.isChecked()){
                     cbAsiento.setChecked(false);
+                    btnSiguiente.setVisibility(View.GONE);
+                    btnFinalizar.setVisibility(View.VISIBLE);
+                }else{
+                    btnFinalizar.setVisibility(View.GONE);
                 }
             }
         });
 
     }
 
-    private void getParaderos() {
+    private void getParaderos(String id) {
         listParaderos.clear();
 
-        stringRequest = new StringRequest(Service.GET_PARADEROS, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.d(Service.TAG, "response: "+response);

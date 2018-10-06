@@ -63,8 +63,8 @@ public class Login extends AppCompatActivity {
             public void onClick(View view) {
 
                 // Store values at the time of the login attempt.
-                String email = edPassword.getText().toString();
-                String password = edUsuario.getText().toString();
+                String email = edPassword.getText().toString().trim();
+                String password = edUsuario.getText().toString().trim();
 
                 if (!dialogAlert.verificaConexion(context)){
                     dialogAlert.showDialogErrorConexion(context);

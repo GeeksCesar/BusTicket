@@ -7,11 +7,30 @@
     tools:context=".Menu.Perfil">
 
 
+    <ImageView
+        android:id="@+id/ivImgPerfil"
+        android:layout_width="@dimen/size_img_perfil"
+        android:layout_height="@dimen/size_img_perfil"
+        android:layout_centerHorizontal="true"
+        android:src="@mipmap/ic_launcher"
+        android:scaleType="center"/>
+
+    <TextView
+        android:id="@+id/tvNameUsuario"
+        style="@style/TextInfoPerfil"
+        android:layout_below="@+id/ivImgPerfil"
+        android:layout_marginTop="15dp"/>
+
+    <TextView
+        android:id="@+id/tvDocuUsuario"
+        style="@style/TextInfoPerfil"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/tvNameUsuario" />
+
     <Button
         android:id="@+id/btnCerrarSession"
         style="@style/ButtonCustomEnable"
         android:text="Cerrar Sessión"
         android:layout_alignParentBottom="true"/>
-
 
 </RelativeLayout>

@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.smartgeeks.busticket.Login;
 import com.smartgeeks.busticket.R;
@@ -23,6 +25,9 @@ public class Perfil extends Fragment {
 
     SharedPreferences preferences;
 
+    ImageView imgPerfil ;
+    TextView tvNombreUsuario , tvDocuUsuario ;
+
     public Perfil() {
         // Required empty public constructor
     }
@@ -35,7 +40,14 @@ public class Perfil extends Fragment {
 
         context = getActivity();
 
+        imgPerfil = view.findViewById(R.id.ivImgPerfil);
+        tvNombreUsuario = view.findViewById(R.id.tvNameUsuario);
+        tvDocuUsuario = view.findViewById(R.id.tvDocuUsuario);
         btnCerrarSession = view.findViewById(R.id.btnCerrarSession) ;
+
+
+        tvNombreUsuario.setText(UsuarioPreferences.getInstance(context).getNombre());
+        tvDocuUsuario.setText(UsuarioPreferences.getInstance(context).getDocumento());
 
         btnCerrarSession.setOnClickListener(new View.OnClickListener() {
             @Override

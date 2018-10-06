@@ -83,4 +83,13 @@
         <item name="android:popupBackground">@drawable/bg_spinner_dropdow_main</item>
     </style>
 
+    <style name="TextInfoPerfil" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/colorGray</item>
+        <item name="android:textSize">@dimen/text_info_perfil</item>
+        <item name="android:fontFamily">@font/font</item>
+        <item name="android:gravity">center</item>
+    </style>
+
 </resources>

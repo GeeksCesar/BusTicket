@@ -20,5 +20,7 @@
     <dimen name="text_size_price">24sp</dimen>
     <dimen name="text_size_count">32sp</dimen>
     <dimen name="text_size_button_count">20sp</dimen>
+    <dimen name="text_info_perfil">24sp</dimen>
+    <dimen name="size_img_perfil">150dp</dimen>
 
 </resources>
