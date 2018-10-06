@@ -56,6 +56,7 @@ public class SelectRutas extends AppCompatActivity {
     public static final String ID = "ID" ;
     public static final String ID_VEHICULO = "ID_VEHICULO" ;
     public static final String ID_HORARIO = "ID_HORARIO" ;
+    public static final String INFO = "INFO" ;
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
@@ -70,17 +71,15 @@ public class SelectRutas extends AppCompatActivity {
     private JSONArray resultUsuarios;
     private ArrayList<String> listParaderos;
     private ArrayList<String> lisUsuarios;
+    private ArrayList<String> listParaderoFin = new ArrayList<>();
 
     //VOLLEY
     JsonArrayRequest jsonArrayRequest;
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int id_paradero;
-
-    int countPasajes = 1;
-    int precio_sum_pasaje ;
-    int precioPasaje ;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_paradero;
+    String ruta_inicio, ruta_fin;
 
     Context context ;
 
@@ -96,11 +95,24 @@ public class SelectRutas extends AppCompatActivity {
 
         initWidget();
 
+        spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ruta_inicio = listParaderos.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                id_paradero = Integer.parseInt(getIdParadero(position)) ;
                 Log.d(Service.TAG, "id_paradero: "+id_paradero);
+                ruta_fin = listParaderos.get(position);
             }
 
             @Override
@@ -196,8 +208,8 @@ public class SelectRutas extends AppCompatActivity {
         int id_ruta = bundle.getInt(ID);
 
         final int id_vehiculo = bundle.getInt(ID_VEHICULO);
-
         final int id_horario = bundle.getInt(ID_HORARIO);
+        final String info = bundle.getString(INFO);
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -218,6 +230,7 @@ public class SelectRutas extends AppCompatActivity {
                     intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
                     intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
                     intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
+                    intent.putExtra(INFO, info+","+ruta_inicio+","+ruta_fin);
                     startActivity(intent);
                 } else if (cbDePie.isChecked()){
                     try {
@@ -286,16 +299,18 @@ public class SelectRutas extends AppCompatActivity {
                         for (int i = 0; i < resutlParaderos.length(); i++) {
                             try {
                                 JSONObject json = resutlParaderos.getJSONObject(i);
-                                String nombreInstitucion = json.getString("paradero");
+                                String paradero = json.getString("paradero");
 
-                                listParaderos.add(nombreInstitucion);
+                                listParaderos.add(paradero);
+                                listParaderoFin.add(paradero);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
                         //setAdapter
                         spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
-                        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderos));
+                        listParaderoFin.remove(0);
+                        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
 
                         getUsuarios();
 
