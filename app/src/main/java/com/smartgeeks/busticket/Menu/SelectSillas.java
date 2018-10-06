@@ -1,5 +1,6 @@
 package com.smartgeeks.busticket.Menu;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,9 +15,23 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ToggleButton;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,14 +41,23 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     public static final String CANT_PUESTOS = "CANT_PUESTOS";
     public static final String PRECIO_PASAJE = "PRECIO_PASAJE";
+    public static final String ID_VEHICULO = "ID_VEHICULO";
+
+    private String TAG = "SelectSillas";
 
     LinearLayout contenedor_bus;
-    private  int sillasOcupadas[] = {3, 4, 6, 9, 11, 15, 16, 20};
+    private  int sillasOcupadas[] = {};
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
-    int cant_puestos, precio_pasaje;
+    int cant_puestos, precio_pasaje, id_vehiculo, id_rutaDisponible;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
+    ProgressDialog progress;
+
+    //VOLLEY
+    JsonArrayRequest jsonArrayRequest;
+    RequestQueue requestQueue;
+    StringRequest stringRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,13 +66,19 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_select_sillas);
 
-        bundle = getIntent().getExtras();
         context = SelectSillas.this;
+        requestQueue = Volley.newRequestQueue(context);
+        bundle = getIntent().getExtras();
+
         cant_puestos = bundle.getInt(CANT_PUESTOS);
         precio_pasaje = bundle.getInt(PRECIO_PASAJE);
+        id_vehiculo = bundle.getInt(ID_VEHICULO);
 
         initWidgets();
-        drawChairBus(2,2,10);
+        showProgressDialog();
+        // Obtengo los datos del vehículo
+        // getSillasOcupadas(id_horario)
+        getVehiculo(id_vehiculo);
     }
 
     private void initWidgets() {
@@ -138,6 +168,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         }
     }
 
+    private void showProgressDialog() {
+        progress = new ProgressDialog(this);
+        progress.setMessage("Cargando bus...");
+        progress.setCanceledOnTouchOutside(false);
+        progress.setCancelable(false);
+        progress.show();
+    }
+
     /**
      * Dibuja las sillas ocupadas
      * @param silla
@@ -184,8 +222,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int silla_seleccionda = buttonView.getId();
 
         // Guardo o elimino la silla
-        Log.e("cant: ", ""+cant_puestos);
-        Log.e("seleccionadas: ", ""+ sillasSeleccionadas.size());
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
             if (sillasSeleccionadas.size() > cant_puestos ){
@@ -201,4 +237,74 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             buttonView.setTextColor(ContextCompat.getColor(context, R.color.md_black_1000));
         }
     }
+
+
+    /**
+     * Consultas a base de datos
+     */
+    private void getVehiculo(int id_vehiculo) {
+
+        String URL = Service.GET_INFO_VEHICULO + id_vehiculo;
+        Log.d(Service.TAG, "rutas: "+URL);
+        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONObject jsonObject = null;
+                try {
+                       jsonObject = new JSONObject(response);
+                       Log.e(TAG, ""+response);
+                       JSONArray jsonArray = jsonObject.getJSONArray("vehiculos");
+
+                       if (jsonArray.length() > 0) {
+                           JSONObject json = jsonArray.getJSONObject(0);
+                           drawChairBus(json.getInt("f_izquierda"), json.getInt("f_derecha"),
+                                   json.getInt("columnas"));
+                       }
+
+                } catch (JSONException e) {
+                      e.printStackTrace();
+                }
+                progress.dismiss();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(TAG, ""+volleyError);
+                progress.dismiss();
+            }
+        });
+        requestQueue.add(stringRequest);
+
+    }
+
+    /**
+     * Consultar sillas ocupadas por horario de ruta
+     * @param id_horario
+     */
+    private void getSillasOcupadas(int id_horario) {
+
+        String URL = Service.SILLAS_OCUPADAS + id_horario;
+        Log.d(Service.TAG, "rutas: "+URL);
+        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(response);
+                    Log.e(TAG, ""+response);
+                    getVehiculo(id_vehiculo);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(TAG, ""+volleyError);
+            }
+        });
+        requestQueue.add(stringRequest);
+
+    }
+
 }

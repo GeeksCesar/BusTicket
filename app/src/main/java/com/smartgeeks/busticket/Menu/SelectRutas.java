@@ -55,6 +55,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 public class SelectRutas extends AppCompatActivity {
 
     public static final String ID = "ID" ;
+    public static final String ID_VEHICULO = "ID_VEHICULO" ;
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
@@ -193,6 +194,7 @@ public class SelectRutas extends AppCompatActivity {
 
         bundle = getIntent().getExtras();
         String id = bundle.getString(ID);
+        final int id_vehiculo = bundle.getInt(ID_VEHICULO);
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -211,6 +213,7 @@ public class SelectRutas extends AppCompatActivity {
                     Intent intent = new Intent(context, SelectSillas.class);
                     intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
                     intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+                    intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
                     startActivity(intent);
                 } else if (cbDePie.isChecked()){
                     try {

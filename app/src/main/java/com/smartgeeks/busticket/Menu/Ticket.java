@@ -109,6 +109,7 @@ public class Ticket extends Fragment {
             public void onClick(View view) {
                     Intent intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID, id_ruta);
+                    intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
                     startActivity(intent);
                 }
         });
@@ -250,15 +251,15 @@ public class Ticket extends Fragment {
     }
 
     private String getIdVehiculo(int position){
-        String idInstucion = "";
+        String id_vehiculo = "";
         try {
             JSONObject object = resultPlaca.getJSONObject(position);
-            idInstucion = object.getString("idVehiculo");
+            id_vehiculo = object.getString("idVehiculo");
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return idInstucion;
+        return id_vehiculo;
     }
 
 
