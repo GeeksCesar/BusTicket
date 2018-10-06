@@ -13,6 +13,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.android.volley.RequestQueue;
@@ -47,7 +48,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private String TAG = "SelectSillas";
 
     LinearLayout contenedor_bus;
-    private  int sillasOcupadas[] = {};
+    private List<Integer> sillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario;
@@ -79,8 +80,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         initWidgets();
         showProgressDialog();
         // Obtengo los datos del vehículo
-        // getSillasOcupadas(id_horario)
-        getVehiculo(id_vehiculo);
+        getSillasOcupadas(id_horario);
     }
 
     private void initWidgets() {
@@ -211,7 +211,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         this.finish();
     }
 
+    /**
+     * Confirmar silla
+     * @param view
+     */
     public void confirmarSilla(View view) {
+        Toast.makeText(context, "Has seleccionado "+sillasSeleccionadas.size(), Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -290,10 +295,15 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                JSONObject jsonObject = null;
+                JSONObject object = null;
+                JSONArray jsonArray = null;
                 try {
-                    jsonObject = new JSONObject(response);
-                    Log.e(TAG, ""+response);
+                    jsonArray = new JSONArray(response);
+                    Log.e(TAG, "Sillas: "+response);
+
+                    for (int i = 0; i < jsonArray.length(); i++){
+                        sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
+                    }
                     getVehiculo(id_vehiculo);
                 } catch (JSONException e) {
                     e.printStackTrace();
