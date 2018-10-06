@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background_blanco"
+    tools:context=".Menu.SelectSillas">
+
+    <LinearLayout
+        android:id="@+id/contenedorHeader"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_contenedor_head"
+        android:layout_weight="10"
+        android:paddingHorizontal="@dimen/activity_horizontal_margin"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imgBack"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="5dp"
+            android:layout_weight="2"
+            android:onClick="goBack"
+            android:background="@android:color/transparent"
+            android:src="@mipmap/icon_back" />
+
+        <ImageView
+            android:id="@+id/ivNameViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:paddingRight="30dp"
+            android:layout_weight="8"
+            android:src="@mipmap/header_tickets"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:layout_below="@+id/contenedorHeader">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_weight="9">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seleccione asientos"
+                android:layout_gravity="center_horizontal"
+                android:textSize="16dp"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:textColor="@color/colorPrimary"/>
+
+            <!--Convernciones de las sillas-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:textAlignment="center"
+                        android:fontFamily="@font/font_main"
+                        android:background="@drawable/silla"
+                        android:padding="5dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:fontFamily="@font/font_main"
+                        android:text="Disponible"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:textAlignment="center"
+                        android:fontFamily="@font/font_main"
+                        android:background="@drawable/silla_ocupada"
+                        android:padding="5dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:fontFamily="@font/font_main"
+                        android:text="Ocupada"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_weight="1">
+                    <TextView
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:textAlignment="center"
+                        android:fontFamily="@font/font_main"
+                        android:background="@drawable/silla_seleccionada"
+                        android:padding="5dp"
+                        android:textColor="@color/md_white_1000"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:fontFamily="@font/font_main"
+                        android:text="Seleccionada"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Mapa de la sala -->
+            <android.support.v4.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/contenedor_bus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingLeft="16dp"
+                        android:paddingRight="16dp">
+
+                    </LinearLayout>
+
+                    <!--Textos-->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="@dimen/activity_vertical_margin"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvVehiculo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="Vehículo: VJH 342"
+                            android:textSize="@dimen/size_text"
+                            android:fontFamily="@font/font_main"/>
+
+                        <TextView
+                            android:id="@+id/tvRuta"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="Ruta: Neiva - Bogotá"
+                            android:textSize="@dimen/size_text"
+                            android:fontFamily="@font/font_main"/>
+
+                        <TextView
+                            android:id="@+id/tvHora"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="Hora: 16:00"
+                            android:textSize="@dimen/size_text"
+                            android:fontFamily="@font/font_main"/>
+
+                        <TextView
+                            android:id="@+id/tvInicio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="Inicio: Neiva"
+                            android:textSize="@dimen/size_text"
+                            android:fontFamily="@font/font_main"/>
+
+                        <TextView
+                            android:id="@+id/tvFin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="Fin: Espinal"
+                            android:textSize="@dimen/size_text"
+                            android:fontFamily="@font/font_main"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </android.support.v4.widget.NestedScrollView>
+
+        </LinearLayout>
+
+        <Button
+            style="@style/ButtonCustomPrimary"
+            android:text="Ok"
+            android:onClick="confirmarSilla"
+            android:layout_weight="1"/>
+
+
+    </LinearLayout>
+
+
+</RelativeLayout>

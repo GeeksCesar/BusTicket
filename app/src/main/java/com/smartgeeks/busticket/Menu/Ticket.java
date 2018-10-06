@@ -34,7 +34,6 @@ public class Ticket extends Fragment {
     View view ;
     Context context;
     Spinner spPlaca, spRuta, spHorarios ;
-
     Button btnSiguiente ;
 
     private JSONArray resultPlaca;
@@ -108,11 +107,10 @@ public class Ticket extends Fragment {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, SelectRutas.class);
-                intent.putExtra(SelectRutas.ID, id_ruta);
-                startActivity(intent);
-
-            }
+                    Intent intent = new Intent(context, SelectRutas.class);
+                    intent.putExtra(SelectRutas.ID, id_ruta);
+                    startActivity(intent);
+                }
         });
 
 
@@ -275,10 +273,5 @@ public class Ticket extends Fragment {
 
         return idRuta;
     }
-
-
-
-
-
 
 }

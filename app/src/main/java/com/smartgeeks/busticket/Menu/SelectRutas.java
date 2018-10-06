@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +36,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.DialogAlert;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,6 +50,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class SelectRutas extends AppCompatActivity {
 
     public static final String ID = "ID" ;
@@ -59,6 +63,7 @@ public class SelectRutas extends AppCompatActivity {
     Spinner spInicio, spFin, spPasajero ;
     CheckBox cbAsiento, cbDePie ;
     TextView tvPrecioPasaje , tvCountItem;
+    DialogAlert dialogAlert = new DialogAlert();
 
     private JSONArray resutlParaderos;
     private JSONArray resultUsuarios;
@@ -196,12 +201,25 @@ public class SelectRutas extends AppCompatActivity {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    createPdfWrapper();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (DocumentException e) {
-                    e.printStackTrace();
+
+                if (!cbAsiento.isChecked() && !cbDePie.isChecked()){
+                    dialogAlert.showDialogFailed(context, "Error", "Debes seleccionar la opción de pie o Asiento", SweetAlertDialog.ERROR_TYPE);
+                    return;
+                }
+
+                if (cbAsiento.isChecked()){
+                    Intent intent = new Intent(context, SelectSillas.class);
+                    intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
+                    intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+                    startActivity(intent);
+                } else if (cbDePie.isChecked()){
+                    try {
+                        createPdfWrapper();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (DocumentException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -453,5 +471,9 @@ public class SelectRutas extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    public void goBack(View view) {
+        this.finish();
     }
 }
