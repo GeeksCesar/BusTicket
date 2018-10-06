@@ -112,7 +112,9 @@ public class SelectRutas extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                id_paradero = Integer.parseInt(getIdParadero(position)) ;
                 Log.d(Service.TAG, "id_paradero: "+id_paradero);
-                ruta_fin = listParaderos.get(position);
+
+                ruta_fin = listParaderoFin.get(position);
+
             }
 
             @Override
