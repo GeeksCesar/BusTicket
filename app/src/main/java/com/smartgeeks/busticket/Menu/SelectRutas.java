@@ -196,10 +196,10 @@ public class SelectRutas extends AppCompatActivity {
 
 
         bundle = getIntent().getExtras();
-        String id = bundle.getString(ID);
+        int id_ruta = bundle.getInt(ID);
 
         final int id_vehiculo = bundle.getInt(ID_VEHICULO);
-        Log.d(Service.TAG, "id_ "+id);
+
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -232,7 +232,7 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
-        //getParaderos(id);
+        getParaderos(id_ruta);
         getUsuarios();
 
         validarCheckBox();
@@ -269,8 +269,10 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private void getParaderos(String id) {
+    private void getParaderos(int id) {
         listParaderos.clear();
+
+        Log.i(Service.TAG, "URL: "+Service.GET_PARADEROS+id);
 
         stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
             @Override
