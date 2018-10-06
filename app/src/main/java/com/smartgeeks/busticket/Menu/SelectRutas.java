@@ -100,7 +100,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                id_paradero = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id: "+id_paradero);
+                Log.d(Service.TAG, "id_paradero: "+id_paradero);
             }
 
             @Override
@@ -113,7 +113,6 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int postion, long id) {
 
-                Log.d(Service.TAG, "id: "+id);
                 if (id == 0){
                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_adulto"));
                 }else if (id == 1){
@@ -140,8 +139,6 @@ public class SelectRutas extends AppCompatActivity {
                 countPasajes ++ ;
 
                 precio_sum_pasaje = precioPasaje * countPasajes ;
-
-                Log.d(Service.TAG , "precio; "+precio_sum_pasaje);
 
                 formatPrecio(precio_sum_pasaje);
                 tvCountItem.setText(""+countPasajes);
@@ -235,7 +232,7 @@ public class SelectRutas extends AppCompatActivity {
         });
 
         getParaderos(id_ruta);
-        getUsuarios();
+
 
         validarCheckBox();
         tvCountItem.setText(""+ countPasajes);
@@ -299,6 +296,8 @@ public class SelectRutas extends AppCompatActivity {
                         //setAdapter
                         spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
                         spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderos));
+
+                        getUsuarios();
 
                     }else {
 
@@ -378,7 +377,6 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     public String getPrecio(int position , String name_usuario){
-        Log.d(Service.TAG, "usuario: "+name_usuario);
         String precio = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
