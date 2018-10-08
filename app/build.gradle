@@ -37,6 +37,8 @@ dependencies {
     implementation "com.android.volley:volley:$rootProject.ext.volleyVersion"
     implementation "com.github.f0ris.sweetalert:library:1.5.1"
 
+    // Sqlite - Sugar ORM
+    implementation 'com.github.satyan:sugar:1.5'
 
     implementation 'com.android.support:support-v4:27.1.1'
     testImplementation 'junit:junit:4.12'

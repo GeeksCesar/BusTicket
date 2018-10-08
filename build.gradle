@@ -30,5 +30,5 @@ ext {
     supportLibraryVersion = '27.1.1'
     firebaseVersion = '11.8.0'
     retrofitVersion = '2.2.0'
-    volleyVersion = '1.0.0'
+    volleyVersion = '1.1.0'
 }
