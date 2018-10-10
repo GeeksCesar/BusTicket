@@ -1,24 +1,31 @@
 package com.smartgeeks.busticket.Modelo;
 
 import com.orm.SugarRecord;
+import com.orm.dsl.Table;
+import com.orm.dsl.Unique;
 
+@Table
 public class Ruta extends SugarRecord {
 
-    int id_remoto;
+    /**
+     * remoto => Indica el id remoto
+     */
+    @Unique
+    String remoto;
     String partida;
     String destino;
 
     public Ruta() {
     }
 
-    public Ruta(int id_remoto, String partida, String destino) {
-        this.id_remoto = id_remoto;
+    public Ruta(String remoto, String partida, String destino) {
+        this.remoto = remoto;
         this.partida = partida;
         this.destino = destino;
     }
 
-    public int getId_remoto() {
-        return id_remoto;
+    public String getId_remoto() {
+        return remoto;
     }
 
     public String getPartida() {

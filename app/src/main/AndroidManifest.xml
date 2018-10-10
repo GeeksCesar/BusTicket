@@ -18,6 +18,7 @@
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
 
+        <!-- SERVICIO DE SINCRONIZACION -->
         <service
             android:name=".sync.SyncService"
             android:exported="false" ></service>
@@ -34,7 +35,7 @@
             android:value="true" />
         <meta-data
             android:name="DOMAIN_PACKAGE_NAME"
-            android:value="com.smartgeeks" />
+            android:value="com.smartgeeks.busticket" />
 
         <activity
             android:name=".SplashScreen"

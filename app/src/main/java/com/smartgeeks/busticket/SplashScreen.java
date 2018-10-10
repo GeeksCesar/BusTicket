@@ -11,7 +11,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.sync.SyncService;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -42,6 +44,13 @@ public class SplashScreen extends AppCompatActivity {
 
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         session = UsuarioPreferences.getInstance(context).getSessionUser();
+
+        /**
+         * Ejecutar el servicio de Sincronización Local
+         */
+        Intent sync = new Intent(context, SyncService.class);
+        sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
+        startService(sync);
 
         splash =  new Thread(){
             @Override

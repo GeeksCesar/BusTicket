@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,12 +19,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.orm.SugarDb;
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
-import com.smartgeeks.busticket.Modelo.Ruta;
-import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 import com.smartgeeks.busticket.sync.SyncService;
@@ -106,9 +102,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 drawer.openDrawer(navList);
-                Intent intent = new Intent(context, SyncService.class);
-                intent.setAction(Constantes.ACTION_RUN_ISERVICE);
-                startService(intent);
             }
         });
     }

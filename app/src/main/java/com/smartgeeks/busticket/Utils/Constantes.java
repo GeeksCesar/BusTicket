@@ -17,19 +17,37 @@ public class Constantes {
     public static final String GET_RUTAS = IP + PROYECT + "/web/obtener_rutas.php";
     public static final String GET_VEHICULOS = IP + PROYECT + "/web/obtener_vehiculos.php";
     public static final String GET_SUBRUTAS = IP + PROYECT + "/web/obtener_subrutas.php";
-    public static final String GET_TIPO_USUARIO = IP + PROYECT + "/web/obtener_tipo_usuario.php";
+    public static final String GET_TIPO_USUARIO = IP + PROYECT + "/web/obtener_tipos_usuario.php";
+
+    /**
+     * Campos de las repuestas JSON
+     */
+    public static final String RUTAS = "rutas";
+    public static final String HORARIOS = "horarios";
+    public static final String VEHICULOS = "vehiculos";
+    public static final String SUBRUTAS = "subrutas";
+    public static final String TIPO_USUARIO = "tipos_usuario";
 
     // Estados del servicio
     public static final String SUCCESS = "1";
-    public static final String FAILED = "2";
+    public static final String FAILED = "0";
+    public static final String ESTADO = "estado";
 
     /**
-     * Constantes para ProgressIntentService
+     * Constantes para SyncService (Sincronización)
      */
-    public static final String ACTION_RUN_ISERVICE = "com.example.services.action.RUN_INTENT_SERVICE";
-    public static final String ACTION_PROGRESS_EXIT = "com.example.services.action.PROGRESS_EXIT";
+    public static final String ACTION_RUN_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_LOCAL_SYNC";
+    public static final String ACTION_STOP_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_STOP_LOCAL_SYNC";
+
+    public static final String ACTION_RUN_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_REMOTE_SYNC";
+    public static final String ACTION_STOP_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_STOP_REMOTE_SYNC";
 
     public static final String EXTRA_PROGRESS = "com.example.services.extra.PROGRESS";
+
+    /**
+     * Tipo de cuenta para la sincronización
+     */
+    public static final String ACCOUNT_TYPE = "com.smartgeeks.busticket.account";
 
 
 
