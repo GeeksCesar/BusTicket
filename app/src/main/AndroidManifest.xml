@@ -18,11 +18,23 @@
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
 
-        <!--Sugar Atribbutes-->
-        <meta-data android:name="DATABASE" android:value="busticket.db" />
-        <meta-data android:name="VERSION" android:value="1" />
-        <meta-data android:name="QUERY_LOG" android:value="true" />
-        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.smartgeeks" />
+        <service
+            android:name=".sync.SyncService"
+            android:exported="false" ></service>
+
+        <!-- Sugar Atribbutes -->
+        <meta-data
+            android:name="DATABASE"
+            android:value="busticket.db" />
+        <meta-data
+            android:name="VERSION"
+            android:value="1" />
+        <meta-data
+            android:name="QUERY_LOG"
+            android:value="true" />
+        <meta-data
+            android:name="DOMAIN_PACKAGE_NAME"
+            android:value="com.smartgeeks" />
 
         <activity
             android:name=".SplashScreen"
@@ -48,8 +60,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-        <activity android:name=".Menu.SelectSillas"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".Menu.SelectSillas"
+            android:screenOrientation="portrait" />
+
+        <service
+            android:name=".sync.SyncService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

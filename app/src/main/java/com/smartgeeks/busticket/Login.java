@@ -67,6 +67,7 @@ public class Login extends AppCompatActivity {
                 String password = edUsuario.getText().toString().trim();
 
                 if (!dialogAlert.verificaConexion(context)){
+                    Log.e("Mesage ", "Entra aquí");
                     dialogAlert.showDialogErrorConexion(context);
                 }else {
                    // showProgress(true);
@@ -91,7 +92,7 @@ public class Login extends AppCompatActivity {
         call.enqueue(new Callback<Signin>() {
             @Override
             public void onResponse(Call<Signin> call, Response<Signin> response) {
-                Log.d(Service.TAG, "response: " + response);
+                Log.e(Service.TAG, "response: " + response);
 
                 if (response.isSuccessful()){
                     errorSiginin = response.body().getError();

@@ -26,7 +26,9 @@ import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
 import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.sync.SyncService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 drawer.openDrawer(navList);
+                Intent intent = new Intent(context, SyncService.class);
+                intent.setAction(Constantes.ACTION_RUN_ISERVICE);
+                startService(intent);
             }
         });
     }

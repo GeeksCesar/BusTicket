@@ -4,30 +4,22 @@ import com.orm.SugarRecord;
 
 public class TipoUsuario extends SugarRecord {
 
-    private int _id;
-    private String nombre;
+    int id_remoto;
+    String nombre;
 
     public TipoUsuario() {
     }
 
-    public TipoUsuario(int id, String nombre) {
-        this._id = id;
+    public TipoUsuario(int id_remoto, String nombre) {
+        this.id_remoto = id_remoto;
         this.nombre = nombre;
     }
 
-    public int get_Id() {
-        return _id;
-    }
-
-    public void set_Id(int id) {
-        this._id = id;
+    public int getId_remoto() {
+        return id_remoto;
     }
 
     public String getNombre() {
         return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 }
