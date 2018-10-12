@@ -34,7 +34,7 @@ public class OpsVehiculo {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: "+response);
+                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -46,7 +46,7 @@ public class OpsVehiculo {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e(TAG, ""+error);
+                                Log.e(TAG, "" + error);
                             }
                         }
                 )
@@ -56,7 +56,7 @@ public class OpsVehiculo {
     /**
      * Procesa la respuesta del servidor al pedir que se retornen todos los vehiculos.
      *
-     * @param response   Respuesta en formato Json
+     * @param response Respuesta en formato Json
      */
     private static void procesarRespuestaGet(JSONObject response) {
         try {
@@ -81,7 +81,7 @@ public class OpsVehiculo {
      * Actualiza los registros locales a través de una comparación con los datos
      * del servidor
      *
-     * @param response   Respuesta en formato Json obtenida del servidor
+     * @param response Respuesta en formato Json obtenida del servidor
      */
     private static void actualizarDatosLocales(JSONObject response) {
 
@@ -112,12 +112,12 @@ public class OpsVehiculo {
         int numDeletes = 0;
         int numInserts = 0;
 
-        for (Vehiculo vehiculo : locales){
+        for (Vehiculo vehiculo : locales) {
 
             // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
             Vehiculo match = expenseMap.get(vehiculo.getId_remoto());
 
-            if (match != null){
+            if (match != null) {
                 // Esta entrada existe, por lo que se remueve del mapeado
                 expenseMap.remove(vehiculo.getId_remoto());
 
@@ -128,7 +128,7 @@ public class OpsVehiculo {
                 boolean b4 = match.getCol_izquierda() != vehiculo.getCol_izquierda();
                 boolean b5 = match.getFilas() != vehiculo.getFilas();
                 boolean b6 = match.getCant_pasajeros() != vehiculo.getCant_pasajeros();
-                
+
                 if (b1 || b2 || b3 || b4 || b5 || b6) {
                     Log.i(TAG, "Programando actualización de: " + vehiculo.getId_remoto());
                     match.update();
@@ -146,12 +146,12 @@ public class OpsVehiculo {
 
         // Insertar items resultantes
         Log.i(TAG, "Programando inserción de Vehiculos ");
-        for (Vehiculo vehiculo : expenseMap.values()){
+        for (Vehiculo vehiculo : expenseMap.values()) {
             vehiculo.save();
             numInserts++;
         }
 
-        Log.i(TAG, "Actualizaciones: "+numUpdates+ " Borrados: "+numDeletes + " Nuevos: "+numInserts);
+        Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes + " Nuevos: " + numInserts);
         Log.e(TAG, "Sincronización finalizada.");
     }
 

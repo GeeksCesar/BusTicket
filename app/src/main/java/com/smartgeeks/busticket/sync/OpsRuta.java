@@ -34,7 +34,7 @@ public class OpsRuta {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: "+response);
+                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -46,7 +46,7 @@ public class OpsRuta {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e(TAG, ""+error);
+                                Log.e(TAG, "" + error);
                             }
                         }
                 )
@@ -56,7 +56,7 @@ public class OpsRuta {
     /**
      * Procesa la respuesta del servidor al pedir que se retornen todos los rutas.
      *
-     * @param response   Respuesta en formato Json
+     * @param response Respuesta en formato Json
      */
     private static void procesarRespuestaGet(JSONObject response) {
         try {
@@ -81,7 +81,7 @@ public class OpsRuta {
      * Actualiza los registros locales a través de una comparación con los datos
      * del servidor
      *
-     * @param response   Respuesta en formato Json obtenida del servidor
+     * @param response Respuesta en formato Json obtenida del servidor
      */
     private static void actualizarDatosLocales(JSONObject response) {
 
@@ -112,12 +112,12 @@ public class OpsRuta {
         int numDeletes = 0;
         int numInserts = 0;
 
-        for (Ruta ruta : locales){
+        for (Ruta ruta : locales) {
 
             // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
             Ruta match = expenseMap.get(ruta.getId_remoto());
 
-            if (match != null){
+            if (match != null) {
                 // Esta entrada existe, por lo que se remueve del mapeado
                 expenseMap.remove(ruta.getId_remoto());
 
@@ -142,12 +142,12 @@ public class OpsRuta {
 
         // Insertar items resultantes
         Log.i(TAG, "Programando inserción de Rutas ");
-        for (Ruta ruta : expenseMap.values()){
+        for (Ruta ruta : expenseMap.values()) {
             ruta.save();
             numInserts++;
         }
 
-        Log.i(TAG, "Actualizaciones: "+numUpdates+ " Borrados: "+numDeletes + " Nuevos: "+numInserts);
+        Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes + " Nuevos: " + numInserts);
         Log.e(TAG, "Sincronización finalizada.");
     }
 

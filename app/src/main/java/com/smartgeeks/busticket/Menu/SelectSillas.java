@@ -96,14 +96,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     private void showDataTextView() {
         String[] split = info_ruta.split(",");
-        tvVehiculo.setText("Vehículo: "+split[0]);
-        tvRuta.setText("Ruta: "+split[1]);
-        tvHora.setText("Hora: "+split[2]);
-        tvInicio.setText("Inicio: "+split[3]);
-        tvFin.setText("Fin: "+split[4]);
+        tvVehiculo.setText("Vehículo: " + split[0]);
+        tvRuta.setText("Ruta: " + split[1]);
+        tvHora.setText("Hora: " + split[2]);
+        tvInicio.setText("Inicio: " + split[3]);
+        tvFin.setText("Fin: " + split[4]);
     }
 
-    private void drawChairBus(int columns_izq, int columns_der, int filas){
+    private void drawChairBus(int columns_izq, int columns_der, int filas) {
         int silla = 1;
 
         // Parámetros del LinearLayout
@@ -113,7 +113,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         params.bottomMargin = 5;
 
         // Parámetros del espacio
-        LinearLayout.LayoutParams space_params = new LinearLayout.LayoutParams(50,0, 1f );
+        LinearLayout.LayoutParams space_params = new LinearLayout.LayoutParams(50, 0, 1f);
 
         // Parámetros de la silla
         LinearLayout.LayoutParams silla_params = new LinearLayout.LayoutParams(50,
@@ -121,14 +121,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         silla_params.setMargins(4, 8, 4, 8);
 
         // Dibujo las filas
-        for (int i = 1; i <= filas; i++){
+        for (int i = 1; i <= filas; i++) {
 
             LinearLayout linearLayout = new LinearLayout(this);
             linearLayout.setLayoutParams(params);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
             //Dibujo las columnas izquierdas
-            for (int a = 1; a <= columns_izq; a++){
+            for (int a = 1; a <= columns_izq; a++) {
 
                 final ToggleButton puesto = new ToggleButton(this);
                 puesto.setLayoutParams(silla_params);
@@ -158,7 +158,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             linearLayout.addView(espacio);
 
             // Dibujo las columnas derechas
-            for (int b = 1; b <= columns_der; b++){
+            for (int b = 1; b <= columns_der; b++) {
 
                 final ToggleButton puesto = new ToggleButton(this);
                 puesto.setLayoutParams(silla_params);
@@ -196,10 +196,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Dibuja las sillas ocupadas
+     *
      * @param silla
      * @param puesto
      */
-    private void drawSillaOcupada(int silla, ToggleButton puesto){
+    private void drawSillaOcupada(int silla, ToggleButton puesto) {
         // Verificar si la silla está ocupada
         for (int ocupada : sillasOcupadas) {
             if (ocupada == silla) {
@@ -212,6 +213,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Elimina una silla del arreglo, de acuerdo a su posicion
+     *
      * @param silId
      */
     private void removeSillaFromArray(int silId) {
@@ -229,14 +231,16 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Confirmar silla
+     *
      * @param view
      */
     public void confirmarSilla(View view) {
-        Toast.makeText(context, "Has seleccionado "+sillasSeleccionadas.size(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Has seleccionado " + sillasSeleccionadas.size(), Toast.LENGTH_SHORT).show();
     }
 
     /**
      * Verifica el estado del toggle button
+     *
      * @param buttonView
      * @param isChecked
      */
@@ -247,8 +251,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         // Guardo o elimino la silla
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
-            if (sillasSeleccionadas.size() > cant_puestos ){
-                dialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los "+cant_puestos+" puestos.", SweetAlertDialog.ERROR_TYPE);
+            if (sillasSeleccionadas.size() > cant_puestos) {
+                dialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los " + cant_puestos + " puestos.", SweetAlertDialog.ERROR_TYPE);
                 removeSillaFromArray(silla_seleccionda);
                 buttonView.setChecked(false);
                 buttonView.setTextColor(ContextCompat.getColor(context, R.color.md_black_1000));
@@ -268,31 +272,31 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getVehiculo(int id_vehiculo) {
 
         String URL = Service.GET_INFO_VEHICULO + id_vehiculo;
-        Log.d(Service.TAG, "rutas: "+URL);
+        Log.d(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject jsonObject = null;
                 try {
-                       jsonObject = new JSONObject(response);
-                       Log.e(TAG, ""+response);
-                       JSONArray jsonArray = jsonObject.getJSONArray("vehiculos");
+                    jsonObject = new JSONObject(response);
+                    Log.e(TAG, "" + response);
+                    JSONArray jsonArray = jsonObject.getJSONArray("vehiculos");
 
-                       if (jsonArray.length() > 0) {
-                           JSONObject json = jsonArray.getJSONObject(0);
-                           drawChairBus(json.getInt("f_izquierda"), json.getInt("f_derecha"),
-                                   json.getInt("columnas"));
-                       }
+                    if (jsonArray.length() > 0) {
+                        JSONObject json = jsonArray.getJSONObject(0);
+                        drawChairBus(json.getInt("f_izquierda"), json.getInt("f_derecha"),
+                                json.getInt("columnas"));
+                    }
 
                 } catch (JSONException e) {
-                      e.printStackTrace();
+                    e.printStackTrace();
                 }
                 progress.dismiss();
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, ""+volleyError);
+                Log.e(TAG, "" + volleyError);
                 progress.dismiss();
             }
         });
@@ -302,12 +306,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Consultar sillas ocupadas por horario de ruta
+     *
      * @param id_horario
      */
     private void getSillasOcupadas(int id_horario) {
 
         String URL = Service.SILLAS_OCUPADAS + id_horario;
-        Log.d(Service.TAG, "rutas: "+URL);
+        Log.d(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -315,9 +320,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 JSONArray jsonArray = null;
                 try {
                     jsonArray = new JSONArray(response);
-                    Log.e(TAG, "Sillas: "+response);
+                    Log.e(TAG, "Sillas: " + response);
 
-                    for (int i = 0; i < jsonArray.length(); i++){
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
                     }
                     getVehiculo(id_vehiculo);
@@ -328,7 +333,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, ""+volleyError);
+                Log.e(TAG, "" + volleyError);
             }
         });
         requestQueue.add(stringRequest);

@@ -12,18 +12,18 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class DialogAlert {
 
-    public void showDialogFailed(Context context , String title, String message, int type){
+    public void showDialogFailed(Context context, String title, String message, int type) {
         SweetAlertDialog alertDialog = new SweetAlertDialog(context, type);
-                alertDialog.setTitleText(title)
+        alertDialog.setTitleText(title)
                 .setContentText(message)
                 .show();
 
-        Button button =  alertDialog.findViewById(R.id.confirm_button);
+        Button button = alertDialog.findViewById(R.id.confirm_button);
         button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
     }
 
 
-    public void showDialogErrorConexion(Context context){
+    public void showDialogErrorConexion(Context context) {
         new SweetAlertDialog(context, SweetAlertDialog.CUSTOM_IMAGE_TYPE)
                 .setTitleText("Error")
                 .setContentText("No hay conexión de \n internet")

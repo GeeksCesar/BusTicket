@@ -21,12 +21,13 @@ public class SplashScreen extends AppCompatActivity {
     ProgressBar progresBar;
 
     Thread splash;
-    Intent intent ;
+    Intent intent;
 
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
     String session;
-    Context context ;
+    Context context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,9 +35,9 @@ public class SplashScreen extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_splash_screen);
 
-        context = SplashScreen.this ;
+        context = SplashScreen.this;
 
-        progresBar = findViewById(R.id.progresBar) ;
+        progresBar = findViewById(R.id.progresBar);
         //Style ProgressBar
         progresBar = findViewById(R.id.progresBar);
         progresBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_IN);
@@ -52,7 +53,7 @@ public class SplashScreen extends AppCompatActivity {
         sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
         startService(sync);
 
-        splash =  new Thread(){
+        splash = new Thread() {
             @Override
             public void run() {
                 try {
@@ -62,13 +63,13 @@ public class SplashScreen extends AppCompatActivity {
                         intent = new Intent(context, MainActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
-                    }else if (session.equals("SessionFailed")) {
+                    } else if (session.equals("SessionFailed")) {
                         intent = new Intent(context, Login.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     }
 
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }

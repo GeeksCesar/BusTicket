@@ -53,18 +53,18 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SelectRutas extends AppCompatActivity {
 
-    public static final String ID = "ID" ;
-    public static final String ID_VEHICULO = "ID_VEHICULO" ;
-    public static final String ID_HORARIO = "ID_HORARIO" ;
-    public static final String INFO = "INFO" ;
+    public static final String ID = "ID";
+    public static final String ID_VEHICULO = "ID_VEHICULO";
+    public static final String ID_HORARIO = "ID_HORARIO";
+    public static final String INFO = "INFO";
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
-    Spinner spInicio, spFin, spPasajero ;
-    CheckBox cbAsiento, cbDePie ;
-    TextView tvPrecioPasaje , tvCountItem;
+    Button btnSiguiente, btnFinalizar, btnMenos, btnMas;
+    Spinner spInicio, spFin, spPasajero;
+    CheckBox cbAsiento, cbDePie;
+    TextView tvPrecioPasaje, tvCountItem;
     DialogAlert dialogAlert = new DialogAlert();
 
     private JSONArray resutlParaderos;
@@ -81,7 +81,7 @@ public class SelectRutas extends AppCompatActivity {
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_paradero;
     String ruta_inicio, ruta_fin;
 
-    Context context ;
+    Context context;
 
     private File pdfFile;
     final private int REQUEST_CODE_ASK_PERMISSIONS = 111;
@@ -110,8 +110,8 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-               id_paradero = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id_paradero: "+id_paradero);
+                id_paradero = Integer.parseInt(getIdParadero(position));
+                Log.d(Service.TAG, "id_paradero: " + id_paradero);
                 ruta_fin = parent.getItemAtPosition(position).toString();
             }
 
@@ -125,13 +125,13 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int postion, long id) {
 
-                if (id == 0){
-                   precioPasaje = Integer.parseInt(getPrecio(postion, "t_adulto"));
-                }else if (id == 1){
+                if (id == 0) {
+                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_adulto"));
+                } else if (id == 1) {
                     precioPasaje = Integer.parseInt(getPrecio(postion, "t_estudiante"));
-                }else if (id == 2){
+                } else if (id == 2) {
                     precioPasaje = Integer.parseInt(getPrecio(postion, "t_frecuente"));
-                }else if (id == 3){
+                } else if (id == 3) {
                     precioPasaje = Integer.parseInt(getPrecio(postion, "t_normal"));
                 }
 
@@ -148,12 +148,12 @@ public class SelectRutas extends AppCompatActivity {
         btnMas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                countPasajes ++ ;
+                countPasajes++;
 
-                precio_sum_pasaje = precioPasaje * countPasajes ;
+                precio_sum_pasaje = precioPasaje * countPasajes;
 
                 formatPrecio(precio_sum_pasaje);
-                tvCountItem.setText(""+countPasajes);
+                tvCountItem.setText("" + countPasajes);
 
             }
         });
@@ -162,11 +162,11 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (countPasajes > 1){
+                if (countPasajes > 1) {
 
                     countPasajes--;
 
-                    precio_sum_pasaje = precioPasaje * countPasajes ;
+                    precio_sum_pasaje = precioPasaje * countPasajes;
 
                     formatPrecio(precio_sum_pasaje);
                     tvCountItem.setText("" + countPasajes);
@@ -177,11 +177,11 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private void formatPrecio(int precio){
+    private void formatPrecio(int precio) {
         String formatPrecio = formatea.format(precio);
         formatPrecio = formatPrecio.replace(',', '.');
 
-        tvPrecioPasaje.setText("$ "+formatPrecio);
+        tvPrecioPasaje.setText("$ " + formatPrecio);
     }
 
     private void initWidget() {
@@ -192,7 +192,7 @@ public class SelectRutas extends AppCompatActivity {
         btnSiguiente = findViewById(R.id.btnSiguiente);
         btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
-        btnMenos= findViewById(R.id.btnRestar);
+        btnMenos = findViewById(R.id.btnRestar);
         spInicio = findViewById(R.id.spInicio);
         spFin = findViewById(R.id.spFIn);
         spPasajero = findViewById(R.id.spUsuarios);
@@ -219,20 +219,20 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (ruta_inicio == ruta_fin){
+                if (ruta_inicio == ruta_fin) {
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 }
 
-                if (cbAsiento.isChecked()){
+                if (cbAsiento.isChecked()) {
                     Intent intent = new Intent(context, SelectSillas.class);
                     intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
                     intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
                     intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
                     intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                    intent.putExtra(INFO, info+","+ruta_inicio+","+ruta_fin);
+                    intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
                     startActivity(intent);
-                } else if (cbDePie.isChecked()){
+                } else if (cbDePie.isChecked()) {
                     try {
                         createPdfWrapper();
                     } catch (FileNotFoundException e) {
@@ -248,7 +248,7 @@ public class SelectRutas extends AppCompatActivity {
 
 
         validarCheckBox();
-        tvCountItem.setText(""+ countPasajes);
+        tvCountItem.setText("" + countPasajes);
 
     }
 
@@ -256,11 +256,11 @@ public class SelectRutas extends AppCompatActivity {
         cbAsiento.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbAsiento.isChecked()){
+                if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);
                     btnSiguiente.setVisibility(View.VISIBLE);
                     btnFinalizar.setVisibility(View.GONE);
-                }else {
+                } else {
                     btnSiguiente.setVisibility(View.GONE);
                 }
             }
@@ -269,11 +269,11 @@ public class SelectRutas extends AppCompatActivity {
         cbDePie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbDePie.isChecked()){
+                if (cbDePie.isChecked()) {
                     cbAsiento.setChecked(false);
                     btnSiguiente.setVisibility(View.GONE);
                     btnFinalizar.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     btnFinalizar.setVisibility(View.GONE);
                 }
             }
@@ -284,12 +284,12 @@ public class SelectRutas extends AppCompatActivity {
     private void getParaderos(int id) {
         listParaderos.clear();
 
-        Log.i(Service.TAG, "URL: "+Service.GET_PARADEROS+id);
+        Log.i(Service.TAG, "URL: " + Service.GET_PARADEROS + id);
 
-        stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Service.GET_PARADEROS + id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(Service.TAG, "response: "+response);
+                Log.d(Service.TAG, "response: " + response);
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
@@ -314,7 +314,7 @@ public class SelectRutas extends AppCompatActivity {
 
                         getUsuarios();
 
-                    }else {
+                    } else {
 
                     }
 
@@ -359,7 +359,7 @@ public class SelectRutas extends AppCompatActivity {
                         }
                         //setAdapter
                         spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
-                    }else {
+                    } else {
 
                     }
 
@@ -375,10 +375,10 @@ public class SelectRutas extends AppCompatActivity {
         });
 
         requestQueue.add(stringRequest);
-        
+
     }
 
-    private String getIdParadero(int position){
+    private String getIdParadero(int position) {
         String idParadero = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -391,7 +391,7 @@ public class SelectRutas extends AppCompatActivity {
         return idParadero;
     }
 
-    public String getPrecio(int position , String name_usuario){
+    public String getPrecio(int position, String name_usuario) {
         String precio = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -401,12 +401,12 @@ public class SelectRutas extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return  precio;
+        return precio;
 
     }
 
 
-    private void createPdfWrapper() throws FileNotFoundException,DocumentException {
+    private void createPdfWrapper() throws FileNotFoundException, DocumentException {
 
         int hasWriteStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (hasWriteStoragePermission != PackageManager.PERMISSION_GRANTED) {
@@ -420,7 +420,7 @@ public class SelectRutas extends AppCompatActivity {
                         REQUEST_CODE_ASK_PERMISSIONS);
             }
             return;
-        }else {
+        } else {
             createPdf();
         }
     }
@@ -433,19 +433,19 @@ public class SelectRutas extends AppCompatActivity {
             Log.i(Service.TAG, "Created a new directory for PDF");
         }
 
-        pdfFile = new File(docsFolder.getAbsolutePath(),"ticket.pdf");
+        pdfFile = new File(docsFolder.getAbsolutePath(), "ticket.pdf");
         OutputStream output = new FileOutputStream(pdfFile);
         Document document = new Document();
         PdfWriter.getInstance(document, output);
         document.open();
 
-        String Empresa = "Empresa :  Coomotor" ;
-        String Placa = "PLACA: 44DHJU" ;
-        String Operador = "USUARIO: Cesar Lizcano" ;
-        String Ruta = "RUTA: Neiva - Campoalegre" ;
-        String Precio = "PRECIO: $ 5.000" ;
-        String Hora = "HORA SALIDA: 09:00" ;
-        String Fecha = "FECHA: 28-09-2018" ;
+        String Empresa = "Empresa :  Coomotor";
+        String Placa = "PLACA: 44DHJU";
+        String Operador = "USUARIO: Cesar Lizcano";
+        String Ruta = "RUTA: Neiva - Campoalegre";
+        String Precio = "PRECIO: $ 5.000";
+        String Hora = "HORA SALIDA: 09:00";
+        String Fecha = "FECHA: 28-09-2018";
 
         document.add(new Paragraph(Empresa));
         document.add(new Paragraph(Placa));
@@ -462,7 +462,6 @@ public class SelectRutas extends AppCompatActivity {
     }
 
 
-
     private void previewPdf() {
 
         PackageManager packageManager = getPackageManager();
@@ -476,8 +475,8 @@ public class SelectRutas extends AppCompatActivity {
             intent.setDataAndType(uri, "application/pdf");
 
             startActivity(intent);
-        }else{
-            Toast.makeText(this,"Download a PDF Viewer to see the generated PDF",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Download a PDF Viewer to see the generated PDF", Toast.LENGTH_SHORT).show();
         }
     }
 

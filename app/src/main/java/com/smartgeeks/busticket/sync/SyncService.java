@@ -23,13 +23,12 @@ public class SyncService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
 
-            switch (action){
+            switch (action) {
                 case Constantes.ACTION_RUN_LOCAL_SYNC:
                     handleLocalSync();
                     break;
                 case Constantes.ACTION_RUN_REMOTE_SYNC:
-                    //realizarSincronizacionRemota()
-                    //handleRemoteSync();
+                    handleRemoteSync();
                     break;
             }
 
@@ -37,31 +36,42 @@ public class SyncService extends IntentService {
     }
 
     /**
-     * Maneja la acción de ejecución del sincronización Local
+     * Maneja la acción de ejecución de la sincronización Remota
+     */
+    private void handleRemoteSync() {
+        try {
+            OpsTicket.realizarSincronizacionRemota(getApplicationContext());
+        } catch (Exception e) {
+            e.getMessage();
+        }
+    }
+
+    /**
+     * Maneja la acción de ejecución de la sincronización Local
      */
     private void handleLocalSync() {
-            try {
-                // Construyo la notificación
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                        .setContentTitle("Sincronizando datos")
-                        .setContentText("Procesando...");
+        try {
+            // Construyo la notificación
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                    .setContentTitle("Sincronizando datos")
+                    .setContentText("Procesando...");
 
-                startForeground(1, builder.build());
+            startForeground(1, builder.build());
 
-                // Sincronizo los datos
-                OpsRuta.realizarSincronizacionLocal(getApplicationContext());
-                OpsHorario.realizarSincronizacionLocal(getApplicationContext());
-                OpsVehiculo.realizarSincronizacionLocal(getApplicationContext());
-                OpsSubrutas.realizarSincronizacionLocal(getApplicationContext());
-                OpsTipoUsuario.realizarSincronizacionLocal(getApplicationContext());
+            // Sincronizo los datos
+            OpsRuta.realizarSincronizacionLocal(getApplicationContext());
+            OpsHorario.realizarSincronizacionLocal(getApplicationContext());
+            OpsVehiculo.realizarSincronizacionLocal(getApplicationContext());
+            OpsSubrutas.realizarSincronizacionLocal(getApplicationContext());
+            OpsTipoUsuario.realizarSincronizacionLocal(getApplicationContext());
 
-                // Quito la notificacion de primer plano
-                stopForeground(true);
+            // Quito la notificacion de primer plano
+            stopForeground(true);
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

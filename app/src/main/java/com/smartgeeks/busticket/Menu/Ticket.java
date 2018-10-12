@@ -31,10 +31,10 @@ import java.util.ArrayList;
 
 public class Ticket extends Fragment {
 
-    View view ;
+    View view;
     Context context;
-    Spinner spPlaca, spRuta, spHorarios ;
-    Button btnSiguiente ;
+    Spinner spPlaca, spRuta, spHorarios;
+    Button btnSiguiente;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -93,8 +93,8 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_ruta = Integer.parseInt(getIdRuta(position)) ;
-                Log.d(Service.TAG, "id_ruta: "+id_ruta);
+                id_ruta = Integer.parseInt(getIdRuta(position));
+                Log.d(Service.TAG, "id_ruta: " + id_ruta);
                 getHorario(id_ruta);
                 ruta = listRuta.get(position);
             }
@@ -109,8 +109,8 @@ public class Ticket extends Fragment {
         spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_horario = Integer.parseInt(getIdHorario(position)) ;
-                Log.d(Service.TAG, "id_horario: "+id_horario);
+                id_horario = Integer.parseInt(getIdHorario(position));
+                Log.d(Service.TAG, "id_horario: " + id_horario);
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
                 horario = listHorario.get(position);
             }
@@ -125,14 +125,14 @@ public class Ticket extends Fragment {
             @Override
             public void onClick(View view) {
 
-                    Log.e(Service.TAG, "id_ruta "+id_ruta);
-                    Intent intent = new Intent(context, SelectRutas.class);
-                    intent.putExtra(SelectRutas.ID, id_ruta);
-                    intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
-                    intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
-                    intent.putExtra(SelectRutas.INFO, placa+","+ruta+","+horario);
-                    startActivity(intent);
-                }
+                Log.e(Service.TAG, "id_ruta " + id_ruta);
+                Intent intent = new Intent(context, SelectRutas.class);
+                intent.putExtra(SelectRutas.ID, id_ruta);
+                intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
+                intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
+                intent.putExtra(SelectRutas.INFO, placa + "," + ruta + "," + horario);
+                startActivity(intent);
+            }
         });
 
 
@@ -143,7 +143,7 @@ public class Ticket extends Fragment {
         listHorario.clear();
 
         String URL = Service.GET_HORARIO + id_vehiculo;
-        Log.d(Service.TAG, "horarios: "+URL);
+        Log.d(Service.TAG, "horarios: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -151,7 +151,7 @@ public class Ticket extends Fragment {
                 try {
                     jsonObject = new JSONObject(response);
                     resultHorarios = jsonObject.getJSONArray("horarios");
-                    Log.d(Service.TAG , "json: "+resultHorarios);
+                    Log.d(Service.TAG, "json: " + resultHorarios);
                     if (resultHorarios.length() > 0) {
                         for (int i = 0; i < resultHorarios.length(); i++) {
                             try {
@@ -165,7 +165,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHorario));
-                    }else {
+                    } else {
 
                     }
 
@@ -186,7 +186,7 @@ public class Ticket extends Fragment {
     private void getRutas(int id_vehiculo) {
         listRuta.clear();
         String URL = Service.GET_RUTAS + id_vehiculo;
-        Log.d(Service.TAG, "rutas: "+URL);
+        Log.d(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -194,7 +194,7 @@ public class Ticket extends Fragment {
                 try {
                     jsonObject = new JSONObject(response);
                     resultRuta = jsonObject.getJSONArray("rutas");
-                    Log.d(Service.TAG , "json: "+resultRuta);
+                    Log.d(Service.TAG, "json: " + resultRuta);
                     if (resultRuta.length() > 0) {
                         for (int i = 0; i < resultRuta.length(); i++) {
                             try {
@@ -202,7 +202,7 @@ public class Ticket extends Fragment {
                                 String nombreIda = json.getString("Ida");
                                 String nombreVuelta = json.getString("Vuelta");
 
-                                String nameRuta = nombreIda +" - "+nombreVuelta;
+                                String nameRuta = nombreIda + " - " + nombreVuelta;
 
                                 listRuta.add(nameRuta);
                             } catch (JSONException e) {
@@ -211,7 +211,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
-                    }else {
+                    } else {
 
                     }
 
@@ -228,7 +228,7 @@ public class Ticket extends Fragment {
         requestQueue.add(stringRequest);
     }
 
-    private void getVehiculos(){
+    private void getVehiculos() {
         listPlacas.clear();
 
         stringRequest = new StringRequest(Service.GET_VEHICULOS, new Response.Listener<String>() {
@@ -252,7 +252,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
-                    }else {
+                    } else {
 
                     }
 
@@ -271,7 +271,7 @@ public class Ticket extends Fragment {
 
     }
 
-    private String getIdVehiculo(int position){
+    private String getIdVehiculo(int position) {
         String id_vehiculo = "";
         try {
             JSONObject object = resultPlaca.getJSONObject(position);
@@ -284,7 +284,7 @@ public class Ticket extends Fragment {
     }
 
 
-    private String getIdRuta(int position){
+    private String getIdRuta(int position) {
         String idRuta = "";
         try {
             JSONObject object = resultRuta.getJSONObject(position);
@@ -296,7 +296,7 @@ public class Ticket extends Fragment {
         return idRuta;
     }
 
-    private String getIdHorario(int position){
+    private String getIdHorario(int position) {
         String idHorario = "";
         try {
             JSONObject object = resultHorarios.getJSONObject(position);

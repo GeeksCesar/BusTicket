@@ -22,28 +22,26 @@ import android.widget.TextView;
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
-import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
-import com.smartgeeks.busticket.sync.SyncService;
 
 public class MainActivity extends AppCompatActivity {
 
-    Context context ;
+    Context context;
 
-    int user_id ;
+    int user_id;
     SharedPreferences preferences;
 
     ImageButton btnAbrirMenu;
-    ImageView ivBanner ;
+    ImageView ivBanner;
     ListView navList;
     DrawerLayout drawer;
     //_STRING OPCIONES DEL MENU
     final String[] MenuItems = {"Perfil", "Inicio", "Tickets", "Cerrar Sesión"};
 
     int icons_categoria[] = {R.mipmap.icon_perfil,
-                             R.mipmap.icon_casa,
-                             R.mipmap.icon_ticket,
-                             R.mipmap.icon_cerrar_sesion};
+            R.mipmap.icon_casa,
+            R.mipmap.icon_ticket,
+            R.mipmap.icon_cerrar_sesion};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
         context = MainActivity.this;
 
         //set DrawerLayout
-        btnAbrirMenu = (ImageButton) findViewById(R.id.imgAbrirMenu) ;
-        ivBanner = (ImageView) findViewById(R.id.ivNameViewPager) ;
+        btnAbrirMenu = (ImageButton) findViewById(R.id.imgAbrirMenu);
+        ivBanner = (ImageView) findViewById(R.id.ivNameViewPager);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navList = (ListView) findViewById(R.id.drawer);
 
@@ -68,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
 
-                switch (pos){
+                switch (pos) {
                     case 0:
                         drawer.closeDrawer(navList);
                         ivBanner.setBackgroundResource(R.mipmap.header_perfil);
@@ -89,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case 3:
                         drawer.closeDrawer(navList);
-                       cerrarSession();
+                        cerrarSession();
                         break;
                 }
             }
@@ -106,10 +104,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void setFragment(int pos){
+    public void setFragment(int pos) {
         Fragment fragment = null;
 
-        switch (pos){
+        switch (pos) {
             case 0:
                 fragment = new Perfil();
                 getSupportFragmentManager().beginTransaction().replace(R.id.main, fragment).commit();
@@ -152,20 +150,20 @@ public class MainActivity extends AppCompatActivity {
 
         public View getCustomView(int position, View convertView, ViewGroup parent) {
 
-            LayoutInflater inflater= getLayoutInflater();
-            View row=inflater.inflate(R.layout.custom_menu, parent, false);
-            TextView label=(TextView)row.findViewById(R.id.txtTitle);
+            LayoutInflater inflater = getLayoutInflater();
+            View row = inflater.inflate(R.layout.custom_menu, parent, false);
+            TextView label = (TextView) row.findViewById(R.id.txtTitle);
             label.setText(MenuItems[position]);
 
 
-            ImageView icon=(ImageView)row.findViewById(R.id.imgIcono);
+            ImageView icon = (ImageView) row.findViewById(R.id.imgIcono);
             icon.setImageResource(icons_categoria[position]);
 
             return row;
         }
     }
 
-    private void cerrarSession(){
+    private void cerrarSession() {
         Intent intent = new Intent(context, Login.class);
         preferences = context.getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         preferences.edit().clear().commit();

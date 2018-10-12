@@ -19,6 +19,8 @@ public class Constantes {
     public static final String GET_SUBRUTAS = IP + PROYECT + "/web/obtener_subrutas.php";
     public static final String GET_TIPO_USUARIO = IP + PROYECT + "/web/obtener_tipos_usuario.php";
 
+    public static final String INSERT_TICKET = IP + PROYECT + "/web/insertar_ticket.php";
+
     /**
      * Campos de las repuestas JSON
      */
@@ -32,6 +34,7 @@ public class Constantes {
     public static final String SUCCESS = "1";
     public static final String FAILED = "0";
     public static final String ESTADO = "estado";
+    public static final String MENSAJE = "mensaje";
 
     /**
      * Constantes para SyncService (Sincronización)
@@ -48,7 +51,6 @@ public class Constantes {
      * Tipo de cuenta para la sincronización
      */
     public static final String ACCOUNT_TYPE = "com.smartgeeks.busticket.account";
-
 
 
 }
