@@ -222,13 +222,23 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/btnConfirmarTicket"
             style="@style/ButtonCustomPrimary"
-            android:text="Ok"
-            android:onClick="confirmarSilla"
-            android:layout_weight="1"/>
+            android:text="Confirmar"
+            android:layout_weight="1"
+            android:visibility="visible"/>
 
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
 
 </RelativeLayout>

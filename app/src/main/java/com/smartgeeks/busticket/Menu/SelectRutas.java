@@ -1,14 +1,14 @@
 package com.smartgeeks.busticket.Menu;
 
-import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -21,50 +21,53 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.pdf.PdfWriter;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+import com.smartgeeks.busticket.Utils.PrintPicture;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SelectRutas extends AppCompatActivity {
 
-    public static final String ID = "ID";
-    public static final String ID_VEHICULO = "ID_VEHICULO";
-    public static final String ID_HORARIO = "ID_HORARIO";
-    public static final String INFO = "INFO";
+    public static final String ID_RUTA = "ID" ;
+    public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE" ;
+    public static final String ID_VEHICULO = "ID_VEHICULO" ;
+    public static final String ID_HORARIO = "ID_HORARIO" ;
+    public static final String HORA = "HORA" ;
+    public static final String INFO = "INFO" ;
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    Button btnSiguiente, btnFinalizar, btnMenos, btnMas;
-    Spinner spInicio, spFin, spPasajero;
-    CheckBox cbAsiento, cbDePie;
-    TextView tvPrecioPasaje, tvCountItem;
+    Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
+    Spinner spInicio, spFin, spPasajero ;
+    CheckBox cbAsiento, cbDePie ;
+    TextView tvPrecioPasaje , tvCountItem;
     DialogAlert dialogAlert = new DialogAlert();
 
     private JSONArray resutlParaderos;
@@ -78,13 +81,28 @@ public class SelectRutas extends AppCompatActivity {
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_paradero;
-    String ruta_inicio, ruta_fin;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin;
+    String ruta_inicio, ruta_fin, Horario;
 
-    Context context;
+    Context context ;
 
-    private File pdfFile;
-    final private int REQUEST_CODE_ASK_PERMISSIONS = 111;
+    BluetoothAdapter bluetoothAdapter ;
+    BluetoothSocket bluetoothSocket;
+    BluetoothDevice bluetoothDevice ;
+
+    OutputStream outputStream;
+    InputStream inputStream;
+    Thread thread;
+
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
+
+    private View mProgressView;
+
+    int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
+
+    StringBuffer stringBuffer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +116,8 @@ public class SelectRutas extends AppCompatActivity {
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
+                Log.d(Service.TAG, "id_paradero_inicio: "+id_paradero_inicio);
                 ruta_inicio = parent.getItemAtPosition(position).toString();
             }
 
@@ -110,8 +130,8 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                id_paradero = Integer.parseInt(getIdParadero(position));
-                Log.d(Service.TAG, "id_paradero: " + id_paradero);
+                id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
+                Log.d(Service.TAG, "id_paradero_fin: "+id_paradero_fin);
                 ruta_fin = parent.getItemAtPosition(position).toString();
             }
 
@@ -123,16 +143,17 @@ public class SelectRutas extends AppCompatActivity {
 
         spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int postion, long id) {
-
-                if (id == 0) {
-                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_adulto"));
-                } else if (id == 1) {
-                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_estudiante"));
-                } else if (id == 2) {
-                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_frecuente"));
-                } else if (id == 3) {
-                    precioPasaje = Integer.parseInt(getPrecio(postion, "t_normal"));
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                id_usuario = Integer.parseInt(getIdUsuario(position)) ;
+                Log.d(Service.TAG, "id_usuario: "+id_usuario);
+                if (id == 0){
+                    precioPasaje = Integer.parseInt(getPrecio(position, "t_adulto"));
+                }else if (id == 1){
+                    precioPasaje = Integer.parseInt(getPrecio(position, "t_estudiante"));
+                }else if (id == 2){
+                    precioPasaje = Integer.parseInt(getPrecio(position, "t_frecuente"));
+                }else if (id == 3){
+                    precioPasaje = Integer.parseInt(getPrecio(position, "t_normal"));
                 }
 
                 formatPrecio(precioPasaje);
@@ -148,12 +169,12 @@ public class SelectRutas extends AppCompatActivity {
         btnMas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                countPasajes++;
+                countPasajes ++ ;
 
-                precio_sum_pasaje = precioPasaje * countPasajes;
+                precio_sum_pasaje = precioPasaje * countPasajes ;
 
                 formatPrecio(precio_sum_pasaje);
-                tvCountItem.setText("" + countPasajes);
+                tvCountItem.setText(""+countPasajes);
 
             }
         });
@@ -162,11 +183,11 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (countPasajes > 1) {
+                if (countPasajes > 1){
 
                     countPasajes--;
 
-                    precio_sum_pasaje = precioPasaje * countPasajes;
+                    precio_sum_pasaje = precioPasaje * countPasajes ;
 
                     formatPrecio(precio_sum_pasaje);
                     tvCountItem.setText("" + countPasajes);
@@ -175,24 +196,34 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
-    }
 
-    private void formatPrecio(int precio) {
-        String formatPrecio = formatea.format(precio);
-        formatPrecio = formatPrecio.replace(',', '.');
+        btnFinalizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-        tvPrecioPasaje.setText("$ " + formatPrecio);
+                if (ruta_inicio == ruta_fin){
+                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                }else {
+                    btnFinalizar.setEnabled(false);
+                    btnFinalizar.setVisibility(View.GONE);
+                    showProgress(true);
+                    registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador,id_usuario, precio_sum_pasaje);
+                }
+
+            }
+        });
+
     }
 
     private void initWidget() {
         context = SelectRutas.this;
         requestQueue = Volley.newRequestQueue(context);
 
-
         btnSiguiente = findViewById(R.id.btnSiguiente);
         btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
-        btnMenos = findViewById(R.id.btnRestar);
+        btnMenos= findViewById(R.id.btnRestar);
         spInicio = findViewById(R.id.spInicio);
         spFin = findViewById(R.id.spFIn);
         spPasajero = findViewById(R.id.spUsuarios);
@@ -200,45 +231,49 @@ public class SelectRutas extends AppCompatActivity {
         cbDePie = findViewById(R.id.cbPie);
         tvCountItem = findViewById(R.id.textCount);
         tvPrecioPasaje = findViewById(R.id.tvPrecio);
+        mProgressView = findViewById(R.id.login_progress);
 
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
 
         bundle = getIntent().getExtras();
-        int id_ruta = bundle.getInt(ID);
 
-        final int id_vehiculo = bundle.getInt(ID_VEHICULO);
-        final int id_horario = bundle.getInt(ID_HORARIO);
+        id_ruta  = bundle.getInt(ID_RUTA);
+        id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
+        id_vehiculo = bundle.getInt(ID_VEHICULO);
+        id_horario  = bundle.getInt(ID_HORARIO);
+        Horario = bundle.getString(HORA);
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+
+
         final String info = bundle.getString(INFO);
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
 
-
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (ruta_inicio == ruta_fin) {
+                if (ruta_inicio == ruta_fin){
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
-                }
+                }else {
+                    if (cbAsiento.isChecked()){
+                        Intent intent = new Intent(context, SelectSillas.class);
+                        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
+                        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+                        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
+                        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
+                        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
+                        intent.putExtra(SelectSillas.HORARIO, Horario);
+                        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
+                        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
+                        intent.putExtra(SelectSillas.TIPO_USUARIO, id_usuario);
+                        intent.putExtra(INFO, info+","+ruta_inicio+","+ruta_fin);
 
-                if (cbAsiento.isChecked()) {
-                    Intent intent = new Intent(context, SelectSillas.class);
-                    intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
-                    intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
-                    intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
-                    intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                    intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
-                    startActivity(intent);
-                } else if (cbDePie.isChecked()) {
-                    try {
-                        createPdfWrapper();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (DocumentException e) {
-                        e.printStackTrace();
+                        startActivity(intent);
                     }
                 }
             }
@@ -246,21 +281,28 @@ public class SelectRutas extends AppCompatActivity {
 
         getParaderos(id_ruta);
 
-
         validarCheckBox();
-        tvCountItem.setText("" + countPasajes);
+        tvCountItem.setText(""+ countPasajes);
 
+    }
+
+
+    private void formatPrecio(int precio){
+        String formatPrecio = formatea.format(precio);
+        formatPrecio = formatPrecio.replace(',', '.');
+
+        tvPrecioPasaje.setText("$ "+formatPrecio);
     }
 
     private void validarCheckBox() {
         cbAsiento.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbAsiento.isChecked()) {
+                if (cbAsiento.isChecked()){
                     cbDePie.setChecked(false);
                     btnSiguiente.setVisibility(View.VISIBLE);
                     btnFinalizar.setVisibility(View.GONE);
-                } else {
+                }else {
                     btnSiguiente.setVisibility(View.GONE);
                 }
             }
@@ -269,11 +311,11 @@ public class SelectRutas extends AppCompatActivity {
         cbDePie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbDePie.isChecked()) {
+                if (cbDePie.isChecked()){
                     cbAsiento.setChecked(false);
                     btnSiguiente.setVisibility(View.GONE);
                     btnFinalizar.setVisibility(View.VISIBLE);
-                } else {
+                }else{
                     btnFinalizar.setVisibility(View.GONE);
                 }
             }
@@ -284,12 +326,12 @@ public class SelectRutas extends AppCompatActivity {
     private void getParaderos(int id) {
         listParaderos.clear();
 
-        Log.i(Service.TAG, "URL: " + Service.GET_PARADEROS + id);
+        Log.i(Service.TAG, "URL: "+Service.GET_PARADEROS+id);
 
-        stringRequest = new StringRequest(Service.GET_PARADEROS + id, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(Service.TAG, "response: " + response);
+                Log.d(Service.TAG, "response: "+response);
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
@@ -309,12 +351,11 @@ public class SelectRutas extends AppCompatActivity {
                         }
                         //setAdapter
                         spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
-                        listParaderoFin.remove(0);
                         spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
 
                         getUsuarios();
 
-                    } else {
+                    }else {
 
                     }
 
@@ -359,7 +400,7 @@ public class SelectRutas extends AppCompatActivity {
                         }
                         //setAdapter
                         spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
-                    } else {
+                    }else {
 
                     }
 
@@ -378,7 +419,7 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private String getIdParadero(int position) {
+    private String getIdParadero(int position){
         String idParadero = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -391,7 +432,20 @@ public class SelectRutas extends AppCompatActivity {
         return idParadero;
     }
 
-    public String getPrecio(int position, String name_usuario) {
+    private String getIdUsuario(int position){
+        String id_usuario = "";
+        try {
+            JSONObject object = resultUsuarios.getJSONObject(position);
+            id_usuario = object.getString("id");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return id_usuario;
+    }
+
+    public String getPrecio(int position , String name_usuario){
         String precio = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -401,111 +455,226 @@ public class SelectRutas extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return precio;
+        return  precio;
 
-    }
-
-
-    private void createPdfWrapper() throws FileNotFoundException, DocumentException {
-
-        int hasWriteStoragePermission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (hasWriteStoragePermission != PackageManager.PERMISSION_GRANTED) {
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CONTACTS)) {
-
-                }
-
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_CODE_ASK_PERMISSIONS);
-            }
-            return;
-        } else {
-            createPdf();
-        }
-    }
-
-    private void createPdf() throws FileNotFoundException, DocumentException {
-
-        File docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
-        if (!docsFolder.exists()) {
-            docsFolder.mkdir();
-            Log.i(Service.TAG, "Created a new directory for PDF");
-        }
-
-        pdfFile = new File(docsFolder.getAbsolutePath(), "ticket.pdf");
-        OutputStream output = new FileOutputStream(pdfFile);
-        Document document = new Document();
-        PdfWriter.getInstance(document, output);
-        document.open();
-
-        String Empresa = "Empresa :  Coomotor";
-        String Placa = "PLACA: 44DHJU";
-        String Operador = "USUARIO: Cesar Lizcano";
-        String Ruta = "RUTA: Neiva - Campoalegre";
-        String Precio = "PRECIO: $ 5.000";
-        String Hora = "HORA SALIDA: 09:00";
-        String Fecha = "FECHA: 28-09-2018";
-
-        document.add(new Paragraph(Empresa));
-        document.add(new Paragraph(Placa));
-        document.add(new Paragraph(Operador));
-        document.add(new Paragraph(Ruta));
-        document.add(new Paragraph(Precio));
-        document.add(new Paragraph(Hora));
-        document.add(new Paragraph(Fecha));
-
-        document.close();
-
-        previewPdf();
-
-    }
-
-
-    private void previewPdf() {
-
-        PackageManager packageManager = getPackageManager();
-        Intent testIntent = new Intent(Intent.ACTION_VIEW);
-        testIntent.setType("application/pdf");
-        List list = packageManager.queryIntentActivities(testIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (list.size() > 0) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_VIEW);
-            Uri uri = Uri.fromFile(pdfFile);
-            intent.setDataAndType(uri, "application/pdf");
-
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Download a PDF Viewer to see the generated PDF", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_PERMISSIONS:
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission Granted
-                    try {
-                        createPdfWrapper();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (DocumentException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    // Permission Denied
-                    Toast.makeText(this, "WRITE_EXTERNAL Permission Denied", Toast.LENGTH_SHORT)
-                            .show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
     }
 
     public void goBack(View view) {
         this.finish();
     }
+
+    //
+    public void encontrarDispositivoBlue () {
+        try {
+
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                //lblPrinterName.setText("No Bluetooth Adapter found");
+            }
+            if (bluetoothAdapter.isEnabled()) {
+                Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBT, 0);
+            }
+            Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
+
+            if (pairedDevice.size() > 0) {
+                for (BluetoothDevice pairedDev : pairedDevice) {
+                    Log.i("nombre Impresora:", "" + pairedDev.getName());
+                    // My Bluetoth printer name is BTP_F09F1A
+                    if (pairedDev.getName().equals("BlueTooth Printer")) {
+                        bluetoothDevice = pairedDev;
+                        //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
+                        break;
+                    }
+                }
+            }
+            //lblPrinterName.setText("Bluetookkkkth Printer Attached");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.i("otro Error", "" + ex.getMessage());
+        }
+
+    }
+
+    public void abrirImpresoraBlue(){
+        try{
+            //Standard uuid from string //
+            UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            bluetoothSocket=bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
+            bluetoothSocket.connect();
+            outputStream=bluetoothSocket.getOutputStream();
+            inputStream=bluetoothSocket.getInputStream();
+
+            comenzarAEscucharDatos();
+            printData();
+
+        }catch (Exception ex){
+
+            Log.i("Error P",""+ex.getMessage());
+
+        }
+    }
+
+    void comenzarAEscucharDatos(){
+        try{
+
+            final Handler handler =new Handler();
+            final byte delimiter=10;
+            stopWorker =false;
+            readBufferPosition=0;
+            readBuffer = new byte[1024];
+
+            thread=new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    while (!Thread.currentThread().isInterrupted() && !stopWorker){
+                        try{
+                            int byteAvailable = inputStream.available();
+                            if(byteAvailable>0){
+                                byte[] packetByte = new byte[byteAvailable];
+                                inputStream.read(packetByte);
+
+                                for(int i=0; i<byteAvailable; i++){
+                                    byte b = packetByte[i];
+                                    if(b==delimiter){
+                                        byte[] encodedByte = new byte[readBufferPosition];
+                                        System.arraycopy(
+                                                readBuffer,0,
+                                                encodedByte,0,
+                                                encodedByte.length
+                                        );
+                                        final String data = new String(encodedByte,"US-ASCII");
+                                        readBufferPosition=0;
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                //lblPrinterName.setText(data);
+
+                                            }
+                                        });
+                                    }else{
+                                        readBuffer[readBufferPosition++]=b;
+                                    }
+                                }
+                            }
+                        }catch(Exception ex){
+                            stopWorker=true;
+                        }
+                    }
+
+                }
+            });
+
+            thread.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    void printData() throws IOException {
+
+        stringBuffer = new StringBuffer();
+
+        byte[] command=null;
+        try{
+
+
+            try {
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                        R.mipmap.img_logo_pdf);
+                byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
+
+                byte[] data1 = PrintPicture.POS_PrintBMP(bmp,384,0);
+
+                outputStream.write(data);
+                outputStream.write(data1);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("PrintTools", "the file isn't exists");
+            }
+
+            String msg = "Ticket 45";
+            msg+="\n";
+            msg += "precio: "+precio_sum_pasaje;
+            msg+="\n";
+            msg += "horario: "+Horario;
+            msg+="\n";
+            msg += "Ruta: "+ruta_inicio+","+ruta_fin;
+            outputStream.write(msg.getBytes());
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    private void registerTicket(final int id_paradero_inicio,final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar){
+
+        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //    Log.d(Service.TAG, "response: "+response);
+
+                final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+                alertDialog.setTitleText("Exito")
+                        .setContentText("Guardo el ticket")
+                        .show();
+
+                Button button =  alertDialog.findViewById(R.id.confirm_button);
+                // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                button.setBackgroundResource(R.drawable.bg_button_main);
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        try {
+
+                            alertDialog.dismiss();
+
+                            showProgress(false);
+                            btnFinalizar.setVisibility(View.VISIBLE);
+                            btnFinalizar.setEnabled(true);
+
+                            encontrarDispositivoBlue();
+                            abrirImpresoraBlue();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialogAlert.showDialogErrorConexion(context);
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+
+                params.put("id_paradero_inicio",  String.valueOf(id_paradero_inicio));
+                params.put("id_paradero_fin", String.valueOf(id_paradero_final));
+                params.put("id_horario", String.valueOf(id_horario));
+                params.put("id_operador", String.valueOf(id_operador));
+                params.put("hora", Horario);
+                params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
+                params.put("total_pagar", String.valueOf(valor_pagar));
+
+
+                return params;
+            }
+        };;
+
+        requestQueue.add(stringRequest);
+
+    }
+
+    private void showProgress(boolean show) {
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+
+
 }

@@ -1,8 +1,15 @@
 package com.smartgeeks.busticket.Menu;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,12 +17,14 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -25,13 +34,22 @@ import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+import com.smartgeeks.busticket.Utils.PrintPicture;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -41,6 +59,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String PRECIO_PASAJE = "PRECIO_PASAJE";
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
+    public static final String ID_RUTA = "ID_RUTA";
+    public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
+    public static final String ID_PARADERO_INICIO = "PARADERO_INCIO";
+    public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
+    public static final String HORARIO = "HORARIO";
+    public static final String TIPO_USUARIO = "TIPO_USUARIO" ;
 
     private String TAG = "SelectSillas";
 
@@ -48,17 +72,35 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private List<Integer> sillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
-    int cant_puestos, precio_pasaje, id_vehiculo, id_horario;
-    String info_ruta;
+    int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
+    String horario, info_ruta;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
+    Button btnConfirmarTicket;
     TextView tvVehiculo, tvRuta, tvHora, tvInicio, tvFin;
     ProgressDialog progress;
+
+    private View mProgressView;
 
     //VOLLEY
     JsonArrayRequest jsonArrayRequest;
     RequestQueue requestQueue;
     StringRequest stringRequest;
+
+    String listSillas = "" ;
+
+    BluetoothAdapter bluetoothAdapter ;
+    BluetoothSocket bluetoothSocket;
+    BluetoothDevice bluetoothDevice ;
+
+    OutputStream outputStream;
+    InputStream inputStream;
+    Thread thread;
+
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,35 +117,78 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         precio_pasaje = bundle.getInt(PRECIO_PASAJE);
         id_vehiculo = bundle.getInt(ID_VEHICULO);
         id_horario = bundle.getInt(ID_HORARIO);
+        id_ruta = bundle.getInt(ID_RUTA);
+        id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
         info_ruta = bundle.getString(SelectRutas.INFO);
+        id_paradero_incio = bundle.getInt(ID_PARADERO_INICIO);
+        id_paradero_final = bundle.getInt(ID_PARADERO_FIN);
+        id_tipo_usuario = bundle.getInt(TIPO_USUARIO);
+        horario = bundle.getString(HORARIO);
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+
 
         initWidgets();
         showProgressDialog();
         // Obtengo los datos del vehículo
-        getSillasOcupadas(id_horario);
+        getSillasOcupadas(id_ruta_disponible);
+
+
+        btnConfirmarTicket.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listSillas = "" ;
+
+                Log.e(Service.TAG, "count_seleccionado: "+sillasSeleccionadas.size());
+                Log.e(Service.TAG, "count_puestos: "+cant_puestos);
+
+                if (sillasSeleccionadas.size() == 0){
+                    dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                }else if (sillasSeleccionadas.size() < cant_puestos){
+                    dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar "+cant_puestos + " Puestos", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                }else{
+                    for (int i = 0; i < sillasSeleccionadas.size(); i++) {
+                        int silla = sillasSeleccionadas.get(i);
+                        Log.d(Service.TAG, "sillas: "+silla);
+
+                        listSillas = listSillas + silla +"-" ;
+                    }
+                    listSillas = listSillas.substring(0, listSillas.length() - 1);
+
+                    btnConfirmarTicket.setEnabled(false);
+                    btnConfirmarTicket.setVisibility(View.GONE);
+                    showProgress(true);
+                    registerTicket(id_paradero_incio, id_paradero_final, id_ruta_disponible, id_operador,  id_tipo_usuario, precio_pasaje, listSillas) ;
+                }
+
+            }
+        });
     }
 
     private void initWidgets() {
         contenedor_bus = findViewById(R.id.contenedor_bus);
+        btnConfirmarTicket = findViewById(R.id.btnConfirmarTicket);
         tvVehiculo = findViewById(R.id.tvVehiculo);
         tvRuta = findViewById(R.id.tvRuta);
         tvHora = findViewById(R.id.tvHora);
         tvInicio = findViewById(R.id.tvInicio);
         tvFin = findViewById(R.id.tvFin);
+        mProgressView = findViewById(R.id.login_progress);
 
         showDataTextView();
     }
 
     private void showDataTextView() {
         String[] split = info_ruta.split(",");
-        tvVehiculo.setText("Vehículo: " + split[0]);
-        tvRuta.setText("Ruta: " + split[1]);
-        tvHora.setText("Hora: " + split[2]);
-        tvInicio.setText("Inicio: " + split[3]);
-        tvFin.setText("Fin: " + split[4]);
+        tvVehiculo.setText("Vehículo: "+split[0]);
+        tvRuta.setText("Ruta: "+split[1]);
+        tvHora.setText("Hora: "+split[2]);
+        tvInicio.setText("Inicio: "+split[3]);
+        tvFin.setText("Fin: "+split[4]);
     }
 
-    private void drawChairBus(int columns_izq, int columns_der, int filas) {
+    private void drawChairBus(int columns_izq, int columns_der, int filas){
         int silla = 1;
 
         // Parámetros del LinearLayout
@@ -113,7 +198,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         params.bottomMargin = 5;
 
         // Parámetros del espacio
-        LinearLayout.LayoutParams space_params = new LinearLayout.LayoutParams(50, 0, 1f);
+        LinearLayout.LayoutParams space_params = new LinearLayout.LayoutParams(50,0, 1f );
 
         // Parámetros de la silla
         LinearLayout.LayoutParams silla_params = new LinearLayout.LayoutParams(50,
@@ -121,14 +206,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         silla_params.setMargins(4, 8, 4, 8);
 
         // Dibujo las filas
-        for (int i = 1; i <= filas; i++) {
+        for (int i = 1; i <= filas; i++){
 
             LinearLayout linearLayout = new LinearLayout(this);
             linearLayout.setLayoutParams(params);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
             //Dibujo las columnas izquierdas
-            for (int a = 1; a <= columns_izq; a++) {
+            for (int a = 1; a <= columns_izq; a++){
 
                 final ToggleButton puesto = new ToggleButton(this);
                 puesto.setLayoutParams(silla_params);
@@ -158,7 +243,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             linearLayout.addView(espacio);
 
             // Dibujo las columnas derechas
-            for (int b = 1; b <= columns_der; b++) {
+            for (int b = 1; b <= columns_der; b++){
 
                 final ToggleButton puesto = new ToggleButton(this);
                 puesto.setLayoutParams(silla_params);
@@ -196,11 +281,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Dibuja las sillas ocupadas
-     *
      * @param silla
      * @param puesto
      */
-    private void drawSillaOcupada(int silla, ToggleButton puesto) {
+    private void drawSillaOcupada(int silla, ToggleButton puesto){
         // Verificar si la silla está ocupada
         for (int ocupada : sillasOcupadas) {
             if (ocupada == silla) {
@@ -213,7 +297,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Elimina una silla del arreglo, de acuerdo a su posicion
-     *
      * @param silId
      */
     private void removeSillaFromArray(int silId) {
@@ -230,29 +313,19 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
     /**
-     * Confirmar silla
-     *
-     * @param view
-     */
-    public void confirmarSilla(View view) {
-        Toast.makeText(context, "Has seleccionado " + sillasSeleccionadas.size(), Toast.LENGTH_SHORT).show();
-    }
-
-    /**
      * Verifica el estado del toggle button
-     *
      * @param buttonView
      * @param isChecked
      */
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int silla_seleccionda = buttonView.getId();
-
+        Log.d(Service.TAG,"silla: "+silla_seleccionda);
         // Guardo o elimino la silla
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
-            if (sillasSeleccionadas.size() > cant_puestos) {
-                dialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los " + cant_puestos + " puestos.", SweetAlertDialog.ERROR_TYPE);
+            if (sillasSeleccionadas.size() > cant_puestos ){
+                dialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los "+cant_puestos+" puestos.", SweetAlertDialog.ERROR_TYPE);
                 removeSillaFromArray(silla_seleccionda);
                 buttonView.setChecked(false);
                 buttonView.setTextColor(ContextCompat.getColor(context, R.color.md_black_1000));
@@ -272,14 +345,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getVehiculo(int id_vehiculo) {
 
         String URL = Service.GET_INFO_VEHICULO + id_vehiculo;
-        Log.d(Service.TAG, "rutas: " + URL);
+        Log.d(Service.TAG, "rutas: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
-                    Log.e(TAG, "" + response);
+                    Log.e(TAG, ""+response);
                     JSONArray jsonArray = jsonObject.getJSONArray("vehiculos");
 
                     if (jsonArray.length() > 0) {
@@ -296,7 +369,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "" + volleyError);
+                Log.e(TAG, ""+volleyError);
                 progress.dismiss();
             }
         });
@@ -306,13 +379,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Consultar sillas ocupadas por horario de ruta
-     *
-     * @param id_horario
+     * @param id_ruta_disponible
      */
-    private void getSillasOcupadas(int id_horario) {
+    private void getSillasOcupadas(int id_ruta_disponible) {
+        Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
 
-        String URL = Service.SILLAS_OCUPADAS + id_horario;
-        Log.d(Service.TAG, "rutas: " + URL);
+        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
+        Log.w(Service.TAG, "rutas: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -320,9 +393,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 JSONArray jsonArray = null;
                 try {
                     jsonArray = new JSONArray(response);
-                    Log.e(TAG, "Sillas: " + response);
+                    Log.e(TAG, "Sillas: "+response);
 
-                    for (int i = 0; i < jsonArray.length(); i++) {
+                    for (int i = 0; i < jsonArray.length(); i++){
                         sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
                     }
                     getVehiculo(id_vehiculo);
@@ -333,11 +406,245 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, "" + volleyError);
+                Log.e(TAG, ""+volleyError);
             }
         });
         requestQueue.add(stringRequest);
 
     }
 
+    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final String listSillas){
+
+       /* Log.d(Service.TAG, "id_paradero_inicio: "+id_paradero_inicio);
+        Log.d(Service.TAG, "id_paradero_final: "+id_paradero_final);
+        Log.d(Service.TAG, "id_horario: "+id_horario);
+        Log.d(Service.TAG, "id_operador: "+id_operador);
+        Log.d(Service.TAG, "id_tipo_usuario: "+id_tipo_usuario);
+        Log.d(Service.TAG, "valor_pagar: "+valor_pagar);
+        Log.d(Service.TAG, "sillas: "+listSillas);
+        Log.d(Service.TAG, "horario: "+horario); */
+
+
+        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_ASIENTO, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                // Log.d(Service.TAG, "response: "+response);
+
+                final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+                alertDialog.setTitleText("Exito")
+                        .setContentText("Guardo el ticket")
+                        .show();
+
+                Button button =  alertDialog.findViewById(R.id.confirm_button);
+                // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                button.setBackgroundResource(R.drawable.bg_button_main);
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        try {
+
+                            alertDialog.dismiss();
+
+                            showProgress(false);
+                            btnConfirmarTicket.setVisibility(View.VISIBLE);
+                            btnConfirmarTicket.setEnabled(true);
+
+                            encontrarDispositivoBlue();
+                            abrirImpresoraBlue();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                });
+
+               /* try {
+                    JSONObject object = new JSONObject(response);
+                    if (object.getBoolean("estado")){
+                        dialogAlert.showDialogFailed(context, "Exito!", "Se registro el ticket \n con exito", SweetAlertDialog.SUCCESS_TYPE);
+                    }else{
+                        dialogAlert.showDialogFailed(context, "Alerta!", "Ha Ocurrido un error al enviar \n el ticket", SweetAlertDialog.SUCCESS_TYPE);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } */
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialogAlert.showDialogErrorConexion(context);
+                Log.e(Service.TAG, "error: "+error.getMessage());
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+
+                params.put("id_paradero_inicio",  String.valueOf(id_paradero_inicio));
+                params.put("id_paradero_fin", String.valueOf(id_paradero_final));
+                params.put("id_horario", String.valueOf(id_horario));
+                params.put("id_operador", String.valueOf(id_operador));
+                params.put("hora", horario);
+                params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
+                params.put("total_pagar", String.valueOf(valor_pagar));
+                params.put("sillas",listSillas);
+
+
+                return params;
+            }
+        };;
+
+        requestQueue.add(stringRequest);
+    }
+
+
+    //
+    public void encontrarDispositivoBlue () {
+        try {
+
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                //lblPrinterName.setText("No Bluetooth Adapter found");
+            }
+            if (bluetoothAdapter.isEnabled()) {
+                Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBT, 0);
+            }
+            Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
+
+            if (pairedDevice.size() > 0) {
+                for (BluetoothDevice pairedDev : pairedDevice) {
+                    Log.i("nombre Impresora:", "" + pairedDev.getName());
+                    // My Bluetoth printer name is BTP_F09F1A
+                    if (pairedDev.getName().equals("BlueTooth Printer")) {
+                        bluetoothDevice = pairedDev;
+                        //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
+                        break;
+                    }
+                }
+            }
+            //lblPrinterName.setText("Bluetookkkkth Printer Attached");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Log.i("otro Error", "" + ex.getMessage());
+        }
+
+    }
+
+    private void showProgress(boolean show) {
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+
+    public void abrirImpresoraBlue(){
+        try{
+            //Standard uuid from string //
+            UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+            bluetoothSocket=bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
+            bluetoothSocket.connect();
+            outputStream=bluetoothSocket.getOutputStream();
+            inputStream=bluetoothSocket.getInputStream();
+
+            comenzarAEscucharDatos();
+            printData();
+
+        }catch (Exception ex){
+
+            Log.i("Error P",""+ex.getMessage());
+
+        }
+    }
+
+    void comenzarAEscucharDatos(){
+        try{
+
+            final Handler handler =new Handler();
+            final byte delimiter=10;
+            stopWorker =false;
+            readBufferPosition=0;
+            readBuffer = new byte[1024];
+
+            thread=new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    while (!Thread.currentThread().isInterrupted() && !stopWorker){
+                        try{
+                            int byteAvailable = inputStream.available();
+                            if(byteAvailable>0){
+                                byte[] packetByte = new byte[byteAvailable];
+                                inputStream.read(packetByte);
+
+                                for(int i=0; i<byteAvailable; i++){
+                                    byte b = packetByte[i];
+                                    if(b==delimiter){
+                                        byte[] encodedByte = new byte[readBufferPosition];
+                                        System.arraycopy(
+                                                readBuffer,0,
+                                                encodedByte,0,
+                                                encodedByte.length
+                                        );
+                                        final String data = new String(encodedByte,"US-ASCII");
+                                        readBufferPosition=0;
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                //lblPrinterName.setText(data);
+
+                                            }
+                                        });
+                                    }else{
+                                        readBuffer[readBufferPosition++]=b;
+                                    }
+                                }
+                            }
+                        }catch(Exception ex){
+                            stopWorker=true;
+                        }
+                    }
+
+                }
+            });
+
+            thread.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+
+    }
+
+    void printData() throws IOException {
+
+        byte[] command=null;
+        try{
+            try {
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                        R.mipmap.img_logo_pdf);
+                byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
+
+                byte[] data1 = PrintPicture.POS_PrintBMP(bmp,384,0);
+
+                outputStream.write(data);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("PrintTools", "the file isn't exists");
+            }
+
+            String msg = "Ticket 45";
+            msg+="\n";
+            msg += "precio: "+precio_pasaje;
+            msg+="\n";
+            msg += "horario: "+horario;
+            msg+="\n";
+            msg += "Ruta: "+info_ruta;
+            outputStream.write(msg.getBytes());
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
 }

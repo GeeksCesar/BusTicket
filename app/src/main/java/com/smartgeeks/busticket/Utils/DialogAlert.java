@@ -19,7 +19,7 @@ public class DialogAlert {
                 .show();
 
         Button button = alertDialog.findViewById(R.id.confirm_button);
-        button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+        button.setBackground(ContextCompat.getDrawable(context, R.drawable.bg_button_main));
     }
 
 

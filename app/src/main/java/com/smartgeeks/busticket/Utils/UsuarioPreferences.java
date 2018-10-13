@@ -12,29 +12,29 @@ public class UsuarioPreferences {
     public static final String KEY_ID_USER = "id_user";
     public static final String KEY_SESSION = "session";
     public static final String KEY_NAME = "name";
-    public static final String KEY_DOCUMENTO = "documento";
+    public static final String KEY_DOCUMENTO = "documento" ;
 
 
-    private static Context mContext;
+
+    private static Context mContext ;
     private static UsuarioPreferences mInstance;
 
-    private UsuarioPreferences(Context context) {
+    private UsuarioPreferences(Context context){
         mContext = context;
     }
 
-    public static synchronized UsuarioPreferences getInstance(Context context) {
+    public static synchronized UsuarioPreferences getInstance(Context context){
         if (mInstance == null)
             mInstance = new UsuarioPreferences(context);
         return mInstance;
     }
 
-    public boolean userPreferences(User user) {
+    public boolean userPreferences(User user){
         SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.putInt(KEY_ROL, user.getIdRol());
         editor.putInt(KEY_ID_USER, user.getIdUsuario());
-        editor.putString(KEY_DOCUMENTO, user.getDocu());
         editor.putString(KEY_NAME, user.getNombre());
 
         editor.apply();
@@ -42,18 +42,19 @@ public class UsuarioPreferences {
         return true;
     }
 
-    public String getSessionUser() {
+    public String getSessionUser(){
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_SESSION, "SessionFailed");
     }
 
-    public String getNombre() {
+    public String getNombre(){
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_NAME, "");
     }
 
-    public String getDocumento() {
+    public int getIdUser(){
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        return sharedPreferences.getString(KEY_DOCUMENTO, "");
+        return sharedPreferences.getInt(KEY_ID_USER, 0);
     }
+
 }
