@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,15 +27,16 @@ public class OpsHorario {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
+        Log.d(TAG, "Url: " + Constantes.GET_HORARIOS+idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_HORARIOS,
+                        Constantes.GET_HORARIOS+idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -93,12 +95,12 @@ public class OpsHorario {
             // Parsear con Gson
             Horario[] res = gson.fromJson(horarios != null ? horarios.toString() : null, Horario[].class);
             List<Horario> data = Arrays.asList(res);
-            Log.i(TAG, "Se encontraron " + data.size() + " registros remotos.");
+            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
             HashMap<String, Horario> expenseMap = new HashMap<String, Horario>();
             for (Horario horario : data) {
-                expenseMap.put(horario.getId_remoto(), horario);
+                expenseMap.put(horario.getIdRemoto(), horario);
             }
 
             List<Horario> locales = Horario.find(Horario.class, "remoto IS NOT NULL");
@@ -112,28 +114,26 @@ public class OpsHorario {
             for (Horario horario : locales) {
 
                 // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
-                Horario match = expenseMap.get(horario.getId_remoto());
+                Horario match = expenseMap.get(horario.getIdRemoto());
 
                 if (match != null) {
                     // Esta entrada existe, por lo que se remueve del mapeado
-                    expenseMap.remove(horario.getId_remoto());
+                    expenseMap.remove(horario.getIdRemoto());
 
                     // Comprobar si necesita ser actualizado los datos
-                    boolean b1 = match.getRuta_id() != horario.getRuta_id();
-                    boolean b2 = match.getVehiculo_id() != horario.getVehiculo_id();
-                    boolean b3 = match.getFecha() != null && !match.getFecha().equals(horario.getFecha());
-                    boolean b4 = match.getHora() != null && !match.getHora().equals(horario.getHora());
+                    boolean b1 = match.getIdRuta() != horario.getIdRuta();
+                    boolean b2 = match.getHora() != null && !match.getHora().equals(horario.getHora());
 
-                    if (b1 || b2 || b3 || b4) {
-                        Log.i(TAG, "Programando actualización de: " + horario.getId_remoto());
+                    if (b1 || b2) {
+                        Log.i(TAG, "Programando actualización de: " + horario.getIdRemoto());
                         match.update();
                         numUpdates++;
                     } else {
-                        Log.i(TAG, "No hay acciones para este registro: " + horario.getId_remoto());
+                        Log.i(TAG, "No hay acciones para este registro: " + horario.getIdRemoto());
                     }
                 } else {
                     // Debido a que la entrada no existe, es removida de la base de datos
-                    Log.i(TAG, "Programando eliminación de: " + horario.getId_remoto());
+                    Log.i(TAG, "Programando eliminación de: " + horario.getIdRemoto());
                     horario.delete();
                     numDeletes++;
                 }

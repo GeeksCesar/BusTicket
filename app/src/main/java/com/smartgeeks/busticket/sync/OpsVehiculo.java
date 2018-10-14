@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,14 +28,16 @@ public class OpsVehiculo {
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
 
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
+
+        Log.d(TAG, "Url: " + Constantes.GET_VEHICULOS+idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_VEHICULOS,
+                        Constantes.GET_VEHICULOS+idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -94,12 +97,12 @@ public class OpsVehiculo {
             // Parsear con Gson
             Vehiculo[] res = gson.fromJson(vehiculos != null ? vehiculos.toString() : null, Vehiculo[].class);
             List<Vehiculo> data = Arrays.asList(res);
-            Log.i(TAG, "Se encontraron " + data.size() + " registros remotos.");
+            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
             HashMap<String, Vehiculo> expenseMap = new HashMap<String, Vehiculo>();
             for (Vehiculo vehiculo : data) {
-                expenseMap.put(vehiculo.getId_remoto(), vehiculo);
+                expenseMap.put(vehiculo.getIdRemoto(), vehiculo);
             }
 
             List<Vehiculo> locales = Vehiculo.find(Vehiculo.class, "remoto IS NOT NULL");
@@ -113,26 +116,27 @@ public class OpsVehiculo {
             for (Vehiculo vehiculo : locales) {
 
                 // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
-                Vehiculo match = expenseMap.get(vehiculo.getId_remoto());
+                Vehiculo match = expenseMap.get(vehiculo.getIdRemoto());
 
                 if (match != null) {
                     // Esta entrada existe, por lo que se remueve del mapeado
-                    expenseMap.remove(vehiculo.getId_remoto());
+                    expenseMap.remove(vehiculo.getIdRemoto());
 
                     // Comprobar si necesita ser actualizado los datos
                     boolean b1 = match.getPlaca() != null && !match.getPlaca().equals(vehiculo.getPlaca());
-                    boolean b2 = match.getCant_pasajeros() != vehiculo.getCant_pasajeros();
+                    boolean b2 = match.getNumAsientos() != vehiculo.getNumAsientos();
+                    boolean b3 = match.getEmpresa() != vehiculo.getEmpresa();
 
-                    if (b1 || b2) {
-                        Log.i(TAG, "Programando actualización de: " + vehiculo.getId_remoto());
+                    if (b1 || b2 || b3) {
+                        Log.i(TAG, "Programando actualización de: " + vehiculo.getIdRemoto());
                         match.update();
                         numUpdates++;
                     } else {
-                        Log.i(TAG, "No hay acciones para este registro: " + vehiculo.getId_remoto());
+                        Log.i(TAG, "No hay acciones para este registro: " + vehiculo.getIdRemoto());
                     }
                 } else {
                     // Debido a que la entrada no existe, es removida de la base de datos
-                    Log.i(TAG, "Programando eliminación de: " + vehiculo.getId_remoto());
+                    Log.i(TAG, "Programando eliminación de: " + vehiculo.getIdRemoto());
                     vehiculo.delete();
                     numDeletes++;
                 }

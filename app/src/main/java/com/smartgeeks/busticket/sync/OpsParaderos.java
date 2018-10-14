@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,15 +27,16 @@ public class OpsParaderos {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
+        Log.d(TAG, "Url: " + Constantes.GET_PARADEROS+idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_PARADEROS,
+                        Constantes.GET_PARADEROS+idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -94,7 +96,7 @@ public class OpsParaderos {
             // Parsear con Gson
             Paradero[] res = gson.fromJson(paraderos != null ? paraderos.toString() : null, Paradero[].class);
             List<Paradero> data = Arrays.asList(res);
-            Log.i(TAG, "Se encontraron " + data.size() + " registros remotos.");
+            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
             HashMap<String, Paradero> expenseMap = new HashMap<String, Paradero>();

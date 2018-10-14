@@ -17,8 +17,10 @@ import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.Signin;
 import com.smartgeeks.busticket.Objcect.User;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.sync.SyncService;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
@@ -103,6 +105,8 @@ public class Login extends AppCompatActivity {
                         User user = response.body().getUser();
 
                         if (user.getIdRol() == 2) {
+                            localSync();
+
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
@@ -141,6 +145,15 @@ public class Login extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void localSync() {
+        /**
+         * Ejecutar el servicio de Sincronización Local
+         */
+        Intent sync = new Intent(context, SyncService.class);
+        sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
+        startService(sync);
     }
 
     private void showProgress(boolean show) {

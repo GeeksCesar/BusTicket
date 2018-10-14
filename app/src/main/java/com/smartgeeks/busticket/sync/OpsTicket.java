@@ -278,7 +278,7 @@ public class OpsTicket {
         // Tabla hash para recibir las entradas entrantes
         HashMap<String, Ruta> expenseMap = new HashMap<String, Ruta>();
         for (Ruta ruta : data) {
-            expenseMap.put(ruta.getId_remoto(), ruta);
+            expenseMap.put(ruta.getIdRemoto(), ruta);
         }
 
         List<Ruta> locales = Ruta.find(Ruta.class, "remoto IS NOT NULL");
@@ -292,26 +292,26 @@ public class OpsTicket {
         for (Ruta ruta : locales) {
 
             // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
-            Ruta match = expenseMap.get(ruta.getId_remoto());
+            Ruta match = expenseMap.get(ruta.getIdRemoto());
 
             if (match != null) {
                 // Esta entrada existe, por lo que se remueve del mapeado
-                expenseMap.remove(ruta.getId_remoto());
+                expenseMap.remove(ruta.getIdRemoto());
 
                 // Comprobar si necesita ser actualizado los datos
                 boolean b1 = match.getPartida() != null && !match.getPartida().equals(ruta.getPartida());
                 boolean b2 = match.getDestino() != null && !match.getDestino().equals(ruta.getDestino());
 
                 if (b1 || b2) {
-                    Log.i(TAG, "Programando actualización de: " + ruta.getId_remoto());
+                    Log.i(TAG, "Programando actualización de: " + ruta.getIdRemoto());
                     match.update();
                     numUpdates++;
                 } else {
-                    Log.i(TAG, "No hay acciones para este registro: " + ruta.getId_remoto());
+                    Log.i(TAG, "No hay acciones para este registro: " + ruta.getIdRemoto());
                 }
             } else {
                 // Debido a que la entrada no existe, es removida de la base de datos
-                Log.i(TAG, "Programando eliminación de: " + ruta.getId_remoto());
+                Log.i(TAG, "Programando eliminación de: " + ruta.getIdRemoto());
                 ruta.delete();
                 numDeletes++;
             }

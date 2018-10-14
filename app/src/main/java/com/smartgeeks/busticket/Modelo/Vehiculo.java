@@ -14,17 +14,19 @@ public class Vehiculo extends SugarRecord {
     String remoto;
     String placa;
     int num_asientos;
+    int empresa;
 
     public Vehiculo() {
     }
 
-    public Vehiculo(String id_remoto, int tipo_vehiculo, String placa, int col_derecha, int col_izquierda, int filas, int num_asientos) {
-        this.remoto = id_remoto;
+    public Vehiculo(String remoto, String placa, int num_asientos, int empresa) {
+        this.remoto = remoto;
         this.placa = placa;
         this.num_asientos = num_asientos;
+        this.empresa = empresa;
     }
 
-    public String getId_remoto() {
+    public String getIdRemoto() {
         return remoto;
     }
 
@@ -32,7 +34,11 @@ public class Vehiculo extends SugarRecord {
         return placa;
     }
 
-    public int getCant_pasajeros() {
+    public int getNumAsientos() {
         return num_asientos;
+    }
+
+    public int getEmpresa() {
+        return empresa;
     }
 }

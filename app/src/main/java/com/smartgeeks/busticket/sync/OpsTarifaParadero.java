@@ -8,7 +8,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
-import com.smartgeeks.busticket.Modelo.Horario;
+import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Utils.Constantes;
 
 import org.json.JSONArray;
@@ -26,7 +26,7 @@ public class OpsTarifaParadero {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
-
+        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
@@ -34,7 +34,6 @@ public class OpsTarifaParadero {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -54,7 +53,7 @@ public class OpsTarifaParadero {
     }
 
     /**
-     * Procesa la respuesta del servidor al pedir que se retornen todos los horarios.
+     * Procesa la respuesta del servidor al pedir que se retornen todos los tarifas_paradero.
      *
      * @param response Respuesta en formato Json
      */
@@ -85,23 +84,23 @@ public class OpsTarifaParadero {
      */
     private static void actualizarDatosLocales(JSONObject response) {
 
-        JSONArray horarios = null;
+        JSONArray tarifas_paradero = null;
 
         try {
-            // Obtener array "horarios"
-            horarios = response.getJSONArray(Constantes.TARIFAS_PARADERO);
+            // Obtener array "tarifas_paradero"
+            tarifas_paradero = response.getJSONArray(Constantes.TARIFAS_PARADERO);
             // Parsear con Gson
-            Horario[] res = gson.fromJson(horarios != null ? horarios.toString() : null, Horario[].class);
-            List<Horario> data = Arrays.asList(res);
-            Log.i(TAG, "Se encontraron " + data.size() + " registros remotos.");
+            TarifaParadero[] res = gson.fromJson(tarifas_paradero != null ? tarifas_paradero.toString() : null, TarifaParadero[].class);
+            List<TarifaParadero> data = Arrays.asList(res);
+            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
-            HashMap<String, Horario> expenseMap = new HashMap<String, Horario>();
-            for (Horario horario : data) {
-                expenseMap.put(horario.getId_remoto(), horario);
+            HashMap<String, TarifaParadero> expenseMap = new HashMap<String, TarifaParadero>();
+            for (TarifaParadero tarifaParadero : data) {
+                expenseMap.put(tarifaParadero.getIdRemoto(), tarifaParadero);
             }
 
-            List<Horario> locales = Horario.find(Horario.class, "remoto IS NOT NULL");
+            List<TarifaParadero> locales = TarifaParadero.find(TarifaParadero.class, "remoto IS NOT NULL");
             Log.i(TAG, "Se encontraron " + locales.size() + " registros locales.");
 
             // Encontrar datos obsoletos
@@ -109,40 +108,42 @@ public class OpsTarifaParadero {
             int numDeletes = 0;
             int numInserts = 0;
 
-            for (Horario horario : locales) {
+            for (TarifaParadero tarifaParadero : locales) {
 
                 // Match son los registros Remotos, esos son los datos que debo tomar para actualizar
-                Horario match = expenseMap.get(horario.getId_remoto());
+                TarifaParadero match = expenseMap.get(tarifaParadero.getIdRemoto());
 
                 if (match != null) {
                     // Esta entrada existe, por lo que se remueve del mapeado
-                    expenseMap.remove(horario.getId_remoto());
+                    expenseMap.remove(tarifaParadero.getIdRemoto());
 
                     // Comprobar si necesita ser actualizado los datos
-                    boolean b1 = match.getRuta_id() != horario.getRuta_id();
-                    boolean b2 = match.getVehiculo_id() != horario.getVehiculo_id();
-                    boolean b3 = match.getFecha() != null && !match.getFecha().equals(horario.getFecha());
-                    boolean b4 = match.getHora() != null && !match.getHora().equals(horario.getHora());
+                    boolean b1 = match.getParada_inicio() != tarifaParadero.getParada_fin();
+                    boolean b2 = match.getNormal() != tarifaParadero.getNormal();
+                    boolean b3 = match.getFrecuente() != tarifaParadero.getFrecuente();
+                    boolean b4 = match.getAdulto_mayor() != tarifaParadero.getAdulto_mayor();
+                    boolean b5 = match.getEstudiante() != tarifaParadero.getEstudiante();
+                    boolean b6 = match.getVale_muni() != tarifaParadero.getVale_muni();
 
-                    if (b1 || b2 || b3 || b4) {
-                        Log.i(TAG, "Programando actualización de: " + horario.getId_remoto());
+                    if (b1 || b2 || b3 || b4 || b5 || b6) {
+                        Log.i(TAG, "Programando actualización de: " + tarifaParadero.getIdRemoto());
                         match.update();
                         numUpdates++;
                     } else {
-                        Log.i(TAG, "No hay acciones para este registro: " + horario.getId_remoto());
+                        Log.i(TAG, "No hay acciones para este registro: " + tarifaParadero.getIdRemoto());
                     }
                 } else {
                     // Debido a que la entrada no existe, es removida de la base de datos
-                    Log.i(TAG, "Programando eliminación de: " + horario.getId_remoto());
-                    horario.delete();
+                    Log.i(TAG, "Programando eliminación de: " + tarifaParadero.getIdRemoto());
+                    tarifaParadero.delete();
                     numDeletes++;
                 }
             }
 
             // Insertar items resultantes
-            Log.i(TAG, "Programando inserción de horarios ");
-            for (Horario horario : expenseMap.values()) {
-                horario.save();
+            Log.i(TAG, "Programando inserción de tarifas_paradero ");
+            for (TarifaParadero tarifaParadero : expenseMap.values()) {
+                tarifaParadero.save();
                 numInserts++;
             }
 

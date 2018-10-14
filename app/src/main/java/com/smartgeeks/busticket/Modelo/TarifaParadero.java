@@ -1,94 +1,63 @@
 package com.smartgeeks.busticket.Modelo;
 
+import com.orm.SugarRecord;
 import com.orm.dsl.Unique;
 
-public class TarifaParadero {
+public class TarifaParadero extends SugarRecord {
 
     @Unique
     String remoto;
-    int inicio;
-    int termina;
-    double tarifa_normal;
-    double tarifa_frecuente;
-    double tarifa_adulto_mayor;
-    double tarifa_estudiante;
-    double tarifa_vale_muni;
+    int parada_inicio;
+    int parada_fin;
+    double normal;
+    double frecuente;
+    double adulto_mayor;
+    double estudiante;
+    double vale_muni;
 
     public TarifaParadero() {
     }
 
-    public TarifaParadero(String remoto, int inicio, int termina, double tarifa_normal, double tarifa_frecuente, double tarifa_adulto_mayor, double tarifa_estudiante, double tarifa_vale_muni) {
+    public TarifaParadero(String remoto, int parada_inicio, int parada_fin, double normal, double frecuente, double adulto_mayor, double estudiante, double vale_muni) {
         this.remoto = remoto;
-        this.inicio = inicio;
-        this.termina = termina;
-        this.tarifa_normal = tarifa_normal;
-        this.tarifa_frecuente = tarifa_frecuente;
-        this.tarifa_adulto_mayor = tarifa_adulto_mayor;
-        this.tarifa_estudiante = tarifa_estudiante;
-        this.tarifa_vale_muni = tarifa_vale_muni;
+        this.parada_inicio = parada_inicio;
+        this.parada_fin = parada_fin;
+        this.normal = normal;
+        this.frecuente = frecuente;
+        this.adulto_mayor = adulto_mayor;
+        this.estudiante = estudiante;
+        this.vale_muni = vale_muni;
     }
 
-    public String getRemoto() {
+    public String getIdRemoto() {
         return remoto;
     }
 
-    public void setRemoto(String remoto) {
-        this.remoto = remoto;
+    public int getParada_inicio() {
+        return parada_inicio;
     }
 
-    public int getInicio() {
-        return inicio;
+    public int getParada_fin() {
+        return parada_fin;
     }
 
-    public void setInicio(int inicio) {
-        this.inicio = inicio;
+    public double getNormal() {
+        return normal;
     }
 
-    public int getTermina() {
-        return termina;
+    public double getFrecuente() {
+        return frecuente;
     }
 
-    public void setTermina(int termina) {
-        this.termina = termina;
+    public double getAdulto_mayor() {
+        return adulto_mayor;
     }
 
-    public double getTarifa_normal() {
-        return tarifa_normal;
+    public double getEstudiante() {
+        return estudiante;
     }
 
-    public void setTarifa_normal(double tarifa_normal) {
-        this.tarifa_normal = tarifa_normal;
-    }
-
-    public double getTarifa_frecuente() {
-        return tarifa_frecuente;
-    }
-
-    public void setTarifa_frecuente(double tarifa_frecuente) {
-        this.tarifa_frecuente = tarifa_frecuente;
-    }
-
-    public double getTarifa_adulto_mayor() {
-        return tarifa_adulto_mayor;
-    }
-
-    public void setTarifa_adulto_mayor(double tarifa_adulto_mayor) {
-        this.tarifa_adulto_mayor = tarifa_adulto_mayor;
-    }
-
-    public double getTarifa_estudiante() {
-        return tarifa_estudiante;
-    }
-
-    public void setTarifa_estudiante(double tarifa_estudiante) {
-        this.tarifa_estudiante = tarifa_estudiante;
-    }
-
-    public double getTarifa_vale_muni() {
-        return tarifa_vale_muni;
-    }
-
-    public void setTarifa_vale_muni(double tarifa_vale_muni) {
-        this.tarifa_vale_muni = tarifa_vale_muni;
+    public double getVale_muni() {
+        return vale_muni;
     }
 }

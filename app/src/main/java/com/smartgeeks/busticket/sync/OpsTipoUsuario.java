@@ -26,15 +26,14 @@ public class OpsTipoUsuario {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
-
+        Log.d(TAG, "Url: " + Constantes.GET_TIPOS_USUARIO);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_TIPO_USUARIO,
+                        Constantes.GET_TIPOS_USUARIO,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                Log.d(TAG, "Response: " + response);
                                 try {
                                     JSONObject object = new JSONObject(response);
                                     procesarRespuestaGet(object);
@@ -89,12 +88,12 @@ public class OpsTipoUsuario {
 
         try {
             // Obtener array "tiposUsuarios"
-            tiposUsuarios = response.getJSONArray(Constantes.TIPO_USUARIO);
+            tiposUsuarios = response.getJSONArray(Constantes.TIPOS_USUARIO);
 
             // Parsear con Gson
             TipoUsuario[] res = gson.fromJson(tiposUsuarios != null ? tiposUsuarios.toString() : null, TipoUsuario[].class);
             List<TipoUsuario> data = Arrays.asList(res);
-            Log.i(TAG, "Se encontraron " + data.size() + " registros remotos.");
+            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
             HashMap<String, TipoUsuario> expenseMap = new HashMap<String, TipoUsuario>();

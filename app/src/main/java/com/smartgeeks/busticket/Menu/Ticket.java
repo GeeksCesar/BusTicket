@@ -21,6 +21,9 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Horario;
+import com.smartgeeks.busticket.Modelo.Ruta;
+import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
@@ -29,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Ticket extends Fragment {
 
@@ -44,6 +48,10 @@ public class Ticket extends Fragment {
     private ArrayList<String> listRuta;
     private ArrayList<String> listHora;
     private ArrayList<String> listHorario = new ArrayList<>();
+
+    private List<Vehiculo> listVehiculos = new ArrayList<>();
+    private List<Ruta> listRutas = new ArrayList<>();
+    private List<Horario> listHorarios = new ArrayList<>();
 
     //VOLLEY
     JsonArrayRequest jsonArrayRequest;
@@ -68,9 +76,10 @@ public class Ticket extends Fragment {
         spPlaca.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_vehiculo = Integer.parseInt(getIdVehiculo(position));
-
-                getRutas(id_vehiculo);
+                id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
+                String vehiculo = listVehiculos.get(position).getIdRemoto();
+                //getRutas(id_vehiculo);
+                getRutasSQLite(vehiculo);
                 placa = listPlacas.get(position);
             }
 
@@ -83,10 +92,13 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_ruta = Integer.parseInt(getIdRuta(position)) ;
-                id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
-
-                getHorario(id_ruta);
+                //id_ruta = Integer.parseInt(getIdRuta(position)) ;
+                //id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
+                id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                id_ruta_disponible = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                String id_ruta = listRutas.get(position).getIdRemoto();
+                //getHorario(id_ruta);
+                getHorarioSQLite(id_ruta);
                 ruta = listRuta.get(position);
             }
 
@@ -100,10 +112,13 @@ public class Ticket extends Fragment {
         spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_horario = Integer.parseInt(getIdHorario(position)) ;
+                //id_horario = Integer.parseInt(getIdHorario(position)) ;
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
-                hora = listHora.get(position);
-                horario = listHorario.get(position);
+                //hora = listHora.get(position);
+                //horario = listHorario.get(position);
+                id_horario = Integer.parseInt(listHorarios.get(position).getIdRemoto());
+                horario = listHorarios.get(position).getIdRemoto();
+                hora = listHorarios.get(position).getHora();
             }
 
             @Override
@@ -147,7 +162,8 @@ public class Ticket extends Fragment {
 
         int id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        getVehiculos(id_empresa);
+        //getVehiculos(id_empresa);
+        getVehiculosSQLite();
     }
 
     private void getHorario(int id_vehiculo) {
@@ -286,6 +302,44 @@ public class Ticket extends Fragment {
 
         requestQueue.add(stringRequest);
 
+    }
+
+    /**
+     *  Consultas en sqlite
+     */
+
+    private void getVehiculosSQLite(){
+        listPlacas.clear();
+        listVehiculos = Vehiculo.listAll(Vehiculo.class);
+        for (Vehiculo vehiculo : listVehiculos){
+            listPlacas.add(vehiculo.getPlaca());
+        }
+        //setAdapter
+        spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
+
+    }
+
+    private void getRutasSQLite(String id_vehiculo){
+        listRuta.clear();
+        listRutas = Ruta.find(Ruta.class, "vehiculo = ?", id_vehiculo);
+        for (Ruta ruta : listRutas){
+            String nameRuta = ruta.getPartida() +" - "+ruta.getDestino();
+            listRuta.add(nameRuta);
+        }
+
+        spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
+    }
+
+    private void getHorarioSQLite(String id_ruta){
+        listHora.clear();
+        listHorarios = Horario.find(Horario.class, "ruta = ?", id_ruta);
+        for (Horario horario : listHorarios){
+            listHora.add(horario.getHora());
+        }
+        //setAdapter
+        spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
+
+        btnSiguiente.setVisibility(View.VISIBLE);
     }
 
     private String getIdVehiculo(int position){

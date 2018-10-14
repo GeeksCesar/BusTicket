@@ -7,32 +7,38 @@ public class Constantes {
     public static final int ESTADO_SYNC = 1;
 
     //private static final String IP = "http://10.0.3.2";  192.168.0.104
-    private static final String IP = "http://192.168.0.104/";
-    private static final String PROYECT = "busticket";
+    private static final String IP = "http://testing.smartgeeks.com.co/";
+    private static final String PROYECT = "busticket/apisync/";
 
     /**
      * URLs del Web Service
      */
-    public static final String GET_HORARIOS = IP + PROYECT + "/web/obtener_horarios.php";
-    public static final String GET_RUTAS = IP + PROYECT + "/web/obtener_rutas.php";
-    public static final String GET_VEHICULOS = IP + PROYECT + "/web/obtener_vehiculos.php";
-    public static final String GET_SUBRUTAS = IP + PROYECT + "/web/obtener_subrutas.php";
-    public static final String GET_PARADEROS = IP + PROYECT + "/web/obtener_subrutas.php";
-    public static final String GET_TARIFAS_PARADERO = IP + PROYECT + "/web/obtener_subrutas.php";
-    public static final String GET_TIPO_USUARIO = IP + PROYECT + "/web/obtener_tipos_usuario.php";
+    public static final String GET_TIPOS_USUARIO = IP + PROYECT + "getTiposUsuario/";
+    public static final String GET_TARIFAS_PARADERO = IP + PROYECT + "getTarifasParadero/";
+    /**
+     * Los siguientes se consultan por id de empresa
+     */
+    public static final String GET_VEHICULOS = IP + PROYECT + "getVehiculos/";
+    public static final String GET_RUTAS = IP + PROYECT + "getRutas/";
+    public static final String GET_PARADEROS = IP + PROYECT + "getParaderos/";
+    public static final String GET_HORARIOS = IP + PROYECT + "getHorarios/";
 
     public static final String INSERT_TICKET = IP + PROYECT + "/web/insertar_ticket.php";
+
+    public static final String GET_SUBRUTAS = "horarios";
 
     /**
      * Campos de las repuestas JSON
      */
-    public static final String RUTAS = "rutas";
-    public static final String HORARIOS = "horarios";
-    public static final String VEHICULOS = "vehiculos";
-    public static final String SUBRUTAS = "subrutas";
-    public static final String PARADEROS = "paraderos";
-    public static final String TIPO_USUARIO = "tipos_usuario";
+    public static final String TIPOS_USUARIO = "tipos_usuario";
     public static final String TARIFAS_PARADERO = "tarifas_paradero";
+    public static final String VEHICULOS = "vehiculos";
+    public static final String RUTAS = "rutas";
+    public static final String PARADEROS = "paraderos";
+    public static final String HORARIOS = "horarios";
+
+    public static final String SUBRUTAS = "horarios";
+
 
     // Estados del servicio
     public static final String SUCCESS = "1";
