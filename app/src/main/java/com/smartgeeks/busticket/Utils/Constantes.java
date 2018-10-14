@@ -17,6 +17,8 @@ public class Constantes {
     public static final String GET_RUTAS = IP + PROYECT + "/web/obtener_rutas.php";
     public static final String GET_VEHICULOS = IP + PROYECT + "/web/obtener_vehiculos.php";
     public static final String GET_SUBRUTAS = IP + PROYECT + "/web/obtener_subrutas.php";
+    public static final String GET_PARADEROS = IP + PROYECT + "/web/obtener_subrutas.php";
+    public static final String GET_TARIFAS_PARADERO = IP + PROYECT + "/web/obtener_subrutas.php";
     public static final String GET_TIPO_USUARIO = IP + PROYECT + "/web/obtener_tipos_usuario.php";
 
     public static final String INSERT_TICKET = IP + PROYECT + "/web/insertar_ticket.php";
@@ -28,7 +30,9 @@ public class Constantes {
     public static final String HORARIOS = "horarios";
     public static final String VEHICULOS = "vehiculos";
     public static final String SUBRUTAS = "subrutas";
+    public static final String PARADEROS = "paraderos";
     public static final String TIPO_USUARIO = "tipos_usuario";
+    public static final String TARIFAS_PARADERO = "tarifas_paradero";
 
     // Estados del servicio
     public static final String SUCCESS = "1";

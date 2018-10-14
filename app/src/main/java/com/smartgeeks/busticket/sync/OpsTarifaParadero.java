@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class OpsHorario {
+public class OpsTarifaParadero {
 
-    private static final String TAG = OpsHorario.class.getSimpleName();
+    private static final String TAG = OpsTarifaParadero.class.getSimpleName();
     private static final Gson gson = new Gson();
 
     public static void realizarSincronizacionLocal(Context context) {
@@ -30,7 +30,7 @@ public class OpsHorario {
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_HORARIOS,
+                        Constantes.GET_TARIFAS_PARADERO,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -89,7 +89,7 @@ public class OpsHorario {
 
         try {
             // Obtener array "horarios"
-            horarios = response.getJSONArray(Constantes.HORARIOS);
+            horarios = response.getJSONArray(Constantes.TARIFAS_PARADERO);
             // Parsear con Gson
             Horario[] res = gson.fromJson(horarios != null ? horarios.toString() : null, Horario[].class);
             List<Horario> data = Arrays.asList(res);

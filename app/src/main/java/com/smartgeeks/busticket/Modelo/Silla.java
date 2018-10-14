@@ -1,7 +1,5 @@
 package com.smartgeeks.busticket.Modelo;
 
-import android.util.Log;
-
 import com.orm.SugarRecord;
 import com.orm.dsl.Table;
 

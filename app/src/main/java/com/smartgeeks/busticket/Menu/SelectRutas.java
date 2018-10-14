@@ -54,20 +54,20 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SelectRutas extends AppCompatActivity {
 
-    public static final String ID_RUTA = "ID" ;
-    public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE" ;
-    public static final String ID_VEHICULO = "ID_VEHICULO" ;
-    public static final String ID_HORARIO = "ID_HORARIO" ;
-    public static final String HORA = "HORA" ;
-    public static final String INFO = "INFO" ;
+    public static final String ID_RUTA = "ID";
+    public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
+    public static final String ID_VEHICULO = "ID_VEHICULO";
+    public static final String ID_HORARIO = "ID_HORARIO";
+    public static final String HORA = "HORA";
+    public static final String INFO = "INFO";
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
-    Spinner spInicio, spFin, spPasajero ;
-    CheckBox cbAsiento, cbDePie ;
-    TextView tvPrecioPasaje , tvCountItem;
+    Button btnSiguiente, btnFinalizar, btnMenos, btnMas;
+    Spinner spInicio, spFin, spPasajero;
+    CheckBox cbAsiento, cbDePie;
+    TextView tvPrecioPasaje, tvCountItem;
     DialogAlert dialogAlert = new DialogAlert();
 
     private JSONArray resutlParaderos;
@@ -84,11 +84,11 @@ public class SelectRutas extends AppCompatActivity {
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin;
     String ruta_inicio, ruta_fin, Horario;
 
-    Context context ;
+    Context context;
 
-    BluetoothAdapter bluetoothAdapter ;
+    BluetoothAdapter bluetoothAdapter;
     BluetoothSocket bluetoothSocket;
-    BluetoothDevice bluetoothDevice ;
+    BluetoothDevice bluetoothDevice;
 
     OutputStream outputStream;
     InputStream inputStream;
@@ -100,7 +100,7 @@ public class SelectRutas extends AppCompatActivity {
 
     private View mProgressView;
 
-    int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
+    int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible;
 
     StringBuffer stringBuffer = null;
 
@@ -116,8 +116,8 @@ public class SelectRutas extends AppCompatActivity {
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id_paradero_inicio: "+id_paradero_inicio);
+                id_paradero_inicio = Integer.parseInt(getIdParadero(position));
+                Log.d(Service.TAG, "id_paradero_inicio: " + id_paradero_inicio);
                 ruta_inicio = parent.getItemAtPosition(position).toString();
             }
 
@@ -130,8 +130,8 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id_paradero_fin: "+id_paradero_fin);
+                id_paradero_fin = Integer.parseInt(getIdParadero(position));
+                Log.d(Service.TAG, "id_paradero_fin: " + id_paradero_fin);
                 ruta_fin = parent.getItemAtPosition(position).toString();
             }
 
@@ -144,15 +144,15 @@ public class SelectRutas extends AppCompatActivity {
         spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                id_usuario = Integer.parseInt(getIdUsuario(position)) ;
-                Log.d(Service.TAG, "id_usuario: "+id_usuario);
-                if (id == 0){
+                id_usuario = Integer.parseInt(getIdUsuario(position));
+                Log.d(Service.TAG, "id_usuario: " + id_usuario);
+                if (id == 0) {
                     precioPasaje = Integer.parseInt(getPrecio(position, "t_adulto"));
-                }else if (id == 1){
+                } else if (id == 1) {
                     precioPasaje = Integer.parseInt(getPrecio(position, "t_estudiante"));
-                }else if (id == 2){
+                } else if (id == 2) {
                     precioPasaje = Integer.parseInt(getPrecio(position, "t_frecuente"));
-                }else if (id == 3){
+                } else if (id == 3) {
                     precioPasaje = Integer.parseInt(getPrecio(position, "t_normal"));
                 }
 
@@ -169,12 +169,12 @@ public class SelectRutas extends AppCompatActivity {
         btnMas.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                countPasajes ++ ;
+                countPasajes++;
 
-                precio_sum_pasaje = precioPasaje * countPasajes ;
+                precio_sum_pasaje = precioPasaje * countPasajes;
 
                 formatPrecio(precio_sum_pasaje);
-                tvCountItem.setText(""+countPasajes);
+                tvCountItem.setText("" + countPasajes);
 
             }
         });
@@ -183,11 +183,11 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (countPasajes > 1){
+                if (countPasajes > 1) {
 
                     countPasajes--;
 
-                    precio_sum_pasaje = precioPasaje * countPasajes ;
+                    precio_sum_pasaje = precioPasaje * countPasajes;
 
                     formatPrecio(precio_sum_pasaje);
                     tvCountItem.setText("" + countPasajes);
@@ -201,14 +201,14 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (ruta_inicio == ruta_fin){
+                if (ruta_inicio == ruta_fin) {
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
-                }else {
+                } else {
                     btnFinalizar.setEnabled(false);
                     btnFinalizar.setVisibility(View.GONE);
                     showProgress(true);
-                    registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador,id_usuario, precio_sum_pasaje);
+                    registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador, id_usuario, precio_sum_pasaje);
                 }
 
             }
@@ -223,7 +223,7 @@ public class SelectRutas extends AppCompatActivity {
         btnSiguiente = findViewById(R.id.btnSiguiente);
         btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
-        btnMenos= findViewById(R.id.btnRestar);
+        btnMenos = findViewById(R.id.btnRestar);
         spInicio = findViewById(R.id.spInicio);
         spFin = findViewById(R.id.spFIn);
         spPasajero = findViewById(R.id.spUsuarios);
@@ -238,10 +238,10 @@ public class SelectRutas extends AppCompatActivity {
 
         bundle = getIntent().getExtras();
 
-        id_ruta  = bundle.getInt(ID_RUTA);
+        id_ruta = bundle.getInt(ID_RUTA);
         id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
         id_vehiculo = bundle.getInt(ID_VEHICULO);
-        id_horario  = bundle.getInt(ID_HORARIO);
+        id_horario = bundle.getInt(ID_HORARIO);
         Horario = bundle.getString(HORA);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
 
@@ -255,11 +255,11 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (ruta_inicio == ruta_fin){
+                if (ruta_inicio == ruta_fin) {
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
-                }else {
-                    if (cbAsiento.isChecked()){
+                } else {
+                    if (cbAsiento.isChecked()) {
                         Intent intent = new Intent(context, SelectSillas.class);
                         intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
                         intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
@@ -271,7 +271,7 @@ public class SelectRutas extends AppCompatActivity {
                         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
                         intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
                         intent.putExtra(SelectSillas.TIPO_USUARIO, id_usuario);
-                        intent.putExtra(INFO, info+","+ruta_inicio+","+ruta_fin);
+                        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
 
                         startActivity(intent);
                     }
@@ -282,27 +282,27 @@ public class SelectRutas extends AppCompatActivity {
         getParaderos(id_ruta);
 
         validarCheckBox();
-        tvCountItem.setText(""+ countPasajes);
+        tvCountItem.setText("" + countPasajes);
 
     }
 
 
-    private void formatPrecio(int precio){
+    private void formatPrecio(int precio) {
         String formatPrecio = formatea.format(precio);
         formatPrecio = formatPrecio.replace(',', '.');
 
-        tvPrecioPasaje.setText("$ "+formatPrecio);
+        tvPrecioPasaje.setText("$ " + formatPrecio);
     }
 
     private void validarCheckBox() {
         cbAsiento.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbAsiento.isChecked()){
+                if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);
                     btnSiguiente.setVisibility(View.VISIBLE);
                     btnFinalizar.setVisibility(View.GONE);
-                }else {
+                } else {
                     btnSiguiente.setVisibility(View.GONE);
                 }
             }
@@ -311,11 +311,11 @@ public class SelectRutas extends AppCompatActivity {
         cbDePie.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (cbDePie.isChecked()){
+                if (cbDePie.isChecked()) {
                     cbAsiento.setChecked(false);
                     btnSiguiente.setVisibility(View.GONE);
                     btnFinalizar.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     btnFinalizar.setVisibility(View.GONE);
                 }
             }
@@ -326,12 +326,12 @@ public class SelectRutas extends AppCompatActivity {
     private void getParaderos(int id) {
         listParaderos.clear();
 
-        Log.i(Service.TAG, "URL: "+Service.GET_PARADEROS+id);
+        Log.i(Service.TAG, "URL: " + Service.GET_PARADEROS + id);
 
-        stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Service.GET_PARADEROS + id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(Service.TAG, "response: "+response);
+                Log.d(Service.TAG, "response: " + response);
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
@@ -355,7 +355,7 @@ public class SelectRutas extends AppCompatActivity {
 
                         getUsuarios();
 
-                    }else {
+                    } else {
 
                     }
 
@@ -400,7 +400,7 @@ public class SelectRutas extends AppCompatActivity {
                         }
                         //setAdapter
                         spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
-                    }else {
+                    } else {
 
                     }
 
@@ -419,7 +419,7 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private String getIdParadero(int position){
+    private String getIdParadero(int position) {
         String idParadero = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -432,7 +432,7 @@ public class SelectRutas extends AppCompatActivity {
         return idParadero;
     }
 
-    private String getIdUsuario(int position){
+    private String getIdUsuario(int position) {
         String id_usuario = "";
         try {
             JSONObject object = resultUsuarios.getJSONObject(position);
@@ -445,7 +445,7 @@ public class SelectRutas extends AppCompatActivity {
         return id_usuario;
     }
 
-    public String getPrecio(int position , String name_usuario){
+    public String getPrecio(int position, String name_usuario) {
         String precio = "";
         try {
             JSONObject object = resutlParaderos.getJSONObject(position);
@@ -455,7 +455,7 @@ public class SelectRutas extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        return  precio;
+        return precio;
 
     }
 
@@ -464,7 +464,7 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     //
-    public void encontrarDispositivoBlue () {
+    public void encontrarDispositivoBlue() {
         try {
 
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -496,56 +496,56 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    public void abrirImpresoraBlue(){
-        try{
+    public void abrirImpresoraBlue() {
+        try {
             //Standard uuid from string //
             UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-            bluetoothSocket=bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
+            bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
             bluetoothSocket.connect();
-            outputStream=bluetoothSocket.getOutputStream();
-            inputStream=bluetoothSocket.getInputStream();
+            outputStream = bluetoothSocket.getOutputStream();
+            inputStream = bluetoothSocket.getInputStream();
 
             comenzarAEscucharDatos();
             printData();
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
-            Log.i("Error P",""+ex.getMessage());
+            Log.i("Error P", "" + ex.getMessage());
 
         }
     }
 
-    void comenzarAEscucharDatos(){
-        try{
+    void comenzarAEscucharDatos() {
+        try {
 
-            final Handler handler =new Handler();
-            final byte delimiter=10;
-            stopWorker =false;
-            readBufferPosition=0;
+            final Handler handler = new Handler();
+            final byte delimiter = 10;
+            stopWorker = false;
+            readBufferPosition = 0;
             readBuffer = new byte[1024];
 
-            thread=new Thread(new Runnable() {
+            thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
 
-                    while (!Thread.currentThread().isInterrupted() && !stopWorker){
-                        try{
+                    while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+                        try {
                             int byteAvailable = inputStream.available();
-                            if(byteAvailable>0){
+                            if (byteAvailable > 0) {
                                 byte[] packetByte = new byte[byteAvailable];
                                 inputStream.read(packetByte);
 
-                                for(int i=0; i<byteAvailable; i++){
+                                for (int i = 0; i < byteAvailable; i++) {
                                     byte b = packetByte[i];
-                                    if(b==delimiter){
+                                    if (b == delimiter) {
                                         byte[] encodedByte = new byte[readBufferPosition];
                                         System.arraycopy(
-                                                readBuffer,0,
-                                                encodedByte,0,
+                                                readBuffer, 0,
+                                                encodedByte, 0,
                                                 encodedByte.length
                                         );
-                                        final String data = new String(encodedByte,"US-ASCII");
-                                        readBufferPosition=0;
+                                        final String data = new String(encodedByte, "US-ASCII");
+                                        readBufferPosition = 0;
                                         handler.post(new Runnable() {
                                             @Override
                                             public void run() {
@@ -553,13 +553,13 @@ public class SelectRutas extends AppCompatActivity {
 
                                             }
                                         });
-                                    }else{
-                                        readBuffer[readBufferPosition++]=b;
+                                    } else {
+                                        readBuffer[readBufferPosition++] = b;
                                     }
                                 }
                             }
-                        }catch(Exception ex){
-                            stopWorker=true;
+                        } catch (Exception ex) {
+                            stopWorker = true;
                         }
                     }
 
@@ -567,7 +567,7 @@ public class SelectRutas extends AppCompatActivity {
             });
 
             thread.start();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -576,8 +576,8 @@ public class SelectRutas extends AppCompatActivity {
 
         stringBuffer = new StringBuffer();
 
-        byte[] command=null;
-        try{
+        byte[] command = null;
+        try {
 
 
             try {
@@ -585,7 +585,7 @@ public class SelectRutas extends AppCompatActivity {
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
 
-                byte[] data1 = PrintPicture.POS_PrintBMP(bmp,384,0);
+                byte[] data1 = PrintPicture.POS_PrintBMP(bmp, 384, 0);
 
                 outputStream.write(data);
                 outputStream.write(data1);
@@ -596,20 +596,20 @@ public class SelectRutas extends AppCompatActivity {
             }
 
             String msg = "Ticket 45";
-            msg+="\n";
-            msg += "precio: "+precio_sum_pasaje;
-            msg+="\n";
-            msg += "horario: "+Horario;
-            msg+="\n";
-            msg += "Ruta: "+ruta_inicio+","+ruta_fin;
+            msg += "\n";
+            msg += "precio: " + precio_sum_pasaje;
+            msg += "\n";
+            msg += "horario: " + Horario;
+            msg += "\n";
+            msg += "Ruta: " + ruta_inicio + "," + ruta_fin;
             outputStream.write(msg.getBytes());
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void registerTicket(final int id_paradero_inicio,final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar){
+    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar) {
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
             @Override
@@ -621,7 +621,7 @@ public class SelectRutas extends AppCompatActivity {
                         .setContentText("Guardo el ticket")
                         .show();
 
-                Button button =  alertDialog.findViewById(R.id.confirm_button);
+                Button button = alertDialog.findViewById(R.id.confirm_button);
                 // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
                 button.setBackgroundResource(R.drawable.bg_button_main);
 
@@ -649,12 +649,12 @@ public class SelectRutas extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 dialogAlert.showDialogErrorConexion(context);
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
 
-                params.put("id_paradero_inicio",  String.valueOf(id_paradero_inicio));
+                params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
                 params.put("id_horario", String.valueOf(id_horario));
                 params.put("id_operador", String.valueOf(id_operador));
@@ -665,7 +665,8 @@ public class SelectRutas extends AppCompatActivity {
 
                 return params;
             }
-        };;
+        };
+        ;
 
         requestQueue.add(stringRequest);
 
@@ -674,7 +675,6 @@ public class SelectRutas extends AppCompatActivity {
     private void showProgress(boolean show) {
         mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
-
 
 
 }
