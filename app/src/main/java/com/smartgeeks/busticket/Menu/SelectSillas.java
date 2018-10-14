@@ -188,8 +188,15 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         tvFin.setText("Fin: "+split[4]);
     }
 
-    private void drawChairBus(int columns_izq, int columns_der, int filas){
+    private void drawChairBus(int cant_sillas){
         int silla = 1;
+
+        int columns_izq =2 ;
+        int columns_der =2 ;
+
+        int filas = (int) Math.ceil(cant_sillas / 4);
+
+
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -357,8 +364,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     if (jsonArray.length() > 0) {
                         JSONObject json = jsonArray.getJSONObject(0);
-                        drawChairBus(json.getInt("f_izquierda"), json.getInt("f_derecha"),
-                                json.getInt("columnas"));
+                        drawChairBus((json.getInt("can_sillas")));
                     }
 
                 } catch (JSONException e) {

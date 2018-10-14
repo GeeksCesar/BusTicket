@@ -12,8 +12,8 @@ public class UsuarioPreferences {
     public static final String KEY_ID_USER = "id_user";
     public static final String KEY_SESSION = "session";
     public static final String KEY_NAME = "name";
-    public static final String KEY_DOCUMENTO = "documento" ;
-
+    public static final String KEY_RUT = "rut" ;
+    public static final String KEY_EMPRESA = "id_empresa" ;
 
 
     private static Context mContext ;
@@ -36,6 +36,8 @@ public class UsuarioPreferences {
         editor.putInt(KEY_ROL, user.getIdRol());
         editor.putInt(KEY_ID_USER, user.getIdUsuario());
         editor.putString(KEY_NAME, user.getNombre());
+        editor.putInt(KEY_EMPRESA, user.getId_empresa());
+        editor.putString(KEY_RUT, user.getRut());
 
         editor.apply();
 
@@ -55,6 +57,16 @@ public class UsuarioPreferences {
     public int getIdUser(){
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(KEY_ID_USER, 0);
+    }
+
+    public int getIdEmpresa(){
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getInt(KEY_EMPRESA, 0);
+    }
+
+    public String getRut(){
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_RUT, "");
     }
 
 }

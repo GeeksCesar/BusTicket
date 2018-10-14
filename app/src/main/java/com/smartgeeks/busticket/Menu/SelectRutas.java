@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -64,6 +65,7 @@ public class SelectRutas extends AppCompatActivity {
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
+    LinearLayout contenedorCheckBox, contenedorPrecio ;
     Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
     Spinner spInicio, spFin, spPasajero ;
     CheckBox cbAsiento, cbDePie ;
@@ -77,7 +79,6 @@ public class SelectRutas extends AppCompatActivity {
     private ArrayList<String> listParaderoFin = new ArrayList<>();
 
     //VOLLEY
-    JsonArrayRequest jsonArrayRequest;
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
@@ -86,23 +87,9 @@ public class SelectRutas extends AppCompatActivity {
 
     Context context ;
 
-    BluetoothAdapter bluetoothAdapter ;
-    BluetoothSocket bluetoothSocket;
-    BluetoothDevice bluetoothDevice ;
-
-    OutputStream outputStream;
-    InputStream inputStream;
-    Thread thread;
-
-    byte[] readBuffer;
-    int readBufferPosition;
-    volatile boolean stopWorker;
-
     private View mProgressView;
 
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
-
-    StringBuffer stringBuffer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +104,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id_paradero_inicio: "+id_paradero_inicio);
+
                 ruta_inicio = parent.getItemAtPosition(position).toString();
             }
 
@@ -131,7 +118,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
                 id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
-                Log.d(Service.TAG, "id_paradero_fin: "+id_paradero_fin);
+
                 ruta_fin = parent.getItemAtPosition(position).toString();
             }
 
@@ -145,19 +132,12 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 id_usuario = Integer.parseInt(getIdUsuario(position)) ;
-                Log.d(Service.TAG, "id_usuario: "+id_usuario);
-                if (id == 0){
-                    precioPasaje = Integer.parseInt(getPrecio(position, "t_adulto"));
-                }else if (id == 1){
-                    precioPasaje = Integer.parseInt(getPrecio(position, "t_estudiante"));
-                }else if (id == 2){
-                    precioPasaje = Integer.parseInt(getPrecio(position, "t_frecuente"));
-                }else if (id == 3){
-                    precioPasaje = Integer.parseInt(getPrecio(position, "t_normal"));
-                }
 
-                formatPrecio(precioPasaje);
+                Log.e(Service.TAG, "id_inicio: "+id_paradero_inicio);
+                Log.e(Service.TAG, "id_fin: "+id_paradero_fin);
+                Log.e(Service.TAG, "id_usuario: "+id_usuario);
 
+                //get_Precio();
             }
 
             @Override
@@ -220,6 +200,8 @@ public class SelectRutas extends AppCompatActivity {
         context = SelectRutas.this;
         requestQueue = Volley.newRequestQueue(context);
 
+        contenedorCheckBox = findViewById(R.id.contenedorCheckbox);
+        contenedorPrecio = findViewById(R.id.contenedorPrecio);
         btnSiguiente = findViewById(R.id.btnSiguiente);
         btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
@@ -233,8 +215,11 @@ public class SelectRutas extends AppCompatActivity {
         tvPrecioPasaje = findViewById(R.id.tvPrecio);
         mProgressView = findViewById(R.id.login_progress);
 
+
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
+        contenedorCheckBox.setVisibility(View.GONE);
+        contenedorPrecio.setVisibility(View.GONE);
 
         bundle = getIntent().getExtras();
 
@@ -374,7 +359,51 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
+    private void getPrecio(int id_inicio, int id_fin , int id_usuario){
+        String URL = Service.GET_PRECIO_TIQUETE+id_inicio+"/"+id_fin+"/"+id_usuario ;
+        Log.d(Service.TAG, "URl: "+URL);
 
+        /*
+        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject = new JSONObject(response);
+                    resultUsuarios = jsonObject.getJSONArray("usuario");
+
+                    if (resultUsuarios.length() > 0) {
+                        for (int i = 0; i < resultUsuarios.length(); i++) {
+                            try {
+                                JSONObject json = resultUsuarios.getJSONObject(i);
+                                String nombreInstitucion = json.getString("nombre");
+
+                                lisUsuarios.add(nombreInstitucion);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        //setAdapter
+                        spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
+                    }else {
+
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+
+            }
+        });
+
+        requestQueue.add(stringRequest);
+        */
+
+    }
     private void getUsuarios() {
 
         lisUsuarios.clear();
@@ -463,160 +492,14 @@ public class SelectRutas extends AppCompatActivity {
         this.finish();
     }
 
-    //
-    public void encontrarDispositivoBlue () {
-        try {
-
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (bluetoothAdapter == null) {
-                //lblPrinterName.setText("No Bluetooth Adapter found");
-            }
-            if (bluetoothAdapter.isEnabled()) {
-                Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBT, 0);
-            }
-            Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
-
-            if (pairedDevice.size() > 0) {
-                for (BluetoothDevice pairedDev : pairedDevice) {
-                    Log.i("nombre Impresora:", "" + pairedDev.getName());
-                    // My Bluetoth printer name is BTP_F09F1A
-                    if (pairedDev.getName().equals("BlueTooth Printer")) {
-                        bluetoothDevice = pairedDev;
-                        //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
-                        break;
-                    }
-                }
-            }
-            //lblPrinterName.setText("Bluetookkkkth Printer Attached");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Log.i("otro Error", "" + ex.getMessage());
-        }
-
-    }
-
-    public void abrirImpresoraBlue(){
-        try{
-            //Standard uuid from string //
-            UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-            bluetoothSocket=bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
-            bluetoothSocket.connect();
-            outputStream=bluetoothSocket.getOutputStream();
-            inputStream=bluetoothSocket.getInputStream();
-
-            comenzarAEscucharDatos();
-            printData();
-
-        }catch (Exception ex){
-
-            Log.i("Error P",""+ex.getMessage());
-
-        }
-    }
-
-    void comenzarAEscucharDatos(){
-        try{
-
-            final Handler handler =new Handler();
-            final byte delimiter=10;
-            stopWorker =false;
-            readBufferPosition=0;
-            readBuffer = new byte[1024];
-
-            thread=new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    while (!Thread.currentThread().isInterrupted() && !stopWorker){
-                        try{
-                            int byteAvailable = inputStream.available();
-                            if(byteAvailable>0){
-                                byte[] packetByte = new byte[byteAvailable];
-                                inputStream.read(packetByte);
-
-                                for(int i=0; i<byteAvailable; i++){
-                                    byte b = packetByte[i];
-                                    if(b==delimiter){
-                                        byte[] encodedByte = new byte[readBufferPosition];
-                                        System.arraycopy(
-                                                readBuffer,0,
-                                                encodedByte,0,
-                                                encodedByte.length
-                                        );
-                                        final String data = new String(encodedByte,"US-ASCII");
-                                        readBufferPosition=0;
-                                        handler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                //lblPrinterName.setText(data);
-
-                                            }
-                                        });
-                                    }else{
-                                        readBuffer[readBufferPosition++]=b;
-                                    }
-                                }
-                            }
-                        }catch(Exception ex){
-                            stopWorker=true;
-                        }
-                    }
-
-                }
-            });
-
-            thread.start();
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
-    }
-
-    void printData() throws IOException {
-
-        stringBuffer = new StringBuffer();
-
-        byte[] command=null;
-        try{
-
-
-            try {
-                Bitmap bmp = BitmapFactory.decodeResource(getResources(),
-                        R.mipmap.img_logo_pdf);
-                byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
-
-                byte[] data1 = PrintPicture.POS_PrintBMP(bmp,384,0);
-
-                outputStream.write(data);
-                outputStream.write(data1);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e("PrintTools", "the file isn't exists");
-            }
-
-            String msg = "Ticket 45";
-            msg+="\n";
-            msg += "precio: "+precio_sum_pasaje;
-            msg+="\n";
-            msg += "horario: "+Horario;
-            msg+="\n";
-            msg += "Ruta: "+ruta_inicio+","+ruta_fin;
-            outputStream.write(msg.getBytes());
-
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
-    }
-
     private void registerTicket(final int id_paradero_inicio,final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar){
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                //    Log.d(Service.TAG, "response: "+response);
+                   Log.d(Service.TAG, "response: "+response);
 
-                final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+                /*final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
                 alertDialog.setTitleText("Exito")
                         .setContentText("Guardo el ticket")
                         .show();
@@ -636,13 +519,12 @@ public class SelectRutas extends AppCompatActivity {
                             btnFinalizar.setVisibility(View.VISIBLE);
                             btnFinalizar.setEnabled(true);
 
-                            encontrarDispositivoBlue();
-                            abrirImpresoraBlue();
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
                     }
                 });
+                */
             }
         }, new Response.ErrorListener() {
             @Override
