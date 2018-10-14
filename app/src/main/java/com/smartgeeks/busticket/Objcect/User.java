@@ -9,9 +9,9 @@ public class User {
     @Expose
     private int idUsuario;
 
-    @SerializedName("docu")
+    @SerializedName("idEmpresa")
     @Expose
-    private String docu;
+    private int id_empresa;
 
     @SerializedName("nombre")
     @Expose
@@ -20,6 +20,10 @@ public class User {
     @SerializedName("idRol")
     @Expose
     private int idRol;
+
+    @SerializedName("rut")
+    @Expose
+    private String rut;
 
     //GETTER && SETTER
     public int getIdUsuario() {
@@ -30,12 +34,12 @@ public class User {
         this.idUsuario = idUsuario;
     }
 
-    public String getDocu() {
-        return docu;
+    public int getId_empresa() {
+        return id_empresa;
     }
 
-    public void setDocu(String docu) {
-        this.docu = docu;
+    public void setId_empresa(int id_empresa) {
+        this.id_empresa = id_empresa;
     }
 
     public String getNombre() {
@@ -52,5 +56,13 @@ public class User {
 
     public void setIdRol(int idRol) {
         this.idRol = idRol;
+    }
+
+    public String getRut() {
+        return rut;
+    }
+
+    public void setRut(String rut) {
+        this.rut = rut;
     }
 }

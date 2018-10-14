@@ -10,7 +10,7 @@ public class Service {
         return RetrofitClient.getClient(URL).create(ApiService.class);
     }
 
-    public static final String GET_VEHICULOS = URL + "api/getVehiculos";
+    public static final String GET_VEHICULOS = URL + "api/getVehiculos?id=";
     public static final String GET_RUTAS = URL + "api/getRutas?id=";
     public static final String GET_USUARIOS = URL + "api/getTipoUsuarios";
     public static final String GET_INFO_VEHICULO = URL + "Api/getInfoVehiculo?id=";
@@ -19,5 +19,6 @@ public class Service {
     public static final String GET_PARADEROS = URL + "api/getParadero?id=";
     public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsiento";
     public static final String SET_TICKET_PIE = URL + "api/setTicketPie";
+    public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio" ;
 
 }

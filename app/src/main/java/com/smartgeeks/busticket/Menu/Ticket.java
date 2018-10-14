@@ -22,6 +22,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,10 +32,10 @@ import java.util.ArrayList;
 
 public class Ticket extends Fragment {
 
-    View view;
+    View view ;
     Context context;
-    Spinner spPlaca, spRuta, spHorarios;
-    Button btnSiguiente;
+    Spinner spPlaca, spRuta, spHorarios ;
+    Button btnSiguiente ;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -61,21 +62,7 @@ public class Ticket extends Fragment {
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.menu_ticket, container, false);
 
-        context = getActivity();
-        requestQueue = Volley.newRequestQueue(context);
-
-        btnSiguiente = view.findViewById(R.id.btnNext);
-        spPlaca = view.findViewById(R.id.spPlaca);
-        spRuta = view.findViewById(R.id.spRutas);
-        spHorarios = view.findViewById(R.id.spHorarios);
-
-        btnSiguiente.setVisibility(View.GONE);
-
-        listPlacas = new ArrayList<String>();
-        listRuta = new ArrayList<String>();
-        listHora = new ArrayList<String>();
-
-        getVehiculos();
+        init();
 
         // select
         spPlaca.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -96,8 +83,8 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_ruta = Integer.parseInt(getIdRuta(position));
-                id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position));
+                id_ruta = Integer.parseInt(getIdRuta(position)) ;
+                id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
 
                 getHorario(id_ruta);
                 ruta = listRuta.get(position);
@@ -113,7 +100,7 @@ public class Ticket extends Fragment {
         spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_horario = Integer.parseInt(getIdHorario(position));
+                id_horario = Integer.parseInt(getIdHorario(position)) ;
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
                 hora = listHora.get(position);
                 horario = listHorario.get(position);
@@ -128,14 +115,13 @@ public class Ticket extends Fragment {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Intent intent = new Intent(context, SelectRutas.class);
                 intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
                 intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
                 intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
                 intent.putExtra(SelectRutas.HORA, horario);
-                intent.putExtra(SelectRutas.INFO, placa + "," + ruta + "," + hora);
+                intent.putExtra(SelectRutas.INFO, placa+","+ruta+","+hora);
                 startActivity(intent);
             }
         });
@@ -144,11 +130,31 @@ public class Ticket extends Fragment {
         return view;
     }
 
+    private void init(){
+        context = getActivity();
+        requestQueue = Volley.newRequestQueue(context);
+
+        btnSiguiente = view.findViewById(R.id.btnNext);
+        spPlaca = view.findViewById(R.id.spPlaca);
+        spRuta = view.findViewById(R.id.spRutas);
+        spHorarios = view.findViewById(R.id.spHorarios);
+
+        btnSiguiente.setVisibility(View.GONE);
+
+        listPlacas = new ArrayList<String>();
+        listRuta = new ArrayList<String>();
+        listHora = new ArrayList<String>();
+
+        int id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
+
+        getVehiculos(id_empresa);
+    }
+
     private void getHorario(int id_vehiculo) {
         listHora.clear();
 
         String URL = Service.GET_HORARIO + id_vehiculo;
-        Log.w(Service.TAG, "horarios: " + URL);
+        Log.w(Service.TAG, "horarios: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -156,7 +162,7 @@ public class Ticket extends Fragment {
                 try {
                     jsonObject = new JSONObject(response);
                     resultHorarios = jsonObject.getJSONArray("horarios");
-                    Log.v(Service.TAG, "json: " + resultHorarios);
+                    Log.v(Service.TAG , "json: "+resultHorarios);
                     if (resultHorarios.length() > 0) {
 
                         btnSiguiente.setVisibility(View.VISIBLE);
@@ -176,7 +182,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
-                    } else {
+                    }else {
                         btnSiguiente.setVisibility(View.GONE);
                     }
 
@@ -197,7 +203,7 @@ public class Ticket extends Fragment {
     private void getRutas(int id_vehiculo) {
         listRuta.clear();
         String URL = Service.GET_RUTAS + id_vehiculo;
-        Log.w(Service.TAG, "rutas: " + URL);
+        Log.w(Service.TAG, "rutas: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -205,7 +211,7 @@ public class Ticket extends Fragment {
                 try {
                     jsonObject = new JSONObject(response);
                     resultRuta = jsonObject.getJSONArray("rutas");
-                    Log.v(Service.TAG, "json: " + resultRuta);
+                    Log.v(Service.TAG , "json: "+resultRuta);
                     if (resultRuta.length() > 0) {
                         for (int i = 0; i < resultRuta.length(); i++) {
                             try {
@@ -213,7 +219,7 @@ public class Ticket extends Fragment {
                                 String nombreIda = json.getString("Inicio");
                                 String nombreVuelta = json.getString("Termina");
 
-                                String nameRuta = nombreIda + " - " + nombreVuelta;
+                                String nameRuta = nombreIda +" - "+nombreVuelta;
 
                                 listRuta.add(nameRuta);
                             } catch (JSONException e) {
@@ -222,7 +228,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
-                    } else {
+                    }else {
 
                     }
 
@@ -239,17 +245,17 @@ public class Ticket extends Fragment {
         requestQueue.add(stringRequest);
     }
 
-    private void getVehiculos() {
+    private void getVehiculos(int id){
         listPlacas.clear();
 
-        stringRequest = new StringRequest(Service.GET_VEHICULOS, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Service.GET_VEHICULOS+id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
                     resultPlaca = jsonObject.getJSONArray("vehiculos");
-                    Log.d(Service.TAG, "vehiculos: " + resultPlaca);
+                    Log.d(Service.TAG, "vehiculos: "+resultPlaca);
                     if (resultPlaca.length() > 0) {
                         for (int i = 0; i < resultPlaca.length(); i++) {
                             try {
@@ -263,7 +269,7 @@ public class Ticket extends Fragment {
                         }
                         //setAdapter
                         spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
-                    } else {
+                    }else {
 
                     }
 
@@ -282,7 +288,7 @@ public class Ticket extends Fragment {
 
     }
 
-    private String getIdVehiculo(int position) {
+    private String getIdVehiculo(int position){
         String id_vehiculo = "";
         try {
             JSONObject object = resultPlaca.getJSONObject(position);
@@ -295,7 +301,7 @@ public class Ticket extends Fragment {
     }
 
 
-    private String getIdRuta(int position) {
+    private String getIdRuta(int position){
         String idRuta = "";
         try {
             JSONObject object = resultRuta.getJSONObject(position);
@@ -307,7 +313,7 @@ public class Ticket extends Fragment {
         return idRuta;
     }
 
-    private String getIdRutaDisponible(int position) {
+    private String getIdRutaDisponible(int position){
         String idRuta = "";
         try {
             JSONObject object = resultRuta.getJSONObject(position);
@@ -319,7 +325,7 @@ public class Ticket extends Fragment {
         return idRuta;
     }
 
-    private String getIdHorario(int position) {
+    private String getIdHorario(int position){
         String idHorario = "";
         try {
             JSONObject object = resultHorarios.getJSONObject(position);
