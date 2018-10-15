@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import com.google.gson.Gson;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Ticket;
@@ -19,13 +21,19 @@ import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 import com.smartgeeks.busticket.sync.SyncService;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Inicio extends Fragment {
 
     Context context;
     View view;
     RelativeLayout relContenedor;
-    Button btnNombreUsuario, btnTest, btnSend;
+    Button btnNombreUsuario, btnSend;
 
     MainActivity activity;
 
@@ -45,7 +53,6 @@ public class Inicio extends Fragment {
         btnNombreUsuario = view.findViewById(R.id.btnNameUsuario);
         relContenedor = view.findViewById(R.id.contentTicket);
         btnSend = view.findViewById(R.id.btnSend);
-        btnTest = view.findViewById(R.id.btnTest);
 
         nameUsuario = UsuarioPreferences.getInstance(getActivity()).getNombre();
         btnNombreUsuario.setText(nameUsuario);
@@ -66,13 +73,6 @@ public class Inicio extends Fragment {
             }
         });
 
-        btnTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveDataDummy();
-            }
-        });
-
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,31 +83,6 @@ public class Inicio extends Fragment {
         return view;
     }
 
-    private void saveDataDummy() {
-        Ticket ticket = new Ticket();
-        ticket.setId_remoto("");
-        ticket.setCliente("Johan Mosquera");
-        ticket.setHorario_id(1);
-        ticket.setSub_partida(1);
-        ticket.setSub_destino(2);
-        ticket.setTipo_usuario(1);
-        ticket.setSillas(4);
-        ticket.setFecha("2018-10-10");
-        ticket.setHora("23:00:00");
-        ticket.setPrecio(12000);
-        ticket.setEstado(0);
-        ticket.setPendiente_insercion(1);
-        ticket.save();
-
-        Silla silla = new Silla();
-        silla.setTicket(ticket.getId());
-        silla.setNumero_silla(12);
-        silla.save();
-        Silla silla1 = new Silla();
-        silla1.setTicket(ticket.getId());
-        silla1.setNumero_silla(2);
-        silla1.save();
-    }
 
     /**
      * Ejecutar el servicio de Sincronización Remota

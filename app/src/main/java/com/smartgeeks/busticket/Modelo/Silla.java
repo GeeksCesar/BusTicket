@@ -1,35 +1,41 @@
 package com.smartgeeks.busticket.Modelo;
 
-import com.orm.SugarRecord;
-import com.orm.dsl.Table;
+public class Silla  {
 
-@Table
-public class Silla extends SugarRecord {
-
-    Long ticket;
-    int numero_silla;
+    int numeroSilla;
+    int origen;
+    int destino;
 
     public Silla() {
     }
 
-    public Silla(Long ticket_id, int numero_silla) {
-        this.ticket = ticket_id;
-        this.numero_silla = numero_silla;
+    public Silla(int numeroSilla, int origen, int destino) {
+        this.numeroSilla = numeroSilla;
+        this.origen = origen;
+        this.destino = destino;
     }
 
-    public Long getTicket_id() {
-        return ticket;
+    public int getNumeroSilla() {
+        return numeroSilla;
     }
 
-    public int getNumero_silla() {
-        return numero_silla;
+    public void setNumeroSilla(int numeroSilla) {
+        this.numeroSilla = numeroSilla;
     }
 
-    public void setTicket(Long ticket) {
-        this.ticket = ticket;
+    public int getOrigen() {
+        return origen;
     }
 
-    public void setNumero_silla(int numero_silla) {
-        this.numero_silla = numero_silla;
+    public void setOrigen(int origen) {
+        this.origen = origen;
+    }
+
+    public int getDestino() {
+        return destino;
+    }
+
+    public void setDestino(int destino) {
+        this.destino = destino;
     }
 }

@@ -32,6 +32,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Silla;
+import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.PrintPicture;
@@ -69,6 +71,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private String TAG = "SelectSillas";
 
     LinearLayout contenedor_bus;
+    private List<Silla> listSillasOcupadas = new ArrayList<>();
     private List<Integer> sillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
@@ -128,8 +131,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
 
         initWidgets();
-        showProgressDialog();
         // Obtengo los datos del vehículo
+        showProgressDialog();
         getSillasOcupadas(id_ruta_disponible);
 
 
@@ -191,12 +194,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void drawChairBus(int cant_sillas){
         int silla = 1;
 
-        int columns_izq =2 ;
-        int columns_der =2 ;
-
         int filas = (int) Math.ceil(cant_sillas / 4);
-
-
+        Log.e(TAG, ""+filas);
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -213,67 +212,95 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         silla_params.setMargins(4, 8, 4, 8);
 
         // Dibujo las filas
-        for (int i = 1; i <= filas; i++){
+        for (int i = 1; i <= filas+1; i++){
 
             LinearLayout linearLayout = new LinearLayout(this);
             linearLayout.setLayoutParams(params);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
             //Dibujo las columnas izquierdas
-            for (int a = 1; a <= columns_izq; a++){
+            for (int a = 1; a <= 4; a++){
 
-                final ToggleButton puesto = new ToggleButton(this);
-                puesto.setLayoutParams(silla_params);
-                puesto.setPadding(0, 10, 0, 10);
-                puesto.setId(silla);
-                puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.toggle_silla));
-                puesto.setTextColor(ContextCompat.getColor(this, R.color.md_black_1000));
-                puesto.setTextOn("" + silla);
-                puesto.setTextOff("" + silla);
-                puesto.setText("" + silla);
-                puesto.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                puesto.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                if (silla > cant_sillas){
+                    break;
+                }
 
-                // Verificar estado de silla
-                drawSillaOcupada(silla, puesto);
-                silla++;
+                if ( (cant_sillas%2)==1 && silla >= (cant_sillas-5)){
+                    final ToggleButton puesto = new ToggleButton(this);
+                    puesto.setLayoutParams(silla_params);
+                    puesto.setPadding(0, 10, 0, 10);
+                    puesto.setId(silla);
+                    puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.toggle_silla));
+                    puesto.setTextColor(ContextCompat.getColor(this, R.color.md_black_1000));
+                    puesto.setTextOn("" + silla);
+                    puesto.setTextOff("" + silla);
+                    puesto.setText("" + silla);
+                    puesto.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    puesto.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
 
-                // Agregar Silla al ticket
-                puesto.setOnCheckedChangeListener(this);
+                    // Verificar estado de silla
+                    drawSillaOcupada(silla, puesto);
+                    silla++;
 
-                linearLayout.addView(puesto);
+                    // Agregar Silla al ticket
+                    puesto.setOnCheckedChangeListener(this);
+                    linearLayout.addView(puesto);
+
+                    if (a==2){
+                        //Dibujo el espacio de en el bus
+                        final ToggleButton extra = new ToggleButton(this);
+                        extra.setLayoutParams(silla_params);
+                        extra.setPadding(0, 10, 0, 10);
+                        extra.setId(silla);
+                        extra.setBackground(ContextCompat.getDrawable(this, R.drawable.toggle_silla));
+                        extra.setTextColor(ContextCompat.getColor(this, R.color.md_black_1000));
+                        extra.setTextOn("" + silla);
+                        extra.setTextOff("" + silla);
+                        extra.setText("" + silla);
+                        extra.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                        extra.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+
+                        // Verificar estado de silla
+                        drawSillaOcupada(silla, extra);
+                        silla++;
+
+                        // Agregar Silla al ticket
+                        extra.setOnCheckedChangeListener(this);
+                        linearLayout.addView(extra);
+                    }
+
+                } else {
+                        final ToggleButton puesto = new ToggleButton(this);
+                        puesto.setLayoutParams(silla_params);
+                        puesto.setPadding(0, 10, 0, 10);
+                        puesto.setId(silla);
+                        puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.toggle_silla));
+                        puesto.setTextColor(ContextCompat.getColor(this, R.color.md_black_1000));
+                        puesto.setTextOn("" + silla);
+                        puesto.setTextOff("" + silla);
+                        puesto.setText("" + silla);
+                        puesto.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                        puesto.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+
+                        // Verificar estado de silla
+                        drawSillaOcupada(silla, puesto);
+                        silla++;
+
+                        // Agregar Silla al ticket
+                        puesto.setOnCheckedChangeListener(this);
+                        linearLayout.addView(puesto);
+
+                    if (a==2){
+                        //Dibujo el espacio de en el bus
+                        View espacio = new View(this);
+                        espacio.setLayoutParams(space_params);
+                        linearLayout.addView(espacio);
+                    }
+                }
+
+
+
             }
-
-            //Dibujo el espacio de en el bus
-            View espacio = new View(this);
-            espacio.setLayoutParams(space_params);
-            linearLayout.addView(espacio);
-
-            // Dibujo las columnas derechas
-            for (int b = 1; b <= columns_der; b++){
-
-                final ToggleButton puesto = new ToggleButton(this);
-                puesto.setLayoutParams(silla_params);
-                puesto.setPadding(0, 10, 0, 10);
-                puesto.setId(silla);
-                puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.toggle_silla));
-                puesto.setTextColor(ContextCompat.getColor(this, R.color.md_black_1000));
-                puesto.setTextOn("" + silla);
-                puesto.setTextOff("" + silla);
-                puesto.setText("" + silla);
-                puesto.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                puesto.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-
-                // Verificar estado de silla
-                drawSillaOcupada(silla, puesto);
-                silla++;
-
-                // Agregar Silla al ticket
-                puesto.setOnCheckedChangeListener(this);
-
-                linearLayout.addView(puesto);
-            }
-
             contenedor_bus.addView(linearLayout);
         }
     }
@@ -391,11 +418,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
 
         String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
-        Log.w(Service.TAG, "rutas: "+URL);
+        Log.i(Service.TAG, "rutas: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                JSONObject object = null;
                 JSONArray jsonArray = null;
                 try {
                     jsonArray = new JSONArray(response);
@@ -653,4 +679,17 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             ex.printStackTrace();
         }
     }
+
+
+    /***
+     *  SQLite - Consulta de datos
+     */
+
+    private void getVehiculoSQLite(){
+        List<Vehiculo> vehiculos = Vehiculo.find(Vehiculo.class, "remoto = ?",
+                ""+id_vehiculo);
+        int cant_sillas = vehiculos.get(0).getNumAsientos();
+        drawChairBus(cant_sillas);
+    }
+
 }

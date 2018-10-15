@@ -31,9 +31,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Paradero;
+import com.smartgeeks.busticket.Modelo.TarifaParadero;
+import com.smartgeeks.busticket.Modelo.Ticket;
+import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
@@ -47,6 +54,7 @@ import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -61,6 +69,7 @@ public class SelectRutas extends AppCompatActivity {
     public static final String ID_HORARIO = "ID_HORARIO" ;
     public static final String HORA = "HORA" ;
     public static final String INFO = "INFO" ;
+    public static final String TAG = SelectRutas.class.getSimpleName();
 
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
@@ -78,12 +87,17 @@ public class SelectRutas extends AppCompatActivity {
     private ArrayList<String> lisUsuarios;
     private ArrayList<String> listParaderoFin = new ArrayList<>();
 
+    // Listas para SQLite
+    private List<Paradero> paraderoInicioList = new ArrayList<>();
+    private List<Paradero>  paraderoFinList = new ArrayList<>();
+    private List<TipoUsuario> tipoUsuariosList = new ArrayList<>();
+
     //VOLLEY
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin;
-    String ruta_inicio, ruta_fin, Horario;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje = 5000, id_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario;
+    String ruta_inicio, ruta_fin, hora;
 
     Context context ;
 
@@ -99,12 +113,13 @@ public class SelectRutas extends AppCompatActivity {
         setContentView(R.layout.activity_select_rutas);
 
         initWidget();
+        showView();
 
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-
+                //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
+                id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
                 ruta_inicio = parent.getItemAtPosition(position).toString();
             }
 
@@ -117,9 +132,17 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
-
+                //id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
+                id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
                 ruta_fin = parent.getItemAtPosition(position).toString();
+                Log.e(TAG, "Paradero inicio: "+id_paradero_inicio);
+                Log.e(TAG, "Paradero fin: "+id_paradero_fin);
+                try {
+                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position_tipo_usuario);
+                    formatPrecio(precioPasaje);
+                } catch (Exception e){
+                    e.getMessage();
+                }
             }
 
             @Override
@@ -131,13 +154,17 @@ public class SelectRutas extends AppCompatActivity {
         spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                id_usuario = Integer.parseInt(getIdUsuario(position)) ;
-
-                Log.e(Service.TAG, "id_inicio: "+id_paradero_inicio);
-                Log.e(Service.TAG, "id_fin: "+id_paradero_fin);
-                Log.e(Service.TAG, "id_usuario: "+id_usuario);
+                //id_usuario = Integer.parseInt(getIdUsuario(position)) ;
+                id_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
+                position_tipo_usuario = position;
 
                 //get_Precio();
+                try {
+                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position);
+                    formatPrecio(precioPasaje);
+                } catch (Exception e){
+                    e.getMessage();
+                }
             }
 
             @Override
@@ -227,7 +254,7 @@ public class SelectRutas extends AppCompatActivity {
         id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
         id_vehiculo = bundle.getInt(ID_VEHICULO);
         id_horario  = bundle.getInt(ID_HORARIO);
-        Horario = bundle.getString(HORA);
+        hora = bundle.getString(HORA);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
 
 
@@ -244,7 +271,7 @@ public class SelectRutas extends AppCompatActivity {
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 }else {
-                    if (cbAsiento.isChecked()){
+                    if (cbAsiento.isChecked() && !DialogAlert.verificaConexion(context)){
                         Intent intent = new Intent(context, SelectSillas.class);
                         intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
                         intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
@@ -252,23 +279,53 @@ public class SelectRutas extends AppCompatActivity {
                         intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
                         intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                         intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                        intent.putExtra(SelectSillas.HORARIO, Horario);
+                        intent.putExtra(SelectSillas.HORARIO, hora);
                         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
                         intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
                         intent.putExtra(SelectSillas.TIPO_USUARIO, id_usuario);
                         intent.putExtra(INFO, info+","+ruta_inicio+","+ruta_fin);
 
                         startActivity(intent);
+                    } else {
+                        // Si no hay conexión a internet, guardo el ticket localmente
+                        saveTicketLocal();
                     }
                 }
             }
         });
 
-        getParaderos(id_ruta);
+        //getParaderos(id_ruta); webservice
+        getParaderosSQLite(id_ruta);
 
         validarCheckBox();
         tvCountItem.setText(""+ countPasajes);
 
+    }
+
+    private void saveTicketLocal() {
+        Ticket ticket = new Ticket();
+        ticket.setIdRemoto("");
+        ticket.setParadaInicio(id_paradero_inicio);
+        ticket.setParadaDestino(id_paradero_fin);
+        ticket.setIdRutaDisponible(id_ruta_disponible);
+        ticket.setIdOperador(UsuarioPreferences.getInstance(context).getIdUser());
+        ticket.setHoraSalida(hora);
+        ticket.setTipoUsuario(3);
+        ticket.setFecha(Helpers.getCurrentDate());
+        ticket.setHora(Helpers.getCurrentTime());
+        ticket.setCantPasajes(countPasajes);
+        ticket.setTotalPagar(precio_sum_pasaje);
+        ticket.setEstado(0);
+        ticket.setPendiente(Constantes.ESTADO_SYNC);
+        
+        ticket.save();
+        // El estado = 0 y estado_sync = 1, para cuando se inicie la sincronización remota
+        // se cambie el estado = 1
+    }
+
+    private void showView(){
+        contenedorCheckBox.setVisibility(View.VISIBLE);
+        contenedorPrecio.setVisibility(View.VISIBLE);
     }
 
 
@@ -398,6 +455,7 @@ public class SelectRutas extends AppCompatActivity {
         */
 
     }
+
     private void getUsuarios() {
 
         lisUsuarios.clear();
@@ -529,7 +587,7 @@ public class SelectRutas extends AppCompatActivity {
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
                 params.put("id_horario", String.valueOf(id_horario));
                 params.put("id_operador", String.valueOf(id_operador));
-                params.put("hora", Horario);
+                params.put("hora", hora);
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
                 params.put("total_pagar", String.valueOf(valor_pagar));
 
@@ -547,5 +605,81 @@ public class SelectRutas extends AppCompatActivity {
     }
 
 
+    /**
+     * ***********   Consultas SQLite  *************
+     */
+
+    private void getParaderosSQLite(int id_ruta){
+        listParaderos.clear();
+        listParaderoFin.clear();
+
+        paraderoInicioList = Paradero.find(Paradero.class, "ruta = ?",
+                new String[]{""+id_ruta}, null, "remoto", null);
+        paraderoFinList = Paradero.find(Paradero.class, "ruta = ?",
+                new String[]{""+id_ruta}, null, "remoto", null);
+
+        for (Paradero paradero : paraderoInicioList){
+            listParaderos.add(paradero.getParadero());
+            listParaderoFin.add(paradero.getParadero());
+        }
+
+        //setAdapter
+        try {
+            listParaderoFin.remove(0);
+            paraderoFinList.remove(0);
+        } catch (Exception e){
+            e.getMessage();
+        }
+        spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
+        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
+
+        getUsuariosSQLite();
+    }
+
+    private void getUsuariosSQLite(){
+        lisUsuarios.clear();
+
+        tipoUsuariosList = TipoUsuario.listAll(TipoUsuario.class, "remoto");
+
+        for (TipoUsuario tipoUsuario : tipoUsuariosList){
+            lisUsuarios.add(tipoUsuario.getNombre());
+        }
+
+        //setAdapter
+        spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
+    }
+
+    private double getPrecioSQLite(int id_paradero_inicio, int id_paradero_fin, int position) {
+        List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
+                "parada_inicio = ? AND parada_fin = ?", ""+id_paradero_inicio,
+                ""+id_paradero_fin);
+
+        double precio = 700;
+        Log.e("Size ", ""+tarifaParaderos.size());
+
+        switch (position){
+            case 0:
+                precio = tarifaParaderos.get(0).getEstudiante();
+                Log.e("Estudiante: ", ""+precio);
+                break;
+            case 1:
+                precio = tarifaParaderos.get(0).getNormal();
+                Log.e("Normal: ", ""+precio);
+                break;
+            case 2:
+                precio = tarifaParaderos.get(0).getFrecuente();
+                Log.e("Frecuente: ", ""+precio);
+                break;
+            case 3:
+                precio = tarifaParaderos.get(0).getAdulto_mayor();
+                Log.e("Adulto: ", ""+precio);
+                break;
+            case 4:
+                precio = tarifaParaderos.get(0).getVale_muni();
+                Log.e("ValeMuni: ", ""+precio);
+                break;
+        }
+        return precio;
+    }
 
 }

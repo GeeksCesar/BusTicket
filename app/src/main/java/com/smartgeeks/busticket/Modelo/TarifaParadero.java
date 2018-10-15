@@ -7,26 +7,26 @@ public class TarifaParadero extends SugarRecord {
 
     @Unique
     String remoto;
-    int parada_inicio;
-    int parada_fin;
+    int paradaInicio;
+    int paradaFin;
     double normal;
     double frecuente;
-    double adulto_mayor;
+    double adultoMayor;
     double estudiante;
-    double vale_muni;
+    double valeMuni;
 
     public TarifaParadero() {
     }
 
-    public TarifaParadero(String remoto, int parada_inicio, int parada_fin, double normal, double frecuente, double adulto_mayor, double estudiante, double vale_muni) {
+    public TarifaParadero(String remoto, int paradaInicio, int paradaFin, double normal, double frecuente, double adultoMayor, double estudiante, double valeMuni) {
         this.remoto = remoto;
-        this.parada_inicio = parada_inicio;
-        this.parada_fin = parada_fin;
+        this.paradaInicio = paradaInicio;
+        this.paradaFin = paradaFin;
         this.normal = normal;
         this.frecuente = frecuente;
-        this.adulto_mayor = adulto_mayor;
+        this.adultoMayor = adultoMayor;
         this.estudiante = estudiante;
-        this.vale_muni = vale_muni;
+        this.valeMuni = valeMuni;
     }
 
     public String getIdRemoto() {
@@ -34,11 +34,11 @@ public class TarifaParadero extends SugarRecord {
     }
 
     public int getParada_inicio() {
-        return parada_inicio;
+        return paradaInicio;
     }
 
     public int getParada_fin() {
-        return parada_fin;
+        return paradaFin;
     }
 
     public double getNormal() {
@@ -50,7 +50,7 @@ public class TarifaParadero extends SugarRecord {
     }
 
     public double getAdulto_mayor() {
-        return adulto_mayor;
+        return adultoMayor;
     }
 
     public double getEstudiante() {
@@ -58,6 +58,6 @@ public class TarifaParadero extends SugarRecord {
     }
 
     public double getVale_muni() {
-        return vale_muni;
+        return valeMuni;
     }
 }

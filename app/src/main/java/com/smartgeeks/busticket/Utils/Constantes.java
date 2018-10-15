@@ -23,7 +23,7 @@ public class Constantes {
     public static final String GET_PARADEROS = IP + PROYECT + "getParaderos/";
     public static final String GET_HORARIOS = IP + PROYECT + "getHorarios/";
 
-    public static final String INSERT_TICKET = IP + PROYECT + "/web/insertar_ticket.php";
+    public static final String INSERT_TICKET = IP + PROYECT + "saveTicket/";
 
     public static final String GET_SUBRUTAS = "horarios";
 
@@ -50,10 +50,9 @@ public class Constantes {
      * Constantes para SyncService (Sincronización)
      */
     public static final String ACTION_RUN_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_LOCAL_SYNC";
-    public static final String ACTION_STOP_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_STOP_LOCAL_SYNC";
-
+    public static final String ACTION_FINISH_SYNC = "com.smartgeeks.busticket.action.ACTION_FINISH_SYNC";
     public static final String ACTION_RUN_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_REMOTE_SYNC";
-    public static final String ACTION_STOP_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_STOP_REMOTE_SYNC";
+
 
     public static final String EXTRA_PROGRESS = "com.example.services.extra.PROGRESS";
 

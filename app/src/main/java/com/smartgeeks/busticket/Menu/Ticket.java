@@ -1,10 +1,13 @@
 package com.smartgeeks.busticket.Menu;
 
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +28,7 @@ import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
@@ -71,6 +75,7 @@ public class Ticket extends Fragment {
         view = inflater.inflate(R.layout.menu_ticket, container, false);
 
         init();
+        alertActionServiceSync();
 
         // select
         spPlaca.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -135,7 +140,7 @@ public class Ticket extends Fragment {
                 intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
                 intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
-                intent.putExtra(SelectRutas.HORA, horario);
+                intent.putExtra(SelectRutas.HORA, hora);
                 intent.putExtra(SelectRutas.INFO, placa+","+ruta+","+hora);
                 startActivity(intent);
             }
@@ -143,6 +148,18 @@ public class Ticket extends Fragment {
 
 
         return view;
+    }
+
+    private void alertActionServiceSync() {
+        // Filtro de acciones que serán alertadas
+        IntentFilter filter = new IntentFilter(
+                Constantes.ACTION_RUN_LOCAL_SYNC);
+        filter.addAction(Constantes.ACTION_FINISH_SYNC);
+
+        // Crear un nuevo ResponseReceiver
+        ResponseReceiver receiver = new ResponseReceiver();
+        // Registrar el receiver y su filtro
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver, filter);
     }
 
     private void init(){
@@ -390,5 +407,23 @@ public class Ticket extends Fragment {
 
         return idHorario;
     }
+
+    // Broadcast receiver que recibe las emisiones desde los servicios
+    private class ResponseReceiver extends BroadcastReceiver {
+
+        // Sin instancias
+        private ResponseReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Constantes.ACTION_FINISH_SYNC:
+                    //getVehiculosSQLite();
+                    break;
+            }
+        }
+    }
+
 
 }
