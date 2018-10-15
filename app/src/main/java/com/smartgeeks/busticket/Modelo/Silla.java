@@ -1,6 +1,6 @@
 package com.smartgeeks.busticket.Modelo;
 
-public class Silla  {
+public class Silla {
 
     int numeroSilla;
     int origen;

@@ -8,7 +8,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
-import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Utils.Constantes;
 

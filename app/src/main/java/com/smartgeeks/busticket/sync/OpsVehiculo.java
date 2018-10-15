@@ -30,11 +30,11 @@ public class OpsVehiculo {
 
         int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        Log.d(TAG, "Url: " + Constantes.GET_VEHICULOS+idEmpresa);
+        Log.d(TAG, "Url: " + Constantes.GET_VEHICULOS + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_VEHICULOS+idEmpresa,
+                        Constantes.GET_VEHICULOS + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

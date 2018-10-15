@@ -17,8 +17,9 @@ public class Service {
     public static final String SILLAS_OCUPADAS = URL + "api/getSillasOcupadas?id=";
     public static final String GET_HORARIO = URL + "api/getHorario?id=";
     public static final String GET_PARADEROS = URL + "api/getParadero?id=";
+    public static final String GET_PARADEROS_FIN = URL + "api/getParaderoFinal/";
     public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsiento";
     public static final String SET_TICKET_PIE = URL + "api/setTicketPie";
-    public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio" ;
+    public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/";
 
 }

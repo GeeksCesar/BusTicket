@@ -7,19 +7,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
-import com.smartgeeks.busticket.Modelo.Ruta;
-import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Ticket;
 import com.smartgeeks.busticket.Utils.Constantes;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +33,7 @@ public class OpsTicket {
         iniciarActualizacion();
 
         List<Ticket> tickets_to_sync = obtenerRegistrosSucios();
-        Log.i("Count ", ""+Ticket.count(Ticket.class));
+        Log.i("Count ", "" + Ticket.count(Ticket.class));
         Log.e(TAG, "Se encontraron " + tickets_to_sync.size() + " registros por Sincronizar.");
 
         if (tickets_to_sync.size() > 0) {
@@ -94,7 +88,7 @@ public class OpsTicket {
 
         try {
             jsonObject = new JSONObject(gson.toJson(ticket));
-            Log.e(TAG, "Ticket: "+ticket.getId()+" "+jsonObject.toString());
+            Log.e(TAG, "Ticket: " + ticket.getId() + " " + jsonObject.toString());
             // Eliminamos propiedades (No las necesita el servidor)
             jsonObject.remove("pendiente");
             jsonObject.remove("estado");

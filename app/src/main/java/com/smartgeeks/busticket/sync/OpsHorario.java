@@ -29,11 +29,11 @@ public class OpsHorario {
         Log.i(TAG, "Actualizando el cliente.");
         int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        Log.d(TAG, "Url: " + Constantes.GET_HORARIOS+idEmpresa);
+        Log.d(TAG, "Url: " + Constantes.GET_HORARIOS + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_HORARIOS+idEmpresa,
+                        Constantes.GET_HORARIOS + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

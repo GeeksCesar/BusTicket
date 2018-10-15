@@ -2,12 +2,9 @@ package com.smartgeeks.busticket.sync;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.orm.SugarDb;
 import com.smartgeeks.busticket.Utils.Constantes;
 
 
@@ -70,7 +67,6 @@ public class SyncService extends IntentService {
     @Override
     public void onDestroy() {
         Log.e(TAG, "Servicio destruido...");
-
         // Emisión para avisar que se terminó el servicio
         Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
