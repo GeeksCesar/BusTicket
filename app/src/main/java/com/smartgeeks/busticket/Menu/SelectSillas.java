@@ -1,5 +1,7 @@
 package com.smartgeeks.busticket.Menu;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
@@ -15,11 +19,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -28,12 +36,12 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
@@ -72,8 +80,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private List<Integer> sillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
+    int id_tarifa ;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
-    String horario, info_ruta;
+    String horario, info_ruta, nombreEmpresa;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -83,11 +92,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private View mProgressView;
 
     //VOLLEY
-    JsonArrayRequest jsonArrayRequest;
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
     String listSillas = "" ;
+    private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
 
     BluetoothAdapter bluetoothAdapter ;
     BluetoothSocket bluetoothSocket;
@@ -100,6 +109,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     byte[] readBuffer;
     int readBufferPosition;
     volatile boolean stopWorker;
+
+    Dialog dialogPrint ;
+    Button btnCancelar ;
+    ListView lstPrint ;
 
 
     @Override
@@ -125,7 +138,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         id_tipo_usuario = bundle.getInt(TIPO_USUARIO);
         horario = bundle.getString(HORARIO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-
+        nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
 
         initWidgets();
         showProgressDialog();
@@ -138,8 +151,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             public void onClick(View view) {
                 listSillas = "" ;
 
-                Log.e(Service.TAG, "count_seleccionado: "+sillasSeleccionadas.size());
-                Log.e(Service.TAG, "count_puestos: "+cant_puestos);
 
                 if (sillasSeleccionadas.size() == 0){
                     dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
@@ -158,8 +169,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     btnConfirmarTicket.setEnabled(false);
                     btnConfirmarTicket.setVisibility(View.GONE);
+
                     showProgress(true);
                     registerTicket(id_paradero_incio, id_paradero_final, id_ruta_disponible, id_operador,  id_tipo_usuario, precio_pasaje, listSillas) ;
+
+
                 }
 
             }
@@ -177,6 +191,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         mProgressView = findViewById(R.id.login_progress);
 
         showDataTextView();
+
+        encontrarDispositivoBlue();
     }
 
     private void showDataTextView() {
@@ -419,61 +435,61 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     }
 
-    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final String listSillas){
-
-       /* Log.d(Service.TAG, "id_paradero_inicio: "+id_paradero_inicio);
-        Log.d(Service.TAG, "id_paradero_final: "+id_paradero_final);
-        Log.d(Service.TAG, "id_horario: "+id_horario);
-        Log.d(Service.TAG, "id_operador: "+id_operador);
-        Log.d(Service.TAG, "id_tipo_usuario: "+id_tipo_usuario);
-        Log.d(Service.TAG, "valor_pagar: "+valor_pagar);
-        Log.d(Service.TAG, "sillas: "+listSillas);
-        Log.d(Service.TAG, "horario: "+horario); */
-
+    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final String listSillas){
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_ASIENTO, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                // Log.d(Service.TAG, "response: "+response);
+                Log.d(Service.TAG, "response: "+response);
 
-                final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
-                alertDialog.setTitleText("Exito")
-                        .setContentText("Guardo el ticket")
-                        .show();
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
 
-                Button button =  alertDialog.findViewById(R.id.confirm_button);
-                // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
-                button.setBackgroundResource(R.drawable.bg_button_main);
+                    String respuesta = jsonObject.getString("message");
+                    id_tarifa= jsonObject.getInt("id");
+                    Log.w(Service.TAG, "respuesta: "+respuesta);
+                    Log.w(Service.TAG, "id_tarifa: "+id_tarifa);
 
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        try {
+                    if (respuesta.equals("success")){
+                        final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
-                            alertDialog.dismiss();
+                        alertDialog.setTitleText("Exito")
+                                .setContentText("Guardo el ticket")
+                                .show();
 
-                            showProgress(false);
-                            btnConfirmarTicket.setVisibility(View.VISIBLE);
-                            btnConfirmarTicket.setEnabled(true);
+                        Button button =  alertDialog.findViewById(R.id.confirm_button);
+                        // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                        button.setBackgroundResource(R.drawable.bg_button_main);
+                        button.setPadding(5,5,5,5);
+                        button.setText("Imprimir Ticket");
 
-                            encontrarDispositivoBlue();
-                            abrirImpresoraBlue();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                try {
+
+                                    alertDialog.dismiss();
+
+                                    showProgress(false);
+                                    showDialogTiquete();
+
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        });
+
+                        }else {
+                        dialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket", SweetAlertDialog.ERROR_TYPE);
+                        btnConfirmarTicket.setEnabled(true);
+                        btnConfirmarTicket.setVisibility(View.VISIBLE);
+                        showProgress(false);
                     }
-                });
 
-               /* try {
-                    JSONObject object = new JSONObject(response);
-                    if (object.getBoolean("estado")){
-                        dialogAlert.showDialogFailed(context, "Exito!", "Se registro el ticket \n con exito", SweetAlertDialog.SUCCESS_TYPE);
-                    }else{
-                        dialogAlert.showDialogFailed(context, "Alerta!", "Ha Ocurrido un error al enviar \n el ticket", SweetAlertDialog.SUCCESS_TYPE);
-                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
-                } */
+                }
 
 
             }
@@ -490,13 +506,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                 params.put("id_paradero_inicio",  String.valueOf(id_paradero_inicio));
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
-                params.put("id_horario", String.valueOf(id_horario));
+                params.put("id_ruta", String.valueOf(id_ruta));
                 params.put("id_operador", String.valueOf(id_operador));
                 params.put("hora", horario);
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
                 params.put("total_pagar", String.valueOf(valor_pagar));
                 params.put("sillas",listSillas);
-
 
                 return params;
             }
@@ -506,7 +521,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
 
-    //
     public void encontrarDispositivoBlue () {
         try {
 
@@ -522,7 +536,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
             if (pairedDevice.size() > 0) {
                 for (BluetoothDevice pairedDev : pairedDevice) {
-                    Log.i("nombre Impresora:", "" + pairedDev.getName());
+
+                    lisPrintBluetooth.add(pairedDev.getName()) ;
                     // My Bluetoth printer name is BTP_F09F1A
                     if (pairedDev.getName().equals("BlueTooth Printer")) {
                         bluetoothDevice = pairedDev;
@@ -625,13 +640,57 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     void printData() throws IOException {
 
         byte[] command=null;
+
+        byte[] format = { 27, 33, 0 };
+        byte[] arrayOfByte1 = { 27, 33, 0 };
+
         try{
+            String[] split = info_ruta.split(",");
+
+            /*String nombre = ""+nombreEmpresa;
+            // Bold
+            format[2] = ((byte)(0x8 | arrayOfByte1[2]));
+            // Height
+            format[2] = ((byte)(0x10 | arrayOfByte1[2]));
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+
+            outputStream.write(format);
+            outputStream.write(nombre.getBytes(), 0, nombre.getBytes().length); */
+
+            String msg = nombreEmpresa ;
+            msg+="\n";
+            msg+="\n";
+            msg+="\n";
+            msg += "Ticket N: "+id_tarifa;
+            msg+="\n";
+            msg += "Fecha: "+ Helpers.getDate();
+            msg+="\n";
+            msg += "Horario: "+split[2];
+            msg+="\n";
+            msg += "Operador: "+UsuarioPreferences.getInstance(context).getNombre();
+            msg+="\n";
+            msg += "Ruta: "+split[1];
+            msg+="\n";
+            msg += "Inicio: "+split[3];
+            msg+="\n";
+            msg += "Termino: "+split[4];
+            msg+="\n";
+            msg += "Vehiculo: "+split[0];
+            msg+="\n";
+            msg += "Asientos: "+listSillas;
+            msg+="\n";
+            msg += "Hora: "+Helpers.getTime();
+            msg+="\n";
+            msg+="\n";
+            msg += "Gracias por su preferencia!";
+
+            outputStream.write(msg.getBytes());
+
             try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
-
-                byte[] data1 = PrintPicture.POS_PrintBMP(bmp,384,0);
 
                 outputStream.write(data);
 
@@ -640,17 +699,89 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 Log.e("PrintTools", "the file isn't exists");
             }
 
-            String msg = "Ticket 45";
-            msg+="\n";
-            msg += "precio: "+precio_pasaje;
-            msg+="\n";
-            msg += "horario: "+horario;
-            msg+="\n";
-            msg += "Ruta: "+info_ruta;
-            outputStream.write(msg.getBytes());
+
+            dialogPrint.hide();
 
         }catch (Exception ex){
             ex.printStackTrace();
         }
     }
+
+
+    private void showDialogTiquete(){
+        dialogPrint = new Dialog(context);
+        dialogPrint.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogPrint.setContentView(R.layout.dialog_print);
+        dialogPrint.setCanceledOnTouchOutside(false);
+        dialogPrint.setCancelable(false);
+
+
+            dialogPrint.getWindow()
+                    .setLayout((int) (getScreenWidth(SelectSillas.this) * .9), ViewGroup.LayoutParams.MATCH_PARENT);
+
+
+        btnCancelar = dialogPrint.findViewById(R.id.btnCancelar);
+        lstPrint = dialogPrint.findViewById(R.id.listViewPrint);
+
+        lstPrint.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,lisPrintBluetooth){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView text = (TextView) view.findViewById(android.R.id.text1);
+                text.setTextColor(Color.BLACK);
+                return view;
+            }
+        });
+
+        lstPrint.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String name_impresora = parent.getItemAtPosition(position).toString();
+
+                Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
+
+                if (pairedDevice.size() > 0) {
+                    for (BluetoothDevice pairedDev : pairedDevice) {
+
+                        if (pairedDev.getName().equals(name_impresora)){
+                            bluetoothDevice = pairedDev;
+                            //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
+                            abrirImpresoraBlue();
+                            break;
+                        }
+
+                    }
+                }
+
+            }
+        });
+
+        btnCancelar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogPrint.hide();
+            }
+        });
+
+        dialogPrint.show();
+    }
+
+    public static int getScreenWidth(Activity activity) {
+        Point size = new Point();
+        activity.getWindowManager().getDefaultDisplay().getSize(size);
+        return size.x;
+    }
+
+    void disconnectBT() throws IOException{
+        try {
+            stopWorker=true;
+            outputStream.close();
+            inputStream.close();
+            bluetoothSocket.close();
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
 }

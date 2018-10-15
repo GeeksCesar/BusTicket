@@ -2,9 +2,11 @@ package com.smartgeeks.busticket.Menu;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +19,12 @@ import android.widget.Spinner;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Objcect.Ruta;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
@@ -35,7 +38,7 @@ public class Ticket extends Fragment {
     View view ;
     Context context;
     Spinner spPlaca, spRuta, spHorarios ;
-    Button btnSiguiente ;
+    Button btnSiguiente, btnRecordarRuta ;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -46,12 +49,12 @@ public class Ticket extends Fragment {
     private ArrayList<String> listHorario = new ArrayList<>();
 
     //VOLLEY
-    JsonArrayRequest jsonArrayRequest;
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
     int id_vehiculo, id_ruta, id_horario, id_ruta_disponible;
-    String placa, ruta, horario, hora;
+    String placa, ruta_info, horario, hora;
+    boolean getStatusRuta ;
 
     public Ticket() {
         // Required empty public constructor
@@ -87,7 +90,7 @@ public class Ticket extends Fragment {
                 id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
 
                 getHorario(id_ruta);
-                ruta = listRuta.get(position);
+                ruta_info = listRuta.get(position);
             }
 
             @Override
@@ -102,6 +105,8 @@ public class Ticket extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 id_horario = Integer.parseInt(getIdHorario(position)) ;
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
+                btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
+
                 hora = listHora.get(position);
                 horario = listHorario.get(position);
             }
@@ -109,6 +114,45 @@ public class Ticket extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
+            }
+        });
+
+        btnRecordarRuta.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
+                builder.setTitle(context.getResources().getString(R.string.app_name));
+                builder.setMessage(context.getResources().getString(R.string.dialogMessage));
+
+                builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        Ruta ruta = new Ruta();
+
+                        ruta.setVehiculo_id(id_vehiculo);
+                        ruta.setRuta_id(id_ruta);
+                        ruta.setRuta_disponible_id(id_ruta_disponible);
+                        ruta.setHorario(hora);
+                        ruta.setHorario_id(id_horario);
+                        ruta.setInformacion(placa+","+ruta_info+","+hora);
+                        ruta.setStatus_ruta(true);
+
+                        RutaPreferences.getInstance(context).rutaPreferences(ruta);
+
+                        Intent intent = new Intent(context, SelectRutas.class);
+                        startActivity(intent);
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.create().show();
             }
         });
 
@@ -121,7 +165,7 @@ public class Ticket extends Fragment {
                     intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                     intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
                     intent.putExtra(SelectRutas.HORA, horario);
-                    intent.putExtra(SelectRutas.INFO, placa+","+ruta+","+hora);
+                    intent.putExtra(SelectRutas.INFO, placa+","+ruta_info+","+hora);
                     startActivity(intent);
                 }
         });
@@ -135,11 +179,24 @@ public class Ticket extends Fragment {
         requestQueue = Volley.newRequestQueue(context);
 
         btnSiguiente = view.findViewById(R.id.btnNext);
+        btnRecordarRuta = view.findViewById(R.id.btnRecordarRuta);
         spPlaca = view.findViewById(R.id.spPlaca);
         spRuta = view.findViewById(R.id.spRutas);
         spHorarios = view.findViewById(R.id.spHorarios);
 
         btnSiguiente.setVisibility(View.GONE);
+        btnRecordarRuta.setVisibility(View.GONE);
+
+        getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
+        Log.e(Service.TAG, "estado_ruta: "+getStatusRuta);
+
+        if (getStatusRuta){
+            Intent intent = new Intent(context, SelectRutas.class);
+            startActivity(intent);
+            getActivity().finish();
+        }else {
+
+        }
 
         listPlacas = new ArrayList<String>();
         listRuta = new ArrayList<String>();
@@ -166,6 +223,7 @@ public class Ticket extends Fragment {
                     if (resultHorarios.length() > 0) {
 
                         btnSiguiente.setVisibility(View.VISIBLE);
+                        btnRecordarRuta.setVisibility(View.VISIBLE);
 
                         for (int i = 0; i < resultHorarios.length(); i++) {
                             try {
@@ -184,6 +242,7 @@ public class Ticket extends Fragment {
                         spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
                     }else {
                         btnSiguiente.setVisibility(View.GONE);
+                        btnRecordarRuta.setVisibility(View.GONE);
                     }
 
                 } catch (JSONException e) {

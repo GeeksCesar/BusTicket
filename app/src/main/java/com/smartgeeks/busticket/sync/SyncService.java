@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.widget.Toast;
 
 import com.smartgeeks.busticket.Utils.Constantes;
 
@@ -76,7 +75,7 @@ public class SyncService extends IntentService {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "Servicio destruido...", Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(this, "Servicio destruido...", Toast.LENGTH_SHORT).show();
 
         // Emisión para avisar que se terminó el servicio
         Intent localIntent = new Intent(Constantes.ACTION_STOP_LOCAL_SYNC);
