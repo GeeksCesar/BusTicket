@@ -29,11 +29,11 @@ public class OpsParaderos {
         Log.i(TAG, "Actualizando el cliente.");
         int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        Log.d(TAG, "Url: " + Constantes.GET_PARADEROS+idEmpresa);
+        Log.d(TAG, "Url: " + Constantes.GET_PARADEROS + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_PARADEROS+idEmpresa,
+                        Constantes.GET_PARADEROS + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

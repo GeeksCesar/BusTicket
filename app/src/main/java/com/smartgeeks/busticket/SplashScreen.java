@@ -46,7 +46,7 @@ public class SplashScreen extends AppCompatActivity {
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         session = UsuarioPreferences.getInstance(context).getSessionUser();
 
-        if (session.equals("SessionSuccess")){
+        if (session.equals("SessionSuccess")) {
             localSync();
         }
 

@@ -11,6 +11,7 @@
 
     <color name="transparent_blue">#B30096ff</color>
     <color name="transparent_grey">#B37b7b7b</color>
+    <color name="tab_background_selected">#6b903c</color>
 
     <array name="reds">
         <item>@color/md_red_1000</item>

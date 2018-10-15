@@ -25,6 +25,10 @@ public class User {
     @Expose
     private String rut;
 
+    @SerializedName("nombreEmpresa")
+    @Expose
+    private String nombreEmpresa;
+
     //GETTER && SETTER
     public int getIdUsuario() {
         return idUsuario;
@@ -64,5 +68,13 @@ public class User {
 
     public void setRut(String rut) {
         this.rut = rut;
+    }
+
+    public String getNombreEmpresa() {
+        return nombreEmpresa;
+    }
+
+    public void setNombreEmpresa(String nombreEmpresa) {
+        this.nombreEmpresa = nombreEmpresa;
     }
 }
