@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -32,9 +34,11 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Objcect.Ruta;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.PrintPicture;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
@@ -73,6 +77,7 @@ public class SelectRutas extends AppCompatActivity {
     DialogAlert dialogAlert = new DialogAlert();
 
     private JSONArray resutlParaderos;
+    private JSONArray resutlParaderosFin;
     private JSONArray resultUsuarios;
     private ArrayList<String> listParaderos;
     private ArrayList<String> lisUsuarios;
@@ -83,13 +88,17 @@ public class SelectRutas extends AppCompatActivity {
     StringRequest stringRequest;
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin;
-    String ruta_inicio, ruta_fin, Horario;
+    String ruta_inicio, ruta_fin, Horario , info;
 
     Context context ;
 
     private View mProgressView;
 
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
+
+    //Prefrences
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,8 +113,9 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-
                 ruta_inicio = parent.getItemAtPosition(position).toString();
+
+                getParaderosFin(id_ruta, id_paradero_inicio);
             }
 
             @Override
@@ -117,9 +127,10 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
-
+                id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
                 ruta_fin = parent.getItemAtPosition(position).toString();
+
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
             }
 
             @Override
@@ -133,11 +144,7 @@ public class SelectRutas extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 id_usuario = Integer.parseInt(getIdUsuario(position)) ;
 
-                Log.e(Service.TAG, "id_inicio: "+id_paradero_inicio);
-                Log.e(Service.TAG, "id_fin: "+id_paradero_fin);
-                Log.e(Service.TAG, "id_usuario: "+id_usuario);
-
-                //get_Precio();
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
             }
 
             @Override
@@ -150,12 +157,10 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 countPasajes ++ ;
-
                 precio_sum_pasaje = precioPasaje * countPasajes ;
 
                 formatPrecio(precio_sum_pasaje);
                 tvCountItem.setText(""+countPasajes);
-
             }
         });
 
@@ -164,9 +169,7 @@ public class SelectRutas extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (countPasajes > 1){
-
                     countPasajes--;
-
                     precio_sum_pasaje = precioPasaje * countPasajes ;
 
                     formatPrecio(precio_sum_pasaje);
@@ -180,7 +183,9 @@ public class SelectRutas extends AppCompatActivity {
         btnFinalizar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                precio_sum_pasaje = precioPasaje * countPasajes ;
 
+              //  Log.e(Service.TAG , "id_ruta: "+id_ruta);
                 if (ruta_inicio == ruta_fin){
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
@@ -223,15 +228,25 @@ public class SelectRutas extends AppCompatActivity {
 
         bundle = getIntent().getExtras();
 
-        id_ruta  = bundle.getInt(ID_RUTA);
-        id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
-        id_vehiculo = bundle.getInt(ID_VEHICULO);
-        id_horario  = bundle.getInt(ID_HORARIO);
-        Horario = bundle.getString(HORA);
-        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        if (bundle != null){
+            Log.e(Service.TAG, "Entro a Bundle");
+            id_ruta  = bundle.getInt(ID_RUTA);
+            id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
+            id_vehiculo = bundle.getInt(ID_VEHICULO);
+            id_horario  = bundle.getInt(ID_HORARIO);
+            Horario = bundle.getString(HORA);
+            info = bundle.getString(INFO);
+            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        }else {
+            id_ruta  = RutaPreferences.getInstance(context).getIdRuta();
+            id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
+            id_vehiculo = RutaPreferences.getInstance(context).getIdVehiculo();
+            id_horario  = RutaPreferences.getInstance(context).getIdHorario();
+            Horario = RutaPreferences.getInstance(context).getHora();
+            info =RutaPreferences.getInstance(context).getInformacion();
+            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
 
-
-        final String info = bundle.getString(INFO);
+        }
 
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
@@ -239,6 +254,8 @@ public class SelectRutas extends AppCompatActivity {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                precio_sum_pasaje = precioPasaje * countPasajes ;
 
                 if (ruta_inicio == ruta_fin){
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
@@ -263,6 +280,7 @@ public class SelectRutas extends AppCompatActivity {
                 }
             }
         });
+
 
         getParaderos(id_ruta);
 
@@ -311,7 +329,6 @@ public class SelectRutas extends AppCompatActivity {
     private void getParaderos(int id) {
         listParaderos.clear();
 
-        Log.i(Service.TAG, "URL: "+Service.GET_PARADEROS+id);
 
         stringRequest = new StringRequest(Service.GET_PARADEROS+id, new Response.Listener<String>() {
             @Override
@@ -329,16 +346,14 @@ public class SelectRutas extends AppCompatActivity {
                                 String paradero = json.getString("paradero");
 
                                 listParaderos.add(paradero);
-                                listParaderoFin.add(paradero);
+                              //  listParaderoFin.add(paradero);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
                         //setAdapter
                         spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
-                        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
-
-                        getUsuarios();
+                       // spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
 
                     }else {
 
@@ -359,32 +374,38 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private void getPrecio(int id_inicio, int id_fin , int id_usuario){
-        String URL = Service.GET_PRECIO_TIQUETE+id_inicio+"/"+id_fin+"/"+id_usuario ;
-        Log.d(Service.TAG, "URl: "+URL);
+    private void getParaderosFin(int id_ruta, final int id_paradero) {
 
-        /*
-        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+        listParaderoFin.clear();
+
+        String Url = Service.GET_PARADEROS_FIN+id_ruta+"/"+id_paradero ;
+        Log.w(Service.TAG, "Url_Paradero_fin: "+Url);
+
+        stringRequest = new StringRequest(Url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                Log.d(Service.TAG, "response: "+response);
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response);
-                    resultUsuarios = jsonObject.getJSONArray("usuario");
+                    resutlParaderosFin = jsonObject.getJSONArray("estacion");
+                    Log.e(Service.TAG, "resulParaderoFin:  "+resutlParaderosFin);
 
-                    if (resultUsuarios.length() > 0) {
-                        for (int i = 0; i < resultUsuarios.length(); i++) {
+                    if (resutlParaderosFin.length() > 0) {
+                        for (int i = 0; i < resutlParaderosFin.length(); i++) {
                             try {
-                                JSONObject json = resultUsuarios.getJSONObject(i);
-                                String nombreInstitucion = json.getString("nombre");
+                                JSONObject json = resutlParaderosFin.getJSONObject(i);
+                                String paradero = json.getString("paradero");
 
-                                lisUsuarios.add(nombreInstitucion);
+                                listParaderoFin.add(paradero);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
-                        //setAdapter
-                        spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
+                        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
+
+                        getUsuarios();
+
                     }else {
 
                     }
@@ -401,7 +422,45 @@ public class SelectRutas extends AppCompatActivity {
         });
 
         requestQueue.add(stringRequest);
-        */
+    }
+
+    private void getPrecio(int id_inicio, int id_fin , int id_usuario){
+        String URL = Service.GET_PRECIO_TIQUETE+id_inicio+"/"+id_fin+"/"+id_usuario ;
+
+        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONArray jsonArray = null;
+
+                try {
+                    jsonArray = new JSONArray(response);
+
+                    if (jsonArray.length() > 0){
+                        precioPasaje = jsonArray.getJSONObject(0).getInt("precio");
+                        contenedorCheckBox.setVisibility(View.VISIBLE);
+                        contenedorPrecio.setVisibility(View.VISIBLE);
+
+                        formatPrecio(precioPasaje);
+
+                    }else {
+                        contenedorCheckBox.setVisibility(View.GONE);
+                        contenedorPrecio.setVisibility(View.GONE);
+                        Toast.makeText(SelectRutas.this, "No han definido precios", Toast.LENGTH_SHORT).show();
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+
+            }
+        });
+
+        requestQueue.add(stringRequest);
 
     }
     private void getUsuarios() {
@@ -461,6 +520,20 @@ public class SelectRutas extends AppCompatActivity {
         return idParadero;
     }
 
+    private String getIdParaderoFin(int position){
+        String idParadero = "";
+        try {
+            JSONObject object = resutlParaderosFin.getJSONObject(position);
+            idParadero = object.getString("id");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return idParadero;
+    }
+
+
     private String getIdUsuario(int position){
         String id_usuario = "";
         try {
@@ -474,57 +547,37 @@ public class SelectRutas extends AppCompatActivity {
         return id_usuario;
     }
 
-    public String getPrecio(int position , String name_usuario){
-        String precio = "";
-        try {
-            JSONObject object = resutlParaderos.getJSONObject(position);
-            precio = object.getString(name_usuario);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return  precio;
-
-    }
-
     public void goBack(View view) {
         this.finish();
     }
 
-    private void registerTicket(final int id_paradero_inicio,final int id_paradero_final, final int id_horario, final int id_operador, final int id_tipo_usuario, final int valor_pagar){
+    private void registerTicket(final int id_paradero_inicio,final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar){
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                   Log.d(Service.TAG, "response: "+response);
+                   Log.e(Service.TAG, "response: "+response);
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
 
-                /*final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
-                alertDialog.setTitleText("Exito")
-                        .setContentText("Guardo el ticket")
-                        .show();
-
-                Button button =  alertDialog.findViewById(R.id.confirm_button);
-                // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
-                button.setBackgroundResource(R.drawable.bg_button_main);
-
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        try {
-
-                            alertDialog.dismiss();
-
-                            showProgress(false);
-                            btnFinalizar.setVisibility(View.VISIBLE);
-                            btnFinalizar.setEnabled(true);
-
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
+                    String respuesta = jsonObject.getString("message");
+                    if (respuesta.equals("success")){
+                        dialogAlert.showDialogFailed(context, "Exito", "Registro el ticket \n exitosamente", SweetAlertDialog.SUCCESS_TYPE);
+                        btnFinalizar.setEnabled(true);
+                        btnFinalizar.setVisibility(View.VISIBLE);
+                        showProgress(false);
+                    }else {
+                        dialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket", SweetAlertDialog.SUCCESS_TYPE);
+                        btnFinalizar.setEnabled(true);
+                        btnFinalizar.setVisibility(View.VISIBLE);
+                        showProgress(false);
                     }
-                });
-                */
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -538,7 +591,7 @@ public class SelectRutas extends AppCompatActivity {
 
                 params.put("id_paradero_inicio",  String.valueOf(id_paradero_inicio));
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
-                params.put("id_horario", String.valueOf(id_horario));
+                params.put("id_ruta", String.valueOf(id_ruta));
                 params.put("id_operador", String.valueOf(id_operador));
                 params.put("hora", Horario);
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));

@@ -47,6 +47,9 @@ public class Inicio extends Fragment {
         btnSend = view.findViewById(R.id.btnSend);
         btnTest = view.findViewById(R.id.btnTest);
 
+        btnSend.setVisibility(View.GONE);
+        btnTest.setVisibility(View.GONE);
+
         nameUsuario = UsuarioPreferences.getInstance(getActivity()).getNombre();
         btnNombreUsuario.setText(nameUsuario);
 

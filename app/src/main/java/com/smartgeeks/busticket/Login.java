@@ -61,8 +61,8 @@ public class Login extends AppCompatActivity {
             public void onClick(View view) {
 
                 // Store values at the time of the login attempt.
-                String email = edPassword.getText().toString().trim();
-                String password = edUsuario.getText().toString().trim();
+                String email = edUsuario.getText().toString().trim();
+                String password = edPassword.getText().toString().trim();
 
                 if (!dialogAlert.verificaConexion(context)) {
                     Log.e("Mesage ", "Entra aquí");
@@ -102,7 +102,7 @@ public class Login extends AppCompatActivity {
 
                         User user = response.body().getUser();
 
-                        if (user.getIdRol() == 2) {
+                        if (user.getIdRol() == 2 || user.getIdRol() == 3) {
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);

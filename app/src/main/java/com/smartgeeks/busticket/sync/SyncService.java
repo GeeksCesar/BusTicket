@@ -76,7 +76,7 @@ public class SyncService extends IntentService {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "Servicio destruido...", Toast.LENGTH_SHORT).show();
+      //  Toast.makeText(this, "Servicio destruido...", Toast.LENGTH_SHORT).show();
 
         // Emisión para avisar que se terminó el servicio
         Intent localIntent = new Intent(Constantes.ACTION_STOP_LOCAL_SYNC);
