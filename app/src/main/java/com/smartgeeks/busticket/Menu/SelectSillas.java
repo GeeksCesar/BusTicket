@@ -692,26 +692,127 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     void printData() throws IOException {
 
-        byte[] command = null;
-
-        byte[] format = {27, 33, 0};
-        byte[] arrayOfByte1 = {27, 33, 0};
-
-        try {
+        byte[] command=null;
+        try{
             String[] split = info_ruta.split(",");
 
-            /*String nombre = ""+nombreEmpresa;
-            // Bold
-            format[2] = ((byte)(0x8 | arrayOfByte1[2]));
-            // Height
-            format[2] = ((byte)(0x10 | arrayOfByte1[2]));
+            byte[] arrayOfByte1 = { 27, 33, 0 };
+            byte[] format = { 27, 33, 0 };
+
+
+
+            byte[] centrado = {0x1B, 'a', 0x01};
+            byte[] der = {0x1B, 'a', 0x02};
+            byte[] izq = {0x1B, 'a', 0x00};
+
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+
+            format =new byte[]{ 27, 33, 0 };
 
             outputStream.write(format);
-            outputStream.write(nombre.getBytes(), 0, nombre.getBytes().length); */
 
-            String msg = nombreEmpresa;
+            outputStream.write(izq);
+            String msg = "";
+            msg += "\n";
+            msg += "Ticket N:   " + id_tarifa;
+            msg += "\n";
+            msg += "Fecha:   " + Helpers.getDate();
+            msg += "\n";
+            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
+            String msg0 = "" ;
+            msg0 += "Horario:   " + split[2];
+            msg0 += "\n";
+            msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
+            msg0 += "\n";
+            outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
+            String ruta = "" ;
+            ruta += "Ruta:  " + split[1] + "\n";
+            // Small
+            format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+            outputStream.write(format);
+            outputStream.write(ruta.getBytes(),0,ruta.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
+            String msg1 = "";
+            msg1 += "";
+            msg1 += "Inicio: " + split[3];
+            msg1 += "\n";
+            msg1 += "Termino: " + split[4];
+            msg1 += "\n";
+            msg1 += "Vehiculo: " + split[0];
+            outputStream.write(msg1.getBytes(), 0, msg1.getBytes().length);
+            String msg2 = "";
+            msg2 += "\n";
+            msg2 += "Asientos: " + listSillas;
+            msg2 += "\n";
+            msg2 += "Hora: " + Helpers.getTime();
+            msg2 += "\n";
+            outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
+
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            String precio = "";
+            precio += "Precio: "+precio_pasaje +"\n";
+
+            outputStream.write(format);
+            outputStream.write(precio.getBytes(),0,precio.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
+
+            try {
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                        R.mipmap.img_logo_pdf);
+                byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
+
+                outputStream.write(data);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("PrintTools", "the file isn't exists");
+            }
+
+            outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+
+       /* try {
+
+            byte[] command = null;
+
+            byte[] format = {27, 33, 0};
+            byte[] arrayOfByte1 = {27, 33, 0};
+
+            byte[] centrado = {0x1b, 'a', 0x01} ;
+            byte[] izquierda = {0x1b, 'a' , 0x00} ;
+            byte[] derecha = {0x1b, 'a' , 0x02} ;
+            String[] split = info_ruta.split(",");
+
+
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(format);
+            outputStream.write(centrado);
+
+            outputStream.write((nombreEmpresa+"\n\n").getBytes(),0, nombreEmpresa.getBytes().length);
+
+            outputStream.write(izquierda);
+
+
+            String precio = "precio: "+precio_pasaje ;
+
+           // outputStream.write(derecha);
+            outputStream.write(precio.getBytes(), 0, precio.getBytes().length);
+
+          /*  String msg = "";
             msg += "\n";
             msg += "\n";
             msg += "\n";
@@ -738,7 +839,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg += "\n";
             msg += "Gracias por su preferencia!";
 
-            outputStream.write(msg.getBytes());
+            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
 
             try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
@@ -758,6 +859,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        */
     }
 
 
