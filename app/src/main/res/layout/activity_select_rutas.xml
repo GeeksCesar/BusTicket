@@ -175,6 +175,14 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btnOlvidarRuta"
+            style="@style/ButtonCustom"
+            android:text="Olvidar ruta"
+            android:visibility="visible"
+            android:layout_marginTop="25dp"
+            android:layout_below="@+id/contenedorPrecio"/>
+
         <ProgressBar
             android:id="@+id/login_progress"
             style="?android:attr/progressBarStyle"
@@ -184,6 +192,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="8dp"
             android:visibility="gone" />
+
 
         <Button
             android:id="@+id/btnSiguiente"

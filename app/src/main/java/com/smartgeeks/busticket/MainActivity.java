@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 public class MainActivity extends AppCompatActivity {
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                     case 3:
                         drawer.closeDrawer(navList);
                         cerrarSession();
+                        clearRuta();
                         break;
                 }
             }
@@ -169,5 +171,10 @@ public class MainActivity extends AppCompatActivity {
         preferences.edit().clear().commit();
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    private void clearRuta(){
+        preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        preferences.edit().clear().commit();
     }
 }

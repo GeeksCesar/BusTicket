@@ -34,6 +34,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Objcect.Ruta;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
@@ -70,7 +71,7 @@ public class SelectRutas extends AppCompatActivity {
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
     LinearLayout contenedorCheckBox, contenedorPrecio ;
-    Button btnSiguiente, btnFinalizar, btnMenos, btnMas ;
+    Button btnSiguiente, btnFinalizar, btnOlvidarRuta,  btnMenos, btnMas ;
     Spinner spInicio, spFin, spPasajero ;
     CheckBox cbAsiento, cbDePie ;
     TextView tvPrecioPasaje , tvCountItem;
@@ -95,10 +96,12 @@ public class SelectRutas extends AppCompatActivity {
     private View mProgressView;
 
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
+    String nameUsuario;
 
-    //Prefrences
-    SharedPreferences preferences;
-    SharedPreferences.Editor editor;
+    MainActivity activity ;
+
+    SharedPreferences preferences ;
+    SharedPreferences.Editor editor ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,10 +144,13 @@ public class SelectRutas extends AppCompatActivity {
 
         spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 id_usuario = Integer.parseInt(getIdUsuario(position)) ;
 
                 getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+
+                nameUsuario = parent.getItemAtPosition(position).toString();
+
             }
 
             @Override
@@ -179,6 +185,17 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
+        btnOlvidarRuta.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+                preferences.edit().clear().commit();
+
+                Intent intent = new Intent(context, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
 
         btnFinalizar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -208,6 +225,7 @@ public class SelectRutas extends AppCompatActivity {
         contenedorCheckBox = findViewById(R.id.contenedorCheckbox);
         contenedorPrecio = findViewById(R.id.contenedorPrecio);
         btnSiguiente = findViewById(R.id.btnSiguiente);
+        btnOlvidarRuta = findViewById(R.id.btnOlvidarRuta);
         btnFinalizar = findViewById(R.id.btnFinalizar);
         btnMas = findViewById(R.id.btnSumar);
         btnMenos= findViewById(R.id.btnRestar);
@@ -223,13 +241,13 @@ public class SelectRutas extends AppCompatActivity {
 
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
+        btnOlvidarRuta.setVisibility(View.GONE);
         contenedorCheckBox.setVisibility(View.GONE);
         contenedorPrecio.setVisibility(View.GONE);
 
         bundle = getIntent().getExtras();
 
         if (bundle != null){
-            Log.e(Service.TAG, "Entro a Bundle");
             id_ruta  = bundle.getInt(ID_RUTA);
             id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
             id_vehiculo = bundle.getInt(ID_VEHICULO);
@@ -305,8 +323,10 @@ public class SelectRutas extends AppCompatActivity {
                     cbDePie.setChecked(false);
                     btnSiguiente.setVisibility(View.VISIBLE);
                     btnFinalizar.setVisibility(View.GONE);
+                    btnOlvidarRuta.setVisibility(View.GONE);
                 }else {
                     btnSiguiente.setVisibility(View.GONE);
+                    btnOlvidarRuta.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -318,8 +338,10 @@ public class SelectRutas extends AppCompatActivity {
                     cbAsiento.setChecked(false);
                     btnSiguiente.setVisibility(View.GONE);
                     btnFinalizar.setVisibility(View.VISIBLE);
+                    btnOlvidarRuta.setVisibility(View.GONE);
                 }else{
                     btnFinalizar.setVisibility(View.GONE);
+                    btnOlvidarRuta.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -439,12 +461,14 @@ public class SelectRutas extends AppCompatActivity {
                         precioPasaje = jsonArray.getJSONObject(0).getInt("precio");
                         contenedorCheckBox.setVisibility(View.VISIBLE);
                         contenedorPrecio.setVisibility(View.VISIBLE);
+                        btnOlvidarRuta.setVisibility(View.VISIBLE);
 
                         formatPrecio(precioPasaje);
 
                     }else {
                         contenedorCheckBox.setVisibility(View.GONE);
                         contenedorPrecio.setVisibility(View.GONE);
+                        btnOlvidarRuta.setVisibility(View.GONE);
                         Toast.makeText(SelectRutas.this, "No han definido precios", Toast.LENGTH_SHORT).show();
                     }
 

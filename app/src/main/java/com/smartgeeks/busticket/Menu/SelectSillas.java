@@ -75,6 +75,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
     public static final String TIPO_USUARIO = "TIPO_USUARIO" ;
+    public static final String NAME_USUARIO = "NAME_USUARIO" ;
 
     private String TAG = "SelectSillas";
 
@@ -84,7 +85,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Bundle bundle;
     int id_tarifa ;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
-    String horario, info_ruta, nombreEmpresa;
+    String horario, info_ruta, nombreEmpresa, nombreUsuario;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -141,6 +142,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         horario = bundle.getString(HORARIO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        nombreUsuario = bundle.getString(nombreUsuario);
 
         initWidgets();
         showProgressDialog();
@@ -153,7 +155,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             public void onClick(View view) {
                 listSillas = "" ;
 
-
                 if (sillasSeleccionadas.size() == 0){
                     dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
                     return;
@@ -163,7 +164,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 }else{
                     for (int i = 0; i < sillasSeleccionadas.size(); i++) {
                         int silla = sillasSeleccionadas.get(i);
-                        Log.d(Service.TAG, "sillas: "+silla);
 
                         listSillas = listSillas + silla +"-" ;
                     }
@@ -174,8 +174,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     showProgress(true);
                     registerTicket(id_paradero_incio, id_paradero_final, id_ruta_disponible, id_operador,  id_tipo_usuario, precio_pasaje, listSillas) ;
-
-
                 }
 
             }
@@ -212,9 +210,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int columns_izq =2 ;
         int columns_der =2 ;
 
-        int filas = (int) Math.ceil(cant_sillas / 4);
-
-
+        int filas = (int) Math.ceil(cant_sillas / 4) +1;
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -345,7 +341,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int silla_seleccionda = buttonView.getId();
-        Log.d(Service.TAG,"silla: "+silla_seleccionda);
+
         // Guardo o elimino la silla
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
@@ -663,7 +659,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             String msg = nombreEmpresa ;
             msg+="\n";
             msg+="\n";
-            msg+="\n";
             msg += "Ticket N: "+id_tarifa;
             msg+="\n";
             msg += "Fecha: "+ Helpers.getDate();
@@ -671,6 +666,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg += "Horario: "+split[2];
             msg+="\n";
             msg += "Operador: "+UsuarioPreferences.getInstance(context).getNombre();
+            msg+="\n";
+            msg += "Tarifa: "+nombreUsuario;
             msg+="\n";
             msg += "Ruta: "+split[1];
             msg+="\n";
@@ -683,6 +680,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg += "Asientos: "+listSillas;
             msg+="\n";
             msg += "Hora: "+Helpers.getTime();
+            msg+="\n";
+            msg += "Precio: $"+precio_pasaje;
             msg+="\n";
             msg+="\n";
             msg += "Gracias por su preferencia!";
