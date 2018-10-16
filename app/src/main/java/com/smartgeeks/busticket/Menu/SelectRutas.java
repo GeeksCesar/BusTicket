@@ -90,7 +90,8 @@ public class SelectRutas extends AppCompatActivity {
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
+
     String ruta_inicio, ruta_fin, hora, info;
 
     Context context;
@@ -146,6 +147,9 @@ public class SelectRutas extends AppCompatActivity {
 
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position_tipo_usuario);
                     formatPrecio(precioPasaje);
+                    if (sizeTarifas == 0){
+                        Toast.makeText(context, "No se han definido precios para estos paraderos", Toast.LENGTH_SHORT).show();
+                    }
                 } catch (Exception e) {
                     e.getMessage();
                 }
@@ -288,7 +292,6 @@ public class SelectRutas extends AppCompatActivity {
             hora = RutaPreferences.getInstance(context).getHora();
             info = RutaPreferences.getInstance(context).getInformacion();
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-
         }
 
         listParaderos = new ArrayList<String>();
@@ -705,6 +708,10 @@ public class SelectRutas extends AppCompatActivity {
         paraderoFinList = Paradero.find(Paradero.class, "ruta = ?",
                 new String[]{"" + id_ruta}, null, "remoto", null);
 
+        if (paraderoInicioList.size()==0){
+            DialogAlert.showDialogFailed(context, "Atención","No se han definido paraderos para la ruta ", SweetAlertDialog.WARNING_TYPE);
+        }
+
         for (Paradero paradero : paraderoInicioList) {
             listParaderos.add(paradero.getParadero());
             listParaderoFin.add(paradero.getParadero());
@@ -741,8 +748,9 @@ public class SelectRutas extends AppCompatActivity {
                 "parada_inicio = ? AND parada_fin = ?", "" + id_paradero_inicio,
                 "" + id_paradero_fin);
 
-        double precio = 700;
+        double precio = 5000;
         Log.e("Size ", "" + tarifaParaderos.size());
+        sizeTarifas = tarifaParaderos.size();
 
         switch (position) {
             case 0:

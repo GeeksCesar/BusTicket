@@ -38,12 +38,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.Formatter;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
@@ -56,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +66,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
-import retrofit2.http.HEAD;
 
 public class SelectSillas extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
@@ -76,9 +78,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_INICIO = "PARADERO_INCIO";
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
-    public static final String TIPO_USUARIO = "TIPO_USUARIO" ;
-    public static final String NAME_USUARIO = "NAME_USUARIO" ;
-
+    public static final String TIPO_USUARIO = "TIPO_USUARIO";
 
     private String TAG = "SelectSillas";
 
@@ -89,9 +89,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Bundle bundle;
     int id_tarifa;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
-
-    String horario, info_ruta, nombreEmpresa, nombreUsuario;
-
+    String horario, info_ruta, nombreEmpresa;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -103,6 +101,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     //VOLLEY
     RequestQueue requestQueue;
     StringRequest stringRequest;
+    Gson gson = new Gson();
 
     String listSillas = "";
     private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
@@ -149,9 +148,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
 
-        nombreUsuario = bundle.getString(nombreUsuario);
-
-
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
@@ -173,6 +169,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 } else {
                     for (int i = 0; i < sillasSeleccionadas.size(); i++) {
                         int silla = sillasSeleccionadas.get(i);
+                        Log.d(Service.TAG, "sillas: " + silla);
+
                         listSillas = listSillas + silla + "-";
                     }
                     listSillas = listSillas.substring(0, listSillas.length() - 1);
@@ -181,8 +179,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     btnConfirmarTicket.setVisibility(View.GONE);
 
                     showProgress(true);
-
                     registerTicket(id_paradero_incio, id_paradero_final, id_ruta_disponible, id_operador, id_tipo_usuario, precio_pasaje, listSillas);
+
+
                 }
 
             }
@@ -216,11 +215,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void drawChairBus(int cant_sillas) {
         int silla = 1;
 
-
-        int columns_izq =2 ;
-        int columns_der =2 ;
-
-        int filas = (int) Math.ceil(cant_sillas / 4) +1;
+        int filas = (int) Math.ceil(cant_sillas / 4);
+        Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
 
 
         // Parámetros del LinearLayout
@@ -333,7 +329,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void showProgressDialog() {
         progress = new ProgressDialog(this);
         progress.setMessage("Cargando bus...");
-        progress.setCanceledOnTouchOutside(false);
+        progress.setCanceledOnTouchOutside(true);
         progress.setCancelable(false);
         progress.show();
     }
@@ -346,8 +342,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      */
     private void drawSillaOcupada(int silla, ToggleButton puesto) {
         // Verificar si la silla está ocupada
-        for (int ocupada : sillasOcupadas) {
-            if (ocupada == silla) {
+        for (Silla ocupada : listSillasOcupadas) {
+            if (ocupada.getNumeroSilla() == silla && ocupada.getDestino() > id_paradero_incio ) {
                 puesto.setEnabled(false);
                 puesto.setClickable(false);
                 puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.silla_ocupada));
@@ -382,6 +378,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int silla_seleccionda = buttonView.getId();
+        Log.d(Service.TAG, "silla: " + silla_seleccionda);
         // Guardo o elimino la silla
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
@@ -445,19 +442,25 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getSillasOcupadas(int id_ruta_disponible) {
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
 
-        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
+
+        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
         Log.i(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                JSONArray jsonArray = null;
+                JSONObject object = null;
+                JSONArray sillas = null;
                 try {
-                    jsonArray = new JSONArray(response);
+                    object = new JSONObject(response);
                     Log.e(TAG, "Sillas: " + response);
 
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
-                    }
+                    // Obtener array "horarios"
+                    sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
+                    // Parsear con Gson
+                    Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
+                    listSillasOcupadas = Arrays.asList(res);
+                    Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+
                     getVehiculo(id_vehiculo);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -479,8 +482,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             @Override
             public void onResponse(String response) {
                 Log.d(Service.TAG, "response: " + response);
-
-
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -507,6 +508,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                             @Override
                             public void onClick(View view) {
                                 try {
+
                                     alertDialog.dismiss();
 
                                     showProgress(false);
@@ -687,37 +689,42 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         try {
             String[] split = info_ruta.split(",");
 
-            String msg = nombreEmpresa ;
-            msg+="\n";
-            msg+="\n";
+            /*String nombre = ""+nombreEmpresa;
+            // Bold
+            format[2] = ((byte)(0x8 | arrayOfByte1[2]));
+            // Height
+            format[2] = ((byte)(0x10 | arrayOfByte1[2]));
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
 
-            msg += "Ticket N: "+id_tarifa;
-            msg+="\n";
-            msg += "Fecha: "+ Helpers.getDate();
-            msg+="\n";
-            msg += "Horario: "+split[2];
-            msg+="\n";
-            msg += "Operador: "+UsuarioPreferences.getInstance(context).getNombre();
-            msg+="\n";
-            msg += "Tarifa: "+nombreUsuario;
-            msg+="\n";
-            msg += "Ruta: "+split[1];
-            msg+="\n";
-            msg += "Inicio: "+split[3];
-            msg+="\n";
-            msg += "Termino: "+split[4];
-            msg+="\n";
-            msg += "Vehiculo: "+split[0];
-            msg+="\n";
-            msg += "Asientos: "+listSillas;
-            msg+="\n";
-            msg += "Hora: "+Helpers.getTime();
-            msg+="\n";
+            outputStream.write(format);
+            outputStream.write(nombre.getBytes(), 0, nombre.getBytes().length); */
 
-            msg += "Precio: $"+precio_pasaje;
-            msg+="\n";
-            msg+="\n";
-
+            String msg = nombreEmpresa;
+            msg += "\n";
+            msg += "\n";
+            msg += "\n";
+            msg += "Ticket N: " + id_tarifa;
+            msg += "\n";
+            msg += "Fecha: " + Helpers.getDate();
+            msg += "\n";
+            msg += "Horario: " + split[2];
+            msg += "\n";
+            msg += "Operador: " + UsuarioPreferences.getInstance(context).getNombre();
+            msg += "\n";
+            msg += "Ruta: " + split[1];
+            msg += "\n";
+            msg += "Inicio: " + split[3];
+            msg += "\n";
+            msg += "Termino: " + split[4];
+            msg += "\n";
+            msg += "Vehiculo: " + split[0];
+            msg += "\n";
+            msg += "Asientos: " + listSillas;
+            msg += "\n";
+            msg += "Hora: " + Helpers.getTime();
+            msg += "\n";
+            msg += "\n";
             msg += "Gracias por su preferencia!";
 
             outputStream.write(msg.getBytes());
