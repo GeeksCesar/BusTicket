@@ -38,10 +38,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
@@ -55,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +101,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     //VOLLEY
     RequestQueue requestQueue;
     StringRequest stringRequest;
+    Gson gson = new Gson();
 
     String listSillas = "";
     private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
@@ -211,7 +216,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int silla = 1;
 
         int filas = (int) Math.ceil(cant_sillas / 4);
-        Log.e(TAG, "" + filas);
+        Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -323,7 +328,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void showProgressDialog() {
         progress = new ProgressDialog(this);
         progress.setMessage("Cargando bus...");
-        progress.setCanceledOnTouchOutside(false);
+        progress.setCanceledOnTouchOutside(true);
         progress.setCancelable(false);
         progress.show();
     }
@@ -336,8 +341,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      */
     private void drawSillaOcupada(int silla, ToggleButton puesto) {
         // Verificar si la silla está ocupada
-        for (int ocupada : sillasOcupadas) {
-            if (ocupada == silla) {
+        for (Silla ocupada : listSillasOcupadas) {
+            if (ocupada.getNumeroSilla() == silla && ocupada.getDestino() > id_paradero_incio ) {
                 puesto.setEnabled(false);
                 puesto.setClickable(false);
                 puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.silla_ocupada));
@@ -436,19 +441,24 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getSillasOcupadas(int id_ruta_disponible) {
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
 
-        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
+        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
         Log.i(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                JSONArray jsonArray = null;
+                JSONObject object = null;
+                JSONArray sillas = null;
                 try {
-                    jsonArray = new JSONArray(response);
+                    object = new JSONObject(response);
                     Log.e(TAG, "Sillas: " + response);
 
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
-                    }
+                    // Obtener array "horarios"
+                    sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
+                    // Parsear con Gson
+                    Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
+                    listSillasOcupadas = Arrays.asList(res);
+                    Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+
                     getVehiculo(id_vehiculo);
                 } catch (JSONException e) {
                     e.printStackTrace();

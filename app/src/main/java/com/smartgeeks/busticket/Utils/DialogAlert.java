@@ -12,7 +12,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class DialogAlert {
 
-    public void showDialogFailed(Context context, String title, String message, int type) {
+    public static void showDialogFailed(Context context, String title, String message, int type) {
         SweetAlertDialog alertDialog = new SweetAlertDialog(context, type);
         alertDialog.setTitleText(title)
                 .setContentText(message)

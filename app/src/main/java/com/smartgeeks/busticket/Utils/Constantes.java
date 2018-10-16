@@ -22,6 +22,7 @@ public class Constantes {
     public static final String GET_RUTAS = IP + PROYECT + "getRutas/";
     public static final String GET_PARADEROS = IP + PROYECT + "getParaderos/";
     public static final String GET_HORARIOS = IP + PROYECT + "getHorarios/";
+    public static final String GET_SILLAS_OCUPADAS = IP + PROYECT + "getSillasOcupadas/";
 
     public static final String INSERT_TICKET = IP + PROYECT + "saveTicket/";
 
@@ -36,6 +37,7 @@ public class Constantes {
     public static final String RUTAS = "rutas";
     public static final String PARADEROS = "paraderos";
     public static final String HORARIOS = "horarios";
+    public static final String SILLAS_OCUPADAS = "sillas_ocupadas";
 
     public static final String SUBRUTAS = "horarios";
 
