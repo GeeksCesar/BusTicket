@@ -13,6 +13,7 @@
         android:layout_height="@dimen/size_img_perfil"
         android:layout_centerHorizontal="true"
         android:src="@mipmap/ic_launcher"
+        android:visibility="gone"
         android:scaleType="center"/>
 
     <TextView

@@ -1,15 +1,13 @@
 package com.smartgeeks.busticket.Menu;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -30,7 +28,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
@@ -46,15 +43,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -103,6 +95,8 @@ public class SelectRutas extends AppCompatActivity {
     SharedPreferences preferences ;
     SharedPreferences.Editor editor ;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,9 +142,7 @@ public class SelectRutas extends AppCompatActivity {
                 id_usuario = Integer.parseInt(getIdUsuario(position)) ;
 
                 getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
-
                 nameUsuario = parent.getItemAtPosition(position).toString();
-
             }
 
             @Override
@@ -461,7 +453,9 @@ public class SelectRutas extends AppCompatActivity {
                         precioPasaje = jsonArray.getJSONObject(0).getInt("precio");
                         contenedorCheckBox.setVisibility(View.VISIBLE);
                         contenedorPrecio.setVisibility(View.VISIBLE);
+
                         btnOlvidarRuta.setVisibility(View.VISIBLE);
+
 
                         formatPrecio(precioPasaje);
 

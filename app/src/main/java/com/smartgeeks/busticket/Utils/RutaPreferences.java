@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.smartgeeks.busticket.Objcect.Ruta;
-import com.smartgeeks.busticket.Objcect.User;
+
 
 public class RutaPreferences {
 

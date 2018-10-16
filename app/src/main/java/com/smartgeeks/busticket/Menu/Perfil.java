@@ -47,6 +47,7 @@ public class Perfil extends Fragment {
 
 
         tvNombreUsuario.setText(UsuarioPreferences.getInstance(context).getNombre());
+        tvDocuUsuario.setText(UsuarioPreferences.getInstance(context).getRut());
 
         btnCerrarSession.setOnClickListener(new View.OnClickListener() {
             @Override

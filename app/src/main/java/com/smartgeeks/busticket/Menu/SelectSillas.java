@@ -41,6 +41,7 @@ import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+
 import com.smartgeeks.busticket.Utils.Formatter;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
@@ -85,7 +86,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Bundle bundle;
     int id_tarifa ;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
+
     String horario, info_ruta, nombreEmpresa, nombreUsuario;
+
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -142,7 +145,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         horario = bundle.getString(HORARIO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+
         nombreUsuario = bundle.getString(nombreUsuario);
+
 
         initWidgets();
         showProgressDialog();
@@ -154,6 +159,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             @Override
             public void onClick(View view) {
                 listSillas = "" ;
+
 
                 if (sillasSeleccionadas.size() == 0){
                     dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
@@ -440,6 +446,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             public void onResponse(String response) {
                 Log.d(Service.TAG, "response: "+response);
 
+
+
                 try {
                     JSONObject jsonObject = new JSONObject(response);
 
@@ -465,7 +473,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                             @Override
                             public void onClick(View view) {
                                 try {
-
                                     alertDialog.dismiss();
 
                                     showProgress(false);
@@ -659,6 +666,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             String msg = nombreEmpresa ;
             msg+="\n";
             msg+="\n";
+
             msg += "Ticket N: "+id_tarifa;
             msg+="\n";
             msg += "Fecha: "+ Helpers.getDate();
@@ -681,6 +689,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg+="\n";
             msg += "Hora: "+Helpers.getTime();
             msg+="\n";
+
             msg += "Precio: $"+precio_pasaje;
             msg+="\n";
             msg+="\n";
