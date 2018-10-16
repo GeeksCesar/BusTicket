@@ -2,8 +2,11 @@ package com.smartgeeks.busticket.sync;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
+<<<<<<< HEAD
+=======
+import android.util.Log;
+>>>>>>> 2828d9f2c552bcca6b06d2efab6a4a9b6393fa0b
 
 import com.smartgeeks.busticket.Utils.Constantes;
 
@@ -50,23 +53,14 @@ public class SyncService extends IntentService {
      */
     private void handleLocalSync() {
         try {
-            // Construyo la notificación
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                    .setContentTitle("Sincronizando datos")
-                    .setContentText("Procesando...");
-
-            startForeground(1, builder.build());
-
             // Sincronizo los datos
-            OpsRuta.realizarSincronizacionLocal(getApplicationContext());
-            OpsHorario.realizarSincronizacionLocal(getApplicationContext());
-            OpsVehiculo.realizarSincronizacionLocal(getApplicationContext());
-            OpsSubrutas.realizarSincronizacionLocal(getApplicationContext());
             OpsTipoUsuario.realizarSincronizacionLocal(getApplicationContext());
+            OpsTarifaParadero.realizarSincronizacionLocal(getApplicationContext());
+            OpsVehiculo.realizarSincronizacionLocal(getApplicationContext());
+            OpsRuta.realizarSincronizacionLocal(getApplicationContext());
+            OpsParaderos.realizarSincronizacionLocal(getApplicationContext());
+            OpsHorario.realizarSincronizacionLocal(getApplicationContext());
 
-            // Quito la notificacion de primer plano
-            stopForeground(true);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,10 +69,9 @@ public class SyncService extends IntentService {
 
     @Override
     public void onDestroy() {
-      //  Toast.makeText(this, "Servicio destruido...", Toast.LENGTH_SHORT).show();
-
+        Log.e(TAG, "Servicio destruido...");
         // Emisión para avisar que se terminó el servicio
-        Intent localIntent = new Intent(Constantes.ACTION_STOP_LOCAL_SYNC);
+        Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
         LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
     }
 

@@ -1,10 +1,9 @@
 package com.smartgeeks.busticket.Objcect;
 
-
 import android.content.Intent;
 import com.smartgeeks.busticket.Menu.SelectRutas;
 
-public class Ruta {
+public class RutaPojo {
 
     private int ruta_id ;
     private int vehiculo_id ;

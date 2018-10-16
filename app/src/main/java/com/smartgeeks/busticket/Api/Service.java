@@ -2,11 +2,11 @@ package com.smartgeeks.busticket.Api;
 
 public class Service {
 
-    public static final String TAG = "Test" ;
+    public static final String TAG = "Test";
 
-    public static final String URL = "http://testing.smartgeeks.com.co/busticket/" ;
+    public static final String URL = "http://testing.smartgeeks.com.co/busticket/";
 
-    public static ApiService getApiService(){
+    public static ApiService getApiService() {
         return RetrofitClient.getClient(URL).create(ApiService.class);
     }
 
@@ -20,6 +20,6 @@ public class Service {
     public static final String GET_PARADEROS_FIN = URL + "api/getParaderoFinal/";
     public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsiento";
     public static final String SET_TICKET_PIE = URL + "api/setTicketPie";
-    public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/" ;
+    public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/";
 
 }

@@ -1,7 +1,9 @@
 package com.smartgeeks.busticket.Utils;
 
 public class Formatter {
-    /** The format that is being build on */
+    /**
+     * The format that is being build on
+     */
     private byte[] mFormat;
 
     public Formatter() {
@@ -44,15 +46,15 @@ public class Formatter {
         return this;
     }
 
-    public static byte[] rightAlign(){
+    public static byte[] rightAlign() {
         return new byte[]{0x1B, 'a', 0x02};
     }
 
-    public static byte[] leftAlign(){
+    public static byte[] leftAlign() {
         return new byte[]{0x1B, 'a', 0x00};
     }
 
-    public static byte[] centerAlign(){
+    public static byte[] centerAlign() {
         return new byte[]{0x1B, 'a', 0x01};
     }
 }

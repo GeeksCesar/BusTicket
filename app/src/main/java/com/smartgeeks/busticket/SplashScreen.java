@@ -46,12 +46,9 @@ public class SplashScreen extends AppCompatActivity {
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         session = UsuarioPreferences.getInstance(context).getSessionUser();
 
-        /**
-         * Ejecutar el servicio de Sincronización Local
-         */
-        Intent sync = new Intent(context, SyncService.class);
-        sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
-        startService(sync);
+        if (session.equals("SessionSuccess")) {
+            localSync();
+        }
 
         splash = new Thread() {
             @Override
@@ -77,5 +74,14 @@ public class SplashScreen extends AppCompatActivity {
         splash.start();
 
 
+    }
+
+    private void localSync() {
+        /**
+         * Ejecutar el servicio de Sincronización Local
+         */
+        Intent sync = new Intent(context, SyncService.class);
+        sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
+        startService(sync);
     }
 }

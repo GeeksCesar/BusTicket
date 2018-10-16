@@ -12,36 +12,24 @@ public class Horario extends SugarRecord {
      */
     @Unique
     String remoto;
-    int ruta_id;
-    int vehiculo_id;
-    String fecha;
+    int ruta;
     String hora;
 
     public Horario() {
     }
 
-    public Horario(String id_remoto, int ruta_id, int vehiculo_id, String fecha, String hora) {
-        this.remoto = id_remoto;
-        this.ruta_id = ruta_id;
-        this.vehiculo_id = vehiculo_id;
-        this.fecha = fecha;
+    public Horario(String remoto, int ruta, String hora) {
+        this.remoto = remoto;
+        this.ruta = ruta;
         this.hora = hora;
     }
 
-    public String getId_remoto() {
+    public String getIdRemoto() {
         return remoto;
     }
 
-    public int getRuta_id() {
-        return ruta_id;
-    }
-
-    public int getVehiculo_id() {
-        return vehiculo_id;
-    }
-
-    public String getFecha() {
-        return fecha;
+    public int getIdRuta() {
+        return ruta;
     }
 
     public String getHora() {

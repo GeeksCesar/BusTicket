@@ -33,14 +33,6 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btnTest"
-            style="@style/ButtonCustom"
-            android:layout_weight="1"
-            android:text="Guardar"
-            android:layout_above="@id/btnNameUsuario"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"/>
-
-        <Button
             android:id="@+id/btnSend"
             style="@style/ButtonCustom"
             android:layout_weight="1"

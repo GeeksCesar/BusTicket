@@ -2,9 +2,7 @@ package com.smartgeeks.busticket.Utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import com.smartgeeks.busticket.Objcect.Ruta;
-
+import com.smartgeeks.busticket.Objcect.RutaPojo;
 
 public class RutaPreferences {
 
@@ -18,20 +16,20 @@ public class RutaPreferences {
     public static final String INFORMACION = "INFORMACION";
     public static final String ESTADO = "ESTADO";
 
-    private static Context mContext ;
+    private static Context mContext;
     private static RutaPreferences mInstance;
 
-    private RutaPreferences(Context context){
+    private RutaPreferences(Context context) {
         mContext = context;
     }
 
-    public static synchronized RutaPreferences getInstance(Context context){
+    public static synchronized RutaPreferences getInstance(Context context) {
         if (mInstance == null)
             mInstance = new RutaPreferences(context);
         return mInstance;
     }
 
-    public boolean rutaPreferences(Ruta ruta){
+    public boolean rutaPreferences(RutaPojo ruta) {
         SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
@@ -47,35 +45,37 @@ public class RutaPreferences {
         return true;
     }
 
-    public int getIdVehiculo(){
+    public int getIdVehiculo() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(ID_VEHICULO, 0);
     }
 
-    public int getIdRuta(){
+    public int getIdRuta() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(ID_RUTA, 0);
     }
-    public int getIdRutaDisponible(){
+
+    public int getIdRutaDisponible() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(ID_RUTA_DISPONIBLE, 0);
     }
-    public int getIdHorario(){
+
+    public int getIdHorario() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getInt(ID_HORARIO, 0);
     }
 
-    public String getHora(){
+    public String getHora() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(HORARIO, "");
     }
 
-    public String getInformacion(){
+    public String getInformacion() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(INFORMACION, "");
     }
 
-    public boolean getEstadoRuta(){
+    public boolean getEstadoRuta() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(ESTADO, false);
     }

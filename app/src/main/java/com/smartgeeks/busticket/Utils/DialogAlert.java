@@ -32,7 +32,7 @@ public class DialogAlert {
     }
 
 
-    public boolean verificaConexion(Context ctx) {
+    public static boolean verificaConexion(Context ctx) {
         boolean bConectado = false;
         ConnectivityManager connec = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
         // No sólo wifi, también GPRS

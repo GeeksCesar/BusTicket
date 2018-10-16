@@ -12,51 +12,33 @@ public class Vehiculo extends SugarRecord {
      */
     @Unique
     String remoto;
-    int tipo_vehiculo;
     String placa;
-    int col_derecha;
-    int col_izquierda;
-    int filas;
-    int cant_pasajeros;
+    int num_asientos;
+    int empresa;
 
     public Vehiculo() {
     }
 
-    public Vehiculo(String id_remoto, int tipo_vehiculo, String placa, int col_derecha, int col_izquierda, int filas, int cant_pasajeros) {
-        this.remoto = id_remoto;
-        this.tipo_vehiculo = tipo_vehiculo;
+    public Vehiculo(String remoto, String placa, int num_asientos, int empresa) {
+        this.remoto = remoto;
         this.placa = placa;
-        this.col_derecha = col_derecha;
-        this.col_izquierda = col_izquierda;
-        this.filas = filas;
-        this.cant_pasajeros = cant_pasajeros;
+        this.num_asientos = num_asientos;
+        this.empresa = empresa;
     }
 
-    public String getId_remoto() {
+    public String getIdRemoto() {
         return remoto;
-    }
-
-    public int getTipo_vehiculo() {
-        return tipo_vehiculo;
     }
 
     public String getPlaca() {
         return placa;
     }
 
-    public int getCol_derecha() {
-        return col_derecha;
+    public int getNumAsientos() {
+        return num_asientos;
     }
 
-    public int getCol_izquierda() {
-        return col_izquierda;
-    }
-
-    public int getFilas() {
-        return filas;
-    }
-
-    public int getCant_pasajeros() {
-        return cant_pasajeros;
+    public int getEmpresa() {
+        return empresa;
     }
 }
