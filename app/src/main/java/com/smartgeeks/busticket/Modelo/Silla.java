@@ -1,15 +1,15 @@
 package com.smartgeeks.busticket.Modelo;
 
-<<<<<<< HEAD
+
 import com.orm.SugarRecord;
 import com.orm.dsl.Table;
-=======
+
 public class Silla {
 
     int numeroSilla;
     int origen;
     int destino;
->>>>>>> 2828d9f2c552bcca6b06d2efab6a4a9b6393fa0b
+
 
     public Silla() {
     }

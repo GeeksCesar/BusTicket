@@ -79,6 +79,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
     public static final String TIPO_USUARIO = "TIPO_USUARIO";
+    public static final String NAME_USUARIO = "NAME_USUARIO" ;
 
     private String TAG = "SelectSillas";
 
@@ -89,7 +90,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Bundle bundle;
     int id_tarifa;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
-    String horario, info_ruta, nombreEmpresa;
+    String horario, info_ruta, nombreEmpresa, nombreUsuario;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -110,7 +111,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     BluetoothSocket bluetoothSocket;
     BluetoothDevice bluetoothDevice;
 
-    OutputStream outputStream;
+    OutputStream outputStream, outputStreamTitle;
     InputStream inputStream;
     Thread thread;
 
@@ -147,11 +148,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         horario = bundle.getString(HORARIO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        nombreUsuario = bundle.getString(nombreUsuario);
 
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
-        getSillasOcupadas(id_ruta_disponible);
+        getSillasOcupadasJohan(id_ruta_disponible);
 
 
         btnConfirmarTicket.setOnClickListener(new View.OnClickListener() {
@@ -217,7 +219,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
         int filas = (int) Math.ceil(cant_sillas / 4);
         Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
-
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -439,11 +440,15 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      *
      * @param id_ruta_disponible
      */
-    private void getSillasOcupadas(int id_ruta_disponible) {
+
+
+    private void getSillasOcupadasJohan(int id_ruta_disponible) {
+
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
 
 
-        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
+      // String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
+        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + id_horario;
         Log.i(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
@@ -475,6 +480,40 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         requestQueue.add(stringRequest);
 
     }
+
+
+    private void getSillasOcupadas(int id_ruta_disponible) {
+        Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
+
+        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
+        Log.w(Service.TAG, "rutas: "+URL);
+        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                JSONObject object = null;
+                JSONArray jsonArray = null;
+                try {
+                    jsonArray = new JSONArray(response);
+                    Log.e(TAG, "Sillas: "+response);
+
+                    for (int i = 0; i < jsonArray.length(); i++){
+                        sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
+                    }
+                    getVehiculo(id_vehiculo);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(TAG, ""+volleyError);
+            }
+        });
+        requestQueue.add(stringRequest);
+
+    }
+
 
     private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final String listSillas) {
 
@@ -608,6 +647,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
             bluetoothSocket.connect();
             outputStream = bluetoothSocket.getOutputStream();
+            outputStreamTitle = bluetoothSocket.getOutputStream();
             inputStream = bluetoothSocket.getInputStream();
 
             comenzarAEscucharDatos();
@@ -689,7 +729,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         try {
             String[] split = info_ruta.split(",");
 
-            /*String nombre = ""+nombreEmpresa;
+            /*
+            String nombre = ""+nombreEmpresa;
             // Bold
             format[2] = ((byte)(0x8 | arrayOfByte1[2]));
             // Height
@@ -697,8 +738,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
 
-            outputStream.write(format);
-            outputStream.write(nombre.getBytes(), 0, nombre.getBytes().length); */
+            outputStreamTitle.write(format);
+            outputStreamTitle.write(nombre.getBytes(), 0, nombre.getBytes().length); */
 
             String msg = nombreEmpresa;
             msg += "\n";
@@ -726,8 +767,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg += "\n";
             msg += "\n";
             msg += "Gracias por su preferencia!";
+            msg += "\n";
+            msg += "\n";
+            msg += "\n";
+            msg += "\n";
 
             outputStream.write(msg.getBytes());
+
 
             try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),

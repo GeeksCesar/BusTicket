@@ -8,10 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-<<<<<<< HEAD
-=======
 import android.support.v4.content.LocalBroadcastManager;
->>>>>>> 2828d9f2c552bcca6b06d2efab6a4a9b6393fa0b
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -87,10 +84,14 @@ public class Ticket extends Fragment {
         spPlaca.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
-                String vehiculo = listVehiculos.get(position).getIdRemoto();
-                //getRutas(id_vehiculo);
-                getRutasSQLite(vehiculo);
+                //id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
+
+                id_vehiculo = Integer.parseInt(getIdVehiculo(position));
+
+                //String vehiculo = listVehiculos.get(position).getIdRemoto();
+                //String vehiculo = listVehiculos.get(position).getIdRemoto();
+                getRutas(id_vehiculo);
+                //getRutasSQLite(vehiculo);
                 placa = listPlacas.get(position);
             }
 
@@ -104,13 +105,13 @@ public class Ticket extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
 
-                //id_ruta = Integer.parseInt(getIdRuta(position)) ;
-                //id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
-                id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
-                id_ruta_disponible = Integer.parseInt(listRutas.get(position).getIdRemoto());
-                String id_ruta = listRutas.get(position).getIdRemoto();
-                //getHorario(id_ruta);
-                getHorarioSQLite(id_ruta);
+                id_ruta = Integer.parseInt(getIdRuta(position)) ;
+                id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
+                //id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                //id_ruta_disponible = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                //String id_ruta = listRutas.get(position).getIdRemoto();
+                getHorario(id_ruta);
+                //getHorarioSQLite(id_ruta);
                 ruta_info = listRuta.get(position);
 
             }
@@ -125,14 +126,14 @@ public class Ticket extends Fragment {
         spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                //id_horario = Integer.parseInt(getIdHorario(position)) ;
+                id_horario = Integer.parseInt(getIdHorario(position)) ;
                 btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
 
-                //hora = listHora.get(position);
-                //horario = listHorario.get(position);
-                id_horario = Integer.parseInt(listHorarios.get(position).getIdRemoto());
-                horario = listHorarios.get(position).getIdRemoto();
-                hora = listHorarios.get(position).getHora();
+                hora = listHora.get(position);
+                horario = listHorario.get(position);
+                //id_horario = Integer.parseInt(listHorarios.get(position).getIdRemoto());
+                //horario = listHorarios.get(position).getIdRemoto();
+                //hora = listHorarios.get(position).getHora();
 
                 btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
 
@@ -245,8 +246,8 @@ public class Ticket extends Fragment {
 
         int id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        //getVehiculos(id_empresa);
-        getVehiculosSQLite();
+        getVehiculos(id_empresa);
+        //getVehiculosSQLite();
     }
 
     private void getHorario(int id_vehiculo) {

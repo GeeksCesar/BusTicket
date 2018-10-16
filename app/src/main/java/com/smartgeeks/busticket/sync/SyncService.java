@@ -3,10 +3,8 @@ package com.smartgeeks.busticket.sync;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-<<<<<<< HEAD
-=======
 import android.util.Log;
->>>>>>> 2828d9f2c552bcca6b06d2efab6a4a9b6393fa0b
+
 
 import com.smartgeeks.busticket.Utils.Constantes;
 

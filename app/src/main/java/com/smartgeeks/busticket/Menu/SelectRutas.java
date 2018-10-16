@@ -101,11 +101,10 @@ public class SelectRutas extends AppCompatActivity {
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible;
     String nameUsuario;
 
-    MainActivity activity ;
-
     SharedPreferences preferences ;
     SharedPreferences.Editor editor ;
 
+    boolean estadoRuta ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,10 +120,11 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-                id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
-                ruta_inicio = parent.getItemAtPosition(position).toString();
+                //id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
+                id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
+                 ruta_inicio = parent.getItemAtPosition(position).toString();
 
-                //getParaderosFin(id_ruta, id_paradero_inicio);
+                getParaderosFin(id_ruta, id_paradero_inicio);
             }
 
             @Override
@@ -137,13 +137,14 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
 
-                //id_paradero_fin = Integer.parseInt(getIdParadero(position)) ;
-                id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
+                id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
+                //id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
                 ruta_fin = parent.getItemAtPosition(position).toString();
                 Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
                 Log.e(TAG, "Paradero fin: " + id_paradero_fin);
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
-                try {
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+
+                /*try {
 
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position_tipo_usuario);
                     formatPrecio(precioPasaje);
@@ -153,6 +154,7 @@ public class SelectRutas extends AppCompatActivity {
                 } catch (Exception e) {
                     e.getMessage();
                 }
+                */
 
             }
 
@@ -165,19 +167,22 @@ public class SelectRutas extends AppCompatActivity {
         spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
 
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                //id_usuario = Integer.parseInt(getIdUsuario(position)) ;
-                id_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                id_usuario = Integer.parseInt(getIdUsuario(position)) ;
+                //id_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
                 position_tipo_usuario = position;
 
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+                nameUsuario = parent.getItemAtPosition(position).toString();
+
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+                /*
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position);
                     formatPrecio(precioPasaje);
                 } catch (Exception e) {
                     e.getMessage();
                 }
-
+                */
             }
 
             @Override
@@ -268,12 +273,19 @@ public class SelectRutas extends AppCompatActivity {
 
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
-        btnOlvidarRuta.setVisibility(View.GONE);
+
         contenedorCheckBox.setVisibility(View.GONE);
         contenedorPrecio.setVisibility(View.GONE);
 
         bundle = getIntent().getExtras();
 
+        estadoRuta = RutaPreferences.getInstance(context).getEstadoRuta();
+
+        if (estadoRuta){
+            btnOlvidarRuta.setVisibility(View.VISIBLE);
+        }else {
+            btnOlvidarRuta.setVisibility(View.GONE);
+        }
 
         if (bundle != null) {
             Log.e(Service.TAG, "Entro a Bundle");
@@ -330,8 +342,8 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
-        //getParaderos(id_ruta); webservice
-        getParaderosSQLite(id_ruta);
+        getParaderos(id_ruta); //webservice
+       // getParaderosSQLite(id_ruta);
 
         validarCheckBox();
         tvCountItem.setText("" + countPasajes);
@@ -382,11 +394,10 @@ public class SelectRutas extends AppCompatActivity {
                     cbDePie.setChecked(false);
                     btnSiguiente.setVisibility(View.VISIBLE);
                     btnFinalizar.setVisibility(View.GONE);
-                    btnOlvidarRuta.setVisibility(View.GONE);
+                   // btnOlvidarRuta.setVisibility(View.GONE);
                 }else {
-
                     btnSiguiente.setVisibility(View.GONE);
-                    btnOlvidarRuta.setVisibility(View.VISIBLE);
+                   // btnOlvidarRuta.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -399,10 +410,10 @@ public class SelectRutas extends AppCompatActivity {
                     btnSiguiente.setVisibility(View.GONE);
                     btnFinalizar.setVisibility(View.VISIBLE);
 
-                    btnOlvidarRuta.setVisibility(View.GONE);
+                  //  btnOlvidarRuta.setVisibility(View.GONE);
                 }else{
                     btnFinalizar.setVisibility(View.GONE);
-                    btnOlvidarRuta.setVisibility(View.VISIBLE);
+                  //  btnOlvidarRuta.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -522,9 +533,7 @@ public class SelectRutas extends AppCompatActivity {
 
                         btnOlvidarRuta.setVisibility(View.VISIBLE);
 
-
                         formatPrecio(precioPasaje);
-
                     } else {
                         contenedorCheckBox.setVisibility(View.GONE);
                         contenedorPrecio.setVisibility(View.GONE);
@@ -549,7 +558,6 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     private void getUsuarios() {
-
         lisUsuarios.clear();
 
         stringRequest = new StringRequest(Service.GET_USUARIOS, new Response.Listener<String>() {

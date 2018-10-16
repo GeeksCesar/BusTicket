@@ -14,11 +14,10 @@ import com.smartgeeks.busticket.Utils.Constantes;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-<<<<<<< HEAD
-import java.util.ArrayList;
+import java.util
+.ArrayList;
 import java.util.Arrays;
-=======
->>>>>>> 2828d9f2c552bcca6b06d2efab6a4a9b6393fa0b
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
