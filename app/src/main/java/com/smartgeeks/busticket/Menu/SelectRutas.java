@@ -87,6 +87,7 @@ public class SelectRutas extends AppCompatActivity {
     StringRequest stringRequest;
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
+
     String ruta_inicio, ruta_fin, hora, info;
 
     Context context;

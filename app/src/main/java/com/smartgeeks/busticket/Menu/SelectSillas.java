@@ -218,6 +218,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int filas = (int) Math.ceil(cant_sillas / 4);
         Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
 
+
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -441,25 +442,37 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getSillasOcupadas(int id_ruta_disponible) {
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
 
-        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
+
+        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" +horario;
         Log.i(Service.TAG, "rutas: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject object = null;
                 JSONArray sillas = null;
+
                 try {
                     object = new JSONObject(response);
+                    // Obtener atributo "estado"
+                    String estado = object.getString(Constantes.ESTADO);
                     Log.e(TAG, "Sillas: " + response);
 
-                    // Obtener array "horarios"
-                    sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
-                    // Parsear con Gson
-                    Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
-                    listSillasOcupadas = Arrays.asList(res);
-                    Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+                    switch (estado) {
+                        case Constantes.SUCCESS: // EXITO
+                            // Obtener array "horarios"
+                            sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
+                            // Parsear con Gson
+                            Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
+                            listSillasOcupadas = Arrays.asList(res);
+                            Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+                            break;
+                        case Constantes.FAILED: // FALLIDO
+                            Log.e(TAG, "Error al traer datos");
+                            break;
+                    }
 
                     getVehiculo(id_vehiculo);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
