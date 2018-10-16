@@ -218,6 +218,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int filas = (int) Math.ceil(cant_sillas / 4);
         Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
 
+
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -440,6 +441,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      */
     private void getSillasOcupadas(int id_ruta_disponible) {
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
+
 
         String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
         Log.i(Service.TAG, "rutas: " + URL);

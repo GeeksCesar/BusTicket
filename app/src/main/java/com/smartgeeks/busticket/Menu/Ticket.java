@@ -189,6 +189,7 @@ public class Ticket extends Fragment {
                 intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
                 intent.putExtra(SelectRutas.HORA, hora);
+
                 intent.putExtra(SelectRutas.INFO, placa + "," + ruta_info + "," + hora);
                 startActivity(intent);
             }
@@ -415,6 +416,7 @@ public class Ticket extends Fragment {
         listHora.clear();
         listHorarios = Horario.find(Horario.class, "ruta = ?", new String[]{id_ruta},
                 "hora", "hora", null);
+
         for (Horario horario : listHorarios) {
             listHora.add(horario.getHora());
         }
