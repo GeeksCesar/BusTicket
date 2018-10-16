@@ -135,6 +135,7 @@ public class Ticket extends Fragment {
                 //horario = listHorarios.get(position).getIdRemoto();
                 //hora = listHorarios.get(position).getHora();
 
+
                 btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
 
             }
@@ -193,6 +194,7 @@ public class Ticket extends Fragment {
                 intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
                 intent.putExtra(SelectRutas.HORA, hora);
+                intent.putExtra(SelectRutas.HORARIO, horario);
 
                 intent.putExtra(SelectRutas.INFO, placa + "," + ruta_info + "," + hora);
                 startActivity(intent);

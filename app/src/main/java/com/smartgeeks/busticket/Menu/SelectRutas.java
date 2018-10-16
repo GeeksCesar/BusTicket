@@ -59,6 +59,8 @@ public class SelectRutas extends AppCompatActivity {
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
     public static final String HORA = "HORA";
+    public static final String HORARIO = "HORARIO";
+
     public static final String INFO = "INFO";
     public static final String TAG = SelectRutas.class.getSimpleName();
 
@@ -92,7 +94,7 @@ public class SelectRutas extends AppCompatActivity {
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
 
-    String ruta_inicio, ruta_fin, hora, info;
+    String ruta_inicio, ruta_fin, hora, horario, info;
 
     Context context;
 
@@ -294,8 +296,11 @@ public class SelectRutas extends AppCompatActivity {
             id_vehiculo = bundle.getInt(ID_VEHICULO);
             id_horario = bundle.getInt(ID_HORARIO);
             hora = bundle.getString(HORA);
+            horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+
+            Log.e(Service.TAG, "horario_bundler: "+horario);
         } else {
             id_ruta = RutaPreferences.getInstance(context).getIdRuta();
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
@@ -327,7 +332,8 @@ public class SelectRutas extends AppCompatActivity {
                         intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
                         intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                         intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                        intent.putExtra(SelectSillas.HORARIO, hora);
+                        intent.putExtra(SelectSillas.HORARIO, horario);
+                        intent.putExtra(SelectSillas.HORA, hora);
                         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
                         intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
                         intent.putExtra(SelectSillas.TIPO_USUARIO, id_usuario);

@@ -78,6 +78,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_INICIO = "PARADERO_INCIO";
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
+    public static final String HORA = "HORA";
     public static final String TIPO_USUARIO = "TIPO_USUARIO";
     public static final String NAME_USUARIO = "NAME_USUARIO" ;
 
@@ -153,7 +154,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
-        getSillasOcupadasJohan(id_ruta_disponible);
+        //getSillasOcupadasJohan(id_ruta_disponible);
+        getSillasOcupadas(id_ruta_disponible);
 
 
         btnConfirmarTicket.setOnClickListener(new View.OnClickListener() {
@@ -379,7 +381,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int silla_seleccionda = buttonView.getId();
-        Log.d(Service.TAG, "silla: " + silla_seleccionda);
         // Guardo o elimino la silla
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
@@ -440,16 +441,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      *
      * @param id_ruta_disponible
      */
-
-
     private void getSillasOcupadasJohan(int id_ruta_disponible) {
 
+        Log.e(Service.TAG, "hora: "+horario);
+
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
-
-
-      // String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible;
-        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + id_horario;
-        Log.i(Service.TAG, "rutas: " + URL);
+        String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
+        Log.i(Service.TAG, "rutas_ocupada: " + URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -485,7 +483,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void getSillasOcupadas(int id_ruta_disponible) {
         Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
 
-        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible;
+        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
         Log.w(Service.TAG, "rutas: "+URL);
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
