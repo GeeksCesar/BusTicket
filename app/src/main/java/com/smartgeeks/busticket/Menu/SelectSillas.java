@@ -154,8 +154,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
-        //getSillasOcupadasJohan(id_ruta_disponible);
-        getSillasOcupadas(id_ruta_disponible);
+        getSillasOcupadasJohan(id_ruta_disponible);
+        //getSillasOcupadas(id_ruta_disponible);
 
 
         btnConfirmarTicket.setOnClickListener(new View.OnClickListener() {
@@ -448,23 +448,35 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
         String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
         Log.i(Service.TAG, "rutas_ocupada: " + URL);
+
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 JSONObject object = null;
                 JSONArray sillas = null;
+
                 try {
                     object = new JSONObject(response);
+                    // Obtener atributo "estado"
+                    String estado = object.getString(Constantes.ESTADO);
                     Log.e(TAG, "Sillas: " + response);
 
-                    // Obtener array "horarios"
-                    sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
-                    // Parsear con Gson
-                    Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
-                    listSillasOcupadas = Arrays.asList(res);
-                    Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+                    switch (estado) {
+                        case Constantes.SUCCESS: // EXITO
+                            // Obtener array "horarios"
+                            sillas = object.getJSONArray(Constantes.SILLAS_OCUPADAS);
+                            // Parsear con Gson
+                            Silla[] res = gson.fromJson(sillas != null ? sillas.toString() : null, Silla[].class);
+                            listSillasOcupadas = Arrays.asList(res);
+                            Log.e(TAG, "Se encontraron " + listSillasOcupadas.size() + " sillas ocupadas.");
+                            break;
+                        case Constantes.FAILED: // FALLIDO
+                            Log.e(TAG, "Error al traer datos");
+                            break;
+                    }
 
                     getVehiculo(id_vehiculo);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -719,59 +731,78 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     void printData() throws IOException {
 
-        byte[] command = null;
-
-        byte[] format = {27, 33, 0};
-        byte[] arrayOfByte1 = {27, 33, 0};
-
-        try {
+        byte[] command=null;
+        try{
             String[] split = info_ruta.split(",");
 
-            /*
-            String nombre = ""+nombreEmpresa;
-            // Bold
-            format[2] = ((byte)(0x8 | arrayOfByte1[2]));
-            // Height
-            format[2] = ((byte)(0x10 | arrayOfByte1[2]));
+            byte[] arrayOfByte1 = { 27, 33, 0 };
+            byte[] format = { 27, 33, 0 };
+
+
+
+            byte[] centrado = {0x1B, 'a', 0x01};
+            byte[] der = {0x1B, 'a', 0x02};
+            byte[] izq = {0x1B, 'a', 0x00};
+
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
-            outputStreamTitle.write(format);
-            outputStreamTitle.write(nombre.getBytes(), 0, nombre.getBytes().length); */
+            format =new byte[]{ 27, 33, 0 };
 
-            String msg = nombreEmpresa;
-            msg += "\n";
-            msg += "\n";
-            msg += "\n";
-            msg += "Ticket N: " + id_tarifa;
-            msg += "\n";
-            msg += "Fecha: " + Helpers.getDate();
-            msg += "\n";
-            msg += "Horario: " + split[2];
-            msg += "\n";
-            msg += "Operador: " + UsuarioPreferences.getInstance(context).getNombre();
-            msg += "\n";
-            msg += "Ruta: " + split[1];
-            msg += "\n";
-            msg += "Inicio: " + split[3];
-            msg += "\n";
-            msg += "Termino: " + split[4];
-            msg += "\n";
-            msg += "Vehiculo: " + split[0];
-            msg += "\n";
-            msg += "Asientos: " + listSillas;
-            msg += "\n";
-            msg += "Hora: " + Helpers.getTime();
-            msg += "\n";
-            msg += "\n";
-            msg += "Gracias por su preferencia!";
-            msg += "\n";
-            msg += "\n";
-            msg += "\n";
-            msg += "\n";
+            outputStream.write(format);
 
-            outputStream.write(msg.getBytes());
+            outputStream.write(izq);
+            String msg = "";
+            msg += "\n";
+            msg += "Ticket N:   " + id_tarifa;
+            msg += "\n";
+            msg += "Fecha:   " + Helpers.getDate();
+            msg += "\n";
+            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
+            String msg0 = "" ;
+            msg0 += "Horario:   " + split[2];
+            msg0 += "\n";
+            msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
+            msg0 += "\n";
+            outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
+            String ruta = "" ;
+            ruta += "Ruta:  " + split[1] + "\n";
+            // Small
+            format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+            outputStream.write(format);
+            outputStream.write(ruta.getBytes(),0,ruta.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
 
+            outputStream.write(format);
+            String msg1 = "";
+            msg1 += "";
+            msg1 += "Inicio: " + split[3];
+            msg1 += "\n";
+            msg1 += "Termino: " + split[4];
+            msg1 += "\n";
+            msg1 += "Vehiculo: " + split[0];
+            outputStream.write(msg1.getBytes(), 0, msg1.getBytes().length);
+            String msg2 = "";
+            msg2 += "\n";
+            msg2 += "Asientos: " + listSillas;
+            msg2 += "\n";
+            msg2 += "Hora: " + Helpers.getTime();
+            msg2 += "\n";
+            outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
+
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            String precio = "";
+            precio += "Precio: "+precio_pasaje +"\n";
+
+            outputStream.write(format);
+            outputStream.write(precio.getBytes(),0,precio.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
 
             try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
@@ -785,10 +816,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 Log.e("PrintTools", "the file isn't exists");
             }
 
+            outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
 
-            dialogPrint.hide();
-
-        } catch (Exception ex) {
+        }catch (Exception ex){
             ex.printStackTrace();
         }
     }
