@@ -58,6 +58,7 @@ public class Ticket extends Fragment {
     DialogAlert dialogAlert = new DialogAlert();
     Spinner spPlaca, spRuta, spHorarios;
     Button btnSiguiente, btnRecordarRuta, btnFinalizarRuta;
+    private View mProgressView;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -139,13 +140,36 @@ public class Ticket extends Fragment {
         btnFinalizarRuta.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!dialogAlert.verificaConexion(context)) {
-                    dialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
-                }else {
-                    Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
-                    Log.e(Service.TAG, "hora: "+hora);
-                    Log.e(Service.TAG, "horario: "+horario);
-                }
+
+                final AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
+                builder.setTitle(context.getResources().getString(R.string.app_name));
+                builder.setMessage(context.getResources().getString(R.string.dialogMessageFinalizar));
+
+                builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        if (!dialogAlert.verificaConexion(context)) {
+                            dialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
+                        }else {
+                            btnFinalizarRuta.setEnabled(false);
+                            showProgress(true);
+                            setFinalizarRuta(id_ruta_disponible, horario);
+                        }
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.create().show();
+
+
+
             }
         });
 
@@ -231,6 +255,7 @@ public class Ticket extends Fragment {
         spPlaca = view.findViewById(R.id.spPlaca);
         spRuta = view.findViewById(R.id.spRutas);
         spHorarios = view.findViewById(R.id.spHorarios);
+        mProgressView = view.findViewById(R.id.login_progress);
 
         btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
         btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
@@ -436,16 +461,26 @@ public class Ticket extends Fragment {
         }
     }
 
-    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final) {
+    private void setFinalizarRuta(final int id_ruta_disponible, final String horario) {
 
-        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.GET, Service.SET_LIBERAR_SILLA+id_ruta_disponible+"/"+horario, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.e(Service.TAG, "response: " + response);
                 try {
                     JSONObject jsonObject = new JSONObject(response);
 
+                    String respuesta = jsonObject.getString("message");
 
+                    if (respuesta.equals("success")) {
+                        btnFinalizarRuta.setEnabled(true);
+                        showProgress(false);
+                        dialogAlert.showDialogFailed(context , "Exito" , "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE) ;
+                    }else {
+                        btnFinalizarRuta.setEnabled(true);
+                        showProgress(false);
+                        dialogAlert.showDialogFailed(context , "Alerta" , "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE) ;
+                    }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -454,26 +489,14 @@ public class Ticket extends Fragment {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                btnFinalizarRuta.setEnabled(true);
+                showProgress(false);
                 dialogAlert.showDialogErrorConexion(context);
             }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-
-                params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
-                params.put("id_paradero_fin", String.valueOf(id_paradero_final));
-
-                return params;
-            }
-        };
-        ;
+        });
 
         requestQueue.add(stringRequest);
-
     }
-
-
 
     private String getIdVehiculo(int position) {
         String id_vehiculo = "";
@@ -540,5 +563,7 @@ public class Ticket extends Fragment {
         }
     }
 
-
+    private void showProgress(boolean show) {
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
 }

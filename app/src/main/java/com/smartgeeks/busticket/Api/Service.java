@@ -21,5 +21,6 @@ public class Service {
     public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsiento";
     public static final String SET_TICKET_PIE = URL + "api/setTicketPie";
     public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/";
+    public static final String SET_LIBERAR_SILLA= URL + "api/getLiberarSillasDia";
 
 }
