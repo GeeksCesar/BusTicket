@@ -151,8 +151,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
         nombreUsuario = bundle.getString(nombreUsuario);
 
+
         Log.e(TAG, "Ruta: "+id_ruta);
         Log.e(TAG, "Disponoble: "+id_ruta_disponible);
+        Log.e(TAG, "Horario: "+horario);
+
 
         initWidgets();
         // Obtengo los datos del vehículo
