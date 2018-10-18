@@ -67,6 +67,7 @@ public class SelectRutas extends AppCompatActivity {
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
+
     LinearLayout contenedorCheckBox, contenedorPrecio ;
     Button btnSiguiente, btnFinalizar, btnOlvidarRuta,  btnMenos, btnMas ;
     Spinner spInicio, spFin, spPasajero ;
@@ -120,12 +121,12 @@ public class SelectRutas extends AppCompatActivity {
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
-                ruta_inicio = parent.getItemAtPosition(position).toString();
-                id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
+                //id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
+                id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
+                 ruta_inicio = parent.getItemAtPosition(position).toString();
 
-                //getParaderosFin(id_ruta, id_paradero_inicio);
+                getParaderosFin(id_ruta, id_paradero_inicio);
             }
 
             @Override
@@ -138,14 +139,15 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
 
-                //id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
-                id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
+                id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
+                //id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
                 ruta_fin = parent.getItemAtPosition(position).toString();
                 Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
                 Log.e(TAG, "Paradero fin: " + id_paradero_fin);
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
 
-                try {
+                /*try {
+
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position_tipo_usuario);
                     formatPrecio(precioPasaje);
                     if (sizeTarifas == 0){
@@ -154,7 +156,7 @@ public class SelectRutas extends AppCompatActivity {
                 } catch (Exception e) {
                     e.getMessage();
                 }
-
+                */
 
             }
 
@@ -168,21 +170,21 @@ public class SelectRutas extends AppCompatActivity {
             @Override
 
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                //id_usuario = Integer.parseInt(getIdUsuario(position)) ;
-                id_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
+                id_usuario = Integer.parseInt(getIdUsuario(position)) ;
+                //id_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
                 position_tipo_usuario = position;
 
                 nameUsuario = parent.getItemAtPosition(position).toString();
 
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
-
+                getPrecio(id_paradero_inicio, id_paradero_fin, id_usuario);
+                /*
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position);
                     formatPrecio(precioPasaje);
                 } catch (Exception e) {
                     e.getMessage();
                 }
+                */
             }
 
             @Override
@@ -346,8 +348,8 @@ public class SelectRutas extends AppCompatActivity {
             }
         });
 
-       //getParaderos(id_ruta); //webservice
-       getParaderosSQLite(id_ruta);
+        getParaderos(id_ruta); //webservice
+       // getParaderosSQLite(id_ruta);
 
         validarCheckBox();
         tvCountItem.setText("" + countPasajes);
@@ -423,18 +425,6 @@ public class SelectRutas extends AppCompatActivity {
         });
 
     }
-
-    public void goBack(View view) {
-        this.finish();
-    }
-
-    private void showProgress(boolean show) {
-        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
-
-    /**
-     * Web services
-     */
 
     private void getParaderos(int id) {
         listParaderos.clear();
@@ -655,6 +645,10 @@ public class SelectRutas extends AppCompatActivity {
         return id_usuario;
     }
 
+    public void goBack(View view) {
+        this.finish();
+    }
+
     private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar) {
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
@@ -708,6 +702,10 @@ public class SelectRutas extends AppCompatActivity {
 
         requestQueue.add(stringRequest);
 
+    }
+
+    private void showProgress(boolean show) {
+        mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
 
@@ -765,29 +763,29 @@ public class SelectRutas extends AppCompatActivity {
                 "" + id_paradero_fin);
 
         double precio = 5000;
-        Log.e(TAG, "Size price: " + tarifaParaderos.size());
+        Log.e("Size ", "" + tarifaParaderos.size());
         sizeTarifas = tarifaParaderos.size();
 
         switch (position) {
             case 0:
                 precio = tarifaParaderos.get(0).getEstudiante();
-                Log.e(TAG, "Estudiante: " + precio);
+                Log.e("Estudiante: ", "" + precio);
                 break;
             case 1:
                 precio = tarifaParaderos.get(0).getNormal();
-                Log.e(TAG, "Normal: " + precio);
+                Log.e("Normal: ", "" + precio);
                 break;
             case 2:
                 precio = tarifaParaderos.get(0).getFrecuente();
-                Log.e(TAG , "Frecuente: " + precio);
+                Log.e("Frecuente: ", "" + precio);
                 break;
             case 3:
                 precio = tarifaParaderos.get(0).getAdulto_mayor();
-                Log.e(TAG, "Adulto: " + precio);
+                Log.e("Adulto: ", "" + precio);
                 break;
             case 4:
                 precio = tarifaParaderos.get(0).getVale_muni();
-                Log.e(TAG, "ValeMuni: " + precio);
+                Log.e("ValeMuni: ", "" + precio);
                 break;
         }
         return precio;
