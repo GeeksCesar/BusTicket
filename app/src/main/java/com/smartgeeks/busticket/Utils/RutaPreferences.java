@@ -7,6 +7,7 @@ import com.smartgeeks.busticket.Objcect.RutaPojo;
 public class RutaPreferences {
 
     public static final String SHARED_PREF_NAME = "Ruta";
+    public static final String PREFERENCES_PRINT = "PRINT" ;
 
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
@@ -15,6 +16,9 @@ public class RutaPreferences {
     public static final String HORARIO = "HORARIO";
     public static final String INFORMACION = "INFORMACION";
     public static final String ESTADO = "ESTADO";
+
+    public static final String NAME_PRINT = "NAME_PRINT";
+    public static final String ESTADO_PRINT = "ESTADO_PRINT";
 
     private static Context mContext;
     private static RutaPreferences mInstance;
@@ -78,5 +82,15 @@ public class RutaPreferences {
     public boolean getEstadoRuta() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(ESTADO, false);
+    }
+
+    public String getNamePrint(){
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(PREFERENCES_PRINT, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(NAME_PRINT, "");
+    }
+
+    public boolean getEstadoPrint() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(PREFERENCES_PRINT, Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(ESTADO_PRINT, false);
     }
 }

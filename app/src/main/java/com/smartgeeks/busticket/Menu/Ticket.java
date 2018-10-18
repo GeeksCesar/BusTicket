@@ -1,6 +1,7 @@
 package com.smartgeeks.busticket.Menu;
 
 
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,6 +20,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -31,6 +34,7 @@ import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Objcect.RutaPojo;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
@@ -40,14 +44,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class Ticket extends Fragment {
 
     View view;
     Context context;
+    DialogAlert dialogAlert = new DialogAlert();
     Spinner spPlaca, spRuta, spHorarios;
-    Button btnSiguiente, btnRecordarRuta;
+    Button btnSiguiente, btnRecordarRuta, btnFinalizarRuta;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -83,10 +93,8 @@ public class Ticket extends Fragment {
         spPlaca.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-
-                //id_vehiculo = Integer.parseInt(getIdVehiculo(position));
                 id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
-                //getRutas(id_vehiculo);
+
                 getRutasSQLite(id_vehiculo);
                 placa = listPlacas.get(position);
             }
@@ -100,16 +108,11 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-
-                //id_ruta = Integer.parseInt(getIdRuta(position)) ;
-                //id_ruta_disponible = Integer.parseInt(getIdRutaDisponible(position)) ;
                 id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
                 id_ruta_disponible = listRutas.get(position).getRutaDisponible();
 
-                //getHorario(id_ruta);
                 getHorarioSQLite(id_ruta+"");
                 ruta_info = listRuta.get(position);
-
             }
 
             @Override
@@ -122,23 +125,27 @@ public class Ticket extends Fragment {
         spHorarios.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-
-                btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
-
-                //hora = listHora.get(position);
-                //horario = listHorario.get(position);
-                //id_horario = Integer.parseInt(getIdHorario(position));
                 id_horario = Integer.parseInt(listHorarios.get(position).getIdRemoto());
                 hora = adapterView.getItemAtPosition(position).toString();
                 horario = listHorarios.get(position).getHora();
-
-                btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
-
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
+            }
+        });
+
+        btnFinalizarRuta.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!dialogAlert.verificaConexion(context)) {
+                    dialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
+                }else {
+                    Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
+                    Log.e(Service.TAG, "hora: "+hora);
+                    Log.e(Service.TAG, "horario: "+horario);
+                }
             }
         });
 
@@ -220,12 +227,14 @@ public class Ticket extends Fragment {
 
         btnSiguiente = view.findViewById(R.id.btnNext);
         btnRecordarRuta = view.findViewById(R.id.btnRecordarRuta);
+        btnFinalizarRuta = view.findViewById(R.id.btnFinalizarRuta);
         spPlaca = view.findViewById(R.id.spPlaca);
         spRuta = view.findViewById(R.id.spRutas);
         spHorarios = view.findViewById(R.id.spHorarios);
 
-        btnSiguiente.setVisibility(View.GONE);
-        btnRecordarRuta.setVisibility(View.GONE);
+        btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
+        btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
+        btnFinalizarRuta.setBackgroundResource(R.drawable.bg_button_main);
 
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
         Log.e(Service.TAG, "estado_ruta: " + getStatusRuta);
@@ -242,9 +251,6 @@ public class Ticket extends Fragment {
         listRuta = new ArrayList<String>();
         listHora = new ArrayList<String>();
 
-        int id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
-
-        //getVehiculos(id_empresa);
         getVehiculosSQLite();
     }
 
@@ -428,6 +434,43 @@ public class Ticket extends Fragment {
             btnRecordarRuta.setVisibility(View.VISIBLE);
             btnSiguiente.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final) {
+
+        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e(Service.TAG, "response: " + response);
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                dialogAlert.showDialogErrorConexion(context);
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+
+                params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
+                params.put("id_paradero_fin", String.valueOf(id_paradero_final));
+
+                return params;
+            }
+        };
+        ;
+
+        requestQueue.add(stringRequest);
+
     }
 
 

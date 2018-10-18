@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -40,6 +41,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
@@ -48,6 +50,7 @@ import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
@@ -57,6 +60,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -86,11 +90,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     LinearLayout contenedor_bus;
     private List<Silla> listSillasOcupadas = new ArrayList<>();
-    private List<Integer> sillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
-    int id_tarifa;
-    int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible;
+    int id_tarifa, countConsecutivo;
+    int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible, id_empresa;
+    String getPrecioPasaje;
     String horario, info_ruta, nombreEmpresa, nombreUsuario;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
@@ -106,8 +110,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Gson gson = new Gson();
 
     String listSillas = "";
-    private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
 
+    //Configuracion Impresora
+    private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
     BluetoothAdapter bluetoothAdapter;
     BluetoothSocket bluetoothSocket;
     BluetoothDevice bluetoothDevice;
@@ -123,7 +128,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Dialog dialogPrint;
     Button btnCancelar;
     ListView lstPrint;
+    DecimalFormat formatea = new DecimalFormat("###,###.##");
 
+    SharedPreferences preferences ;
+    SharedPreferences.Editor editor ;
+
+    boolean estadoRuta , estadoPrint;
+    String namePrint ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,31 +142,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_select_sillas);
-
-        context = SelectSillas.this;
-        requestQueue = Volley.newRequestQueue(context);
-        bundle = getIntent().getExtras();
-
-        cant_puestos = bundle.getInt(CANT_PUESTOS);
-        precio_pasaje = bundle.getInt(PRECIO_PASAJE);
-        id_vehiculo = bundle.getInt(ID_VEHICULO);
-        id_horario = bundle.getInt(ID_HORARIO);
-        id_ruta = bundle.getInt(ID_RUTA);
-        id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
-        info_ruta = bundle.getString(SelectRutas.INFO);
-        id_paradero_incio = bundle.getInt(ID_PARADERO_INICIO);
-        id_paradero_final = bundle.getInt(ID_PARADERO_FIN);
-        id_tipo_usuario = bundle.getInt(TIPO_USUARIO);
-        horario = bundle.getString(HORARIO);
-        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-        nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
-        nombreUsuario = bundle.getString(nombreUsuario);
-
-
-        Log.e(TAG, "Ruta: "+id_ruta);
-        Log.e(TAG, "Disponoble: "+id_ruta_disponible);
-        Log.e(TAG, "Horario: "+horario);
-
 
         initWidgets();
         // Obtengo los datos del vehículo
@@ -168,7 +154,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             @Override
             public void onClick(View view) {
                 listSillas = "";
-
 
                 if (sillasSeleccionadas.size() == 0) {
                     dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
@@ -199,6 +184,31 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
     private void initWidgets() {
+        context = SelectSillas.this;
+        requestQueue = Volley.newRequestQueue(context);
+        bundle = getIntent().getExtras();
+
+        cant_puestos = bundle.getInt(CANT_PUESTOS);
+        precio_pasaje = bundle.getInt(PRECIO_PASAJE);
+        id_vehiculo = bundle.getInt(ID_VEHICULO);
+        id_horario = bundle.getInt(ID_HORARIO);
+        id_ruta = bundle.getInt(ID_RUTA);
+        id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
+        info_ruta = bundle.getString(SelectRutas.INFO);
+        id_paradero_incio = bundle.getInt(ID_PARADERO_INICIO);
+        id_paradero_final = bundle.getInt(ID_PARADERO_FIN);
+        id_tipo_usuario = bundle.getInt(TIPO_USUARIO);
+        horario = bundle.getString(HORARIO);
+        nombreUsuario = bundle.getString(NAME_USUARIO);
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
+
+
+        getPrecioPasaje =  "$ "+formatPrecio(precio_pasaje);
+
+
+        //Input
         contenedor_bus = findViewById(R.id.contenedor_bus);
         btnConfirmarTicket = findViewById(R.id.btnConfirmarTicket);
         tvVehiculo = findViewById(R.id.tvVehiculo);
@@ -211,6 +221,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         showDataTextView();
 
         encontrarDispositivoBlue();
+    }
+
+    public void getDataPrint(){
+        namePrint = RutaPreferences.getInstance(context).getNamePrint() ;
+        estadoPrint = RutaPreferences.getInstance(context).getEstadoPrint();
+
+        Log.d(Service.TAG , "name print: "+namePrint);
+        Log.d(Service.TAG , "boolen print: "+estadoPrint);
     }
 
     private void showDataTextView() {
@@ -498,39 +516,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
 
-    private void getSillasOcupadas(int id_ruta_disponible) {
-        Log.e(Service.TAG, "id_ruta_disponible: "+id_ruta_disponible);
-
-        String URL = Service.SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
-        Log.w(Service.TAG, "rutas: "+URL);
-        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                JSONObject object = null;
-                JSONArray jsonArray = null;
-                try {
-                    jsonArray = new JSONArray(response);
-                    Log.e(TAG, "Sillas: "+response);
-
-                    for (int i = 0; i < jsonArray.length(); i++){
-                        sillasOcupadas.add(jsonArray.getJSONObject(i).getInt("silla"));
-                    }
-                    getVehiculo(id_vehiculo);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Log.e(TAG, ""+volleyError);
-            }
-        });
-        requestQueue.add(stringRequest);
-
-    }
-
-
     private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final String listSillas) {
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_ASIENTO, new Response.Listener<String>() {
@@ -542,11 +527,15 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     JSONObject jsonObject = new JSONObject(response);
 
                     String respuesta = jsonObject.getString("message");
-                    id_tarifa = jsonObject.getInt("id");
+                    countConsecutivo = jsonObject.getInt("count") + 1;
                     Log.w(Service.TAG, "respuesta: " + respuesta);
                     Log.w(Service.TAG, "id_tarifa: " + id_tarifa);
+                    Log.w(Service.TAG, "consecutivo: " + countConsecutivo);
+
 
                     if (respuesta.equals("success")) {
+                        showProgress(false);
+
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
                         alertDialog.setTitleText("Exito")
@@ -566,8 +555,34 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                                     alertDialog.dismiss();
 
-                                    showProgress(false);
-                                    showDialogTiquete();
+                                    getDataPrint();
+
+                                    if (estadoPrint == true){
+                                        Log.e(Service.TAG, "entro estado") ;
+                                        Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
+                                        Log.e(Service.TAG, "parired: "+pairedDevice.size()) ;
+
+                                        if (pairedDevice.size() > 0) {
+                                            for (BluetoothDevice pairedDev : pairedDevice) {
+                                                if (pairedDev.getName().equals(namePrint)) {
+                                                    bluetoothDevice = pairedDev;
+                                                    abrirImpresoraBlue();
+                                                    goIntentMain();
+                                                     break;
+                                                }else {
+                                                    Log.e(Service.TAG  , "error no existe impresora");
+                                                    //Toast.makeText(SelectRutas.this, "No se puede imprimir", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        }else {
+                                            Log.e(Service.TAG  , "error no existe impresora");
+                                            //Toast.makeText(SelectRutas.this, "No existe impresora", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    }else {
+                                        showDialogTiquete();
+                                    }
+
 
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
@@ -608,6 +623,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
                 params.put("total_pagar", String.valueOf(valor_pagar));
                 params.put("sillas", listSillas);
+                params.put("id_empresa", String.valueOf(id_empresa));
 
                 return params;
             }
@@ -633,14 +649,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
             if (pairedDevice.size() > 0) {
                 for (BluetoothDevice pairedDev : pairedDevice) {
-
                     lisPrintBluetooth.add(pairedDev.getName());
-                    // My Bluetoth printer name is BTP_F09F1A
-                    if (pairedDev.getName().equals("BlueTooth Printer")) {
-                        bluetoothDevice = pairedDev;
-                        //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
-                        break;
-                    }
                 }
             }
             //lblPrinterName.setText("Bluetookkkkth Printer Attached");
@@ -763,7 +772,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            msg += "Ticket N:   " + id_tarifa;
+            msg += "Ticket N:   " + countConsecutivo;
+            msg += "\n";
+            msg += "Tarifa:   " + nombreUsuario;
             msg += "\n";
             msg += "Fecha:   " + Helpers.getDate();
             msg += "\n";
@@ -797,12 +808,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             msg2 += "\n";
             msg2 += "Hora: " + Helpers.getTime();
             msg2 += "\n";
+            msg2 += "\n";
             outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
 
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             String precio = "";
-            precio += "Precio: "+precio_pasaje +"\n";
+            precio += "Precio: "+getPrecioPasaje+"\n";
 
             outputStream.write(format);
             outputStream.write(precio.getBytes(),0,precio.getBytes().length);
@@ -860,14 +872,19 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String name_impresora = parent.getItemAtPosition(position).toString();
 
+                preferences = context.getSharedPreferences(RutaPreferences.PREFERENCES_PRINT, Context.MODE_PRIVATE);
+                editor = preferences.edit() ;
+
+                editor.putString(RutaPreferences.NAME_PRINT, name_impresora);
+                editor.putBoolean(RutaPreferences.ESTADO_PRINT, true);
+                editor.commit() ;
+
                 Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
                 if (pairedDevice.size() > 0) {
                     for (BluetoothDevice pairedDev : pairedDevice) {
-
                         if (pairedDev.getName().equals(name_impresora)) {
                             bluetoothDevice = pairedDev;
-                            //lblPrinterName.setText("Bluetooth Printer Attached: "+pairedDev.getName());
                             abrirImpresoraBlue();
                             break;
                         }
@@ -894,17 +911,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         return size.x;
     }
 
-    void disconnectBT() throws IOException {
-        try {
-            stopWorker = true;
-            outputStream.close();
-            inputStream.close();
-            bluetoothSocket.close();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
 
     /***
      *  SQLite - Consulta de datos
@@ -915,6 +921,22 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 "" + id_vehiculo);
         int cant_sillas = vehiculos.get(0).getNumAsientos();
         drawChairBus(cant_sillas);
+    }
+
+    private String formatPrecio(int precio) {
+        String formatPrecio = formatea.format(precio);
+        formatPrecio = formatPrecio.replace(',', '.');
+
+        return  formatPrecio ;
+
+    }
+
+    private void goIntentMain(){
+        Log.d(Service.TAG, "entro a goIntentMain");
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(MainActivity.BACK , true) ;
+        startActivity(intent);
+        finish();
     }
 
 }

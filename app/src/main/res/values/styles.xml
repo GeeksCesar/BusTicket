@@ -54,11 +54,11 @@
 
     <style name="ButtonCustomEnable" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@dimen/height_button</item>
+        <item name="android:layout_height">@dimen/height_button_enable</item>
         <item name="android:background">@drawable/bg_button_main_enable</item>
         <item name="android:gravity">center</item>
         <item name="android:textColor">@color/md_white_1000</item>
-        <item name="android:textSize">@dimen/size_text_button</item>
+        <item name="android:textSize">@dimen/size_text_button_enable</item>
         <item name="android:fontFamily">@font/font</item>
         <item name="android:textStyle">bold</item>
         <item name="android:padding">5dp</item>

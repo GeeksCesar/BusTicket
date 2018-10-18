@@ -9,8 +9,10 @@
     <dimen name="size_progress">40dp</dimen>
     <dimen name="size_text">18sp</dimen>
     <dimen name="height_button">50dp</dimen>
+    <dimen name="height_button_enable">40dp</dimen>
     <dimen name="height_spinner">60dp</dimen>
     <dimen name="size_text_button">18sp</dimen>
+    <dimen name="size_text_button_enable">15sp</dimen>
 
     <dimen name="height_contenedor_head">80dp</dimen>
 
@@ -22,5 +24,7 @@
     <dimen name="text_size_button_count">20sp</dimen>
     <dimen name="text_info_perfil">24sp</dimen>
     <dimen name="size_img_perfil">150dp</dimen>
+
+
 
 </resources>

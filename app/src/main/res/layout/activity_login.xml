@@ -68,7 +68,7 @@
                 style="@style/ButtonCustom"
                 android:layout_alignParentBottom="true"
                 android:paddingHorizontal="20dp"
-                android:text="Iniciar Sessión"/>
+                android:text="Iniciar Sesión"/>
 
 
         </RelativeLayout>
