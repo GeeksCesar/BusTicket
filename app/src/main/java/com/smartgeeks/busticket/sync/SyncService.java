@@ -59,7 +59,6 @@ public class SyncService extends IntentService {
             OpsParaderos.realizarSincronizacionLocal(getApplicationContext());
             OpsHorario.realizarSincronizacionLocal(getApplicationContext());
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }

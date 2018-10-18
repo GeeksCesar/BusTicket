@@ -151,10 +151,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
         nombreUsuario = bundle.getString(nombreUsuario);
 
+        Log.e(TAG, "Horario: "+horario);
+
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
-        getSillasOcupadasJohan(id_ruta_disponible);
+        getSillasOcupadasEnParadas(id_ruta_disponible);
         //getSillasOcupadas(id_ruta_disponible);
 
 
@@ -441,7 +443,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      *
      * @param id_ruta_disponible
      */
-    private void getSillasOcupadasJohan(int id_ruta_disponible) {
+    private void getSillasOcupadasEnParadas(int id_ruta_disponible) {
 
         Log.e(Service.TAG, "hora: "+horario);
 
@@ -459,7 +461,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     object = new JSONObject(response);
                     // Obtener atributo "estado"
                     String estado = object.getString(Constantes.ESTADO);
-                    Log.e(TAG, "Sillas: " + response);
+                    Log.i(TAG, "Sillas: " + response);
 
                     switch (estado) {
                         case Constantes.SUCCESS: // EXITO

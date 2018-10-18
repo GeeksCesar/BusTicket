@@ -8,6 +8,7 @@ import android.util.DisplayMetrics;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class Helpers {
 
@@ -41,17 +42,34 @@ public class Helpers {
     public static String getTime() {
         // Obtener la fecha y hora del telefono
         Calendar calendar = Calendar.getInstance();
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         String hora = dateFormat.format(calendar.getTime());
         return hora;
     }
-
 
     public static String getDate() {
         Calendar calendar = Calendar.getInstance();
         String date = String.format("%d-%d-%d",
                 calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
         return date;
+    }
+
+    public static String formatTwelveHours(String hour){
+        String time;
+        String[] split = hour.split(":");
+        int hora = Integer.parseInt(split[0]);
+
+        if (hora > 12){
+            time = (hora-12)+":"+split[1]+":"+split[2]+ " PM";
+        } else {
+            if (hora == 12){
+                time = hour + " PM";
+            } else {
+                time = hour + " AM";
+            }
+        }
+
+        return time;
     }
 
 }
