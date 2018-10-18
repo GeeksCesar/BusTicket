@@ -83,8 +83,7 @@ public class SelectRutas extends AppCompatActivity {
     private ArrayList<String> listParaderoFin = new ArrayList<>();
 
     // Listas para SQLite
-    private List<Paradero> paraderoInicioList = new ArrayList<>();
-    private List<Paradero> paraderoFinList = new ArrayList<>();
+    private List<Paradero> paraderosList = new ArrayList<>();
     private List<TipoUsuario> tipoUsuariosList = new ArrayList<>();
 
     //VOLLEY
@@ -123,9 +122,10 @@ public class SelectRutas extends AppCompatActivity {
 
                 //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
                 ruta_inicio = parent.getItemAtPosition(position).toString();
-                id_paradero_inicio = Integer.parseInt(paraderoInicioList.get(position).getIdRemoto());
+                id_paradero_inicio = Integer.parseInt(paraderosList.get(position).getIdRemoto());
 
                 //getParaderosFin(id_ruta, id_paradero_inicio);
+                getParaderosFinSQLite(position);
             }
 
             @Override
@@ -139,8 +139,9 @@ public class SelectRutas extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
 
                 //id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
-                id_paradero_fin = Integer.parseInt(paraderoFinList.get(position).getIdRemoto());
                 ruta_fin = parent.getItemAtPosition(position).toString();
+                id_paradero_fin = Integer.parseInt(Paradero.find(Paradero.class, "ruta = ? AND paradero = ?",
+                        new String[]{"" + id_ruta, ""+ruta_fin}, "remoto", "id", null).get(0).getIdRemoto());
                 Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
                 Log.e(TAG, "Paradero fin: " + id_paradero_fin);
                 //getPrecio(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
@@ -719,31 +720,36 @@ public class SelectRutas extends AppCompatActivity {
         listParaderos.clear();
         listParaderoFin.clear();
 
-        paraderoInicioList = Paradero.find(Paradero.class, "ruta = ?",
-                new String[]{"" + id_ruta}, null, "remoto", null);
-        paraderoFinList = Paradero.find(Paradero.class, "ruta = ?",
-                new String[]{"" + id_ruta}, null, "remoto", null);
+        paraderosList = Paradero.find(Paradero.class, "ruta = ?",
+                new String[]{"" + id_ruta}, "remoto", "id", null);
 
-        if (paraderoInicioList.size()==0){
+        if (paraderosList.size()==0){
             DialogAlert.showDialogFailed(context, "Atención","No se han definido paraderos para la ruta ", SweetAlertDialog.WARNING_TYPE);
         }
 
-        for (Paradero paradero : paraderoInicioList) {
+        for (Paradero paradero : paraderosList) {
             listParaderos.add(paradero.getParadero());
-            listParaderoFin.add(paradero.getParadero());
         }
 
-        //setAdapter
         try {
-            listParaderoFin.remove(0);
-            paraderoFinList.remove(0);
-        } catch (Exception e) {
+            listParaderos.remove(paraderosList.size()-1);
+        } catch (Exception e){
             e.getMessage();
         }
+
         spInicio.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_inicio, R.id.txtName, listParaderos));
-        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
 
         getUsuariosSQLite();
+    }
+
+    public void getParaderosFinSQLite(int paradero_inicio){
+        listParaderoFin.clear();
+
+        for (int i = (paradero_inicio+1); i < paraderosList.size(); i++){
+            listParaderoFin.add(paraderosList.get(i).getParadero());
+        }
+
+        spFin.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_fin, R.id.txtName, listParaderoFin));
     }
 
     private void getUsuariosSQLite() {
