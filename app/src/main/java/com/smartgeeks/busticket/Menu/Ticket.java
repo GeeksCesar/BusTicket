@@ -82,6 +82,8 @@ public class Ticket extends Fragment {
     String placa, ruta_info, horario, hora;
     boolean getStatusRuta;
 
+    AlertDialog.Builder builder ;
+
     public Ticket() {
         // Required empty public constructor
     }
@@ -143,7 +145,7 @@ public class Ticket extends Fragment {
             @Override
             public void onClick(View view) {
 
-                final AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
+                builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
                 builder.setTitle(context.getResources().getString(R.string.app_name));
                 builder.setMessage(context.getResources().getString(R.string.dialogMessageFinalizar));
 
@@ -153,7 +155,9 @@ public class Ticket extends Fragment {
 
                         if (!dialogAlert.verificaConexion(context)) {
                             dialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
+                            dialog.cancel();
                         }else {
+                            dialog.cancel();
                             btnFinalizarRuta.setEnabled(false);
                             showProgress(true);
                             setFinalizarRuta(id_ruta_disponible, horario);
@@ -475,7 +479,10 @@ public class Ticket extends Fragment {
 
     private void setFinalizarRuta(final int id_ruta_disponible, final String horario) {
 
-        stringRequest = new StringRequest(Request.Method.GET, Service.SET_LIBERAR_SILLA+id_ruta_disponible+"/"+horario, new Response.Listener<String>() {
+        String URL = Service.SET_LIBERAR_SILLA+id_ruta_disponible+"/"+horario ;
+        Log.d(Service.TAG, "Url: "+URL);
+
+        stringRequest = new StringRequest(Request.Method.GET, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Log.e(Service.TAG, "response: " + response);
@@ -485,9 +492,11 @@ public class Ticket extends Fragment {
                     String respuesta = jsonObject.getString("message");
 
                     if (respuesta.equals("success")) {
-                        btnFinalizarRuta.setEnabled(true);
+                        showProgress(false);
+                        btnFinalizarRuta.setEnabled(false);
                         dialogAlert.showDialogFailed(context , "Exito" , "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE) ;
                     }else {
+                        showProgress(false);
                         btnFinalizarRuta.setEnabled(true);
                         dialogAlert.showDialogFailed(context , "Alerta" , "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE) ;
                     }

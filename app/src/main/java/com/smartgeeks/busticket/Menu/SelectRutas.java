@@ -107,7 +107,7 @@ public class SelectRutas extends AppCompatActivity {
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    static int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
     String ruta_inicio, ruta_fin, hora, horario, info, nombreEmpresa;
 
@@ -178,9 +178,10 @@ public class SelectRutas extends AppCompatActivity {
                 ruta_fin = parent.getItemAtPosition(position).toString();
                 id_paradero_fin = Paradero.find(Paradero.class, "ruta = ? AND paradero = ?",
                         new String[]{"" + id_ruta, ""+ruta_fin}, "remoto", "remoto", null).get(0).getIdRemoto();
+
                 Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
                 Log.e(TAG, "Paradero fin: " + id_paradero_fin);
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
+                Log.e(TAG, "tipo usuario: " + id_tipo_usuario);
 
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
@@ -207,8 +208,6 @@ public class SelectRutas extends AppCompatActivity {
 
                 nameUsuario = parent.getItemAtPosition(position).toString();
 
-                //getPrecio(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
-
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
                     formatPrecio(precioPasaje);
@@ -218,6 +217,11 @@ public class SelectRutas extends AppCompatActivity {
 
                 if (sizeTarifas == 0){
                     Toast.makeText(context, "No se han definido precios para este usuario.", Toast.LENGTH_SHORT).show();
+                    contenedorCheckBox.setVisibility(View.GONE);
+                    contenedorPrecio.setVisibility(View.GONE);
+                }else {
+                    contenedorCheckBox.setVisibility(View.VISIBLE);
+                    contenedorPrecio.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -268,9 +272,13 @@ public class SelectRutas extends AppCompatActivity {
             public void onClick(View view) {
                 precio_sum_pasaje = precioPasaje * countPasajes;
 
-                //  Log.e(Service.TAG , "id_ruta: "+id_ruta);
+                String precio = String.valueOf(precio_sum_pasaje) ;
+
                 if (ruta_inicio == ruta_fin) {
                     dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                } else if (precio_sum_pasaje == 0 || precio == null){
+                    dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
                     btnFinalizar.setEnabled(false);
@@ -446,6 +454,12 @@ public class SelectRutas extends AppCompatActivity {
         cbAsiento.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+               if (DialogAlert.verificaConexion(context)){
+                    btnSiguiente.setText("Siguiente");
+                }else{
+                    btnSiguiente.setText("Finalizar");
+                }
 
                 if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);
@@ -876,6 +890,11 @@ public class SelectRutas extends AppCompatActivity {
 
         if (tipoUsuariosList.size()==0){
             Log.e(TAG, "NO hay usuarios");
+            contenedorPrecio.setVisibility(View.GONE);
+            contenedorCheckBox.setVisibility(View.GONE);
+        }else {
+            contenedorPrecio.setVisibility(View.VISIBLE);
+            contenedorCheckBox.setVisibility(View.VISIBLE);
         }
 
         for (TipoUsuario tipoUsuario : tipoUsuariosList) {
