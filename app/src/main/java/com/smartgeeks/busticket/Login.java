@@ -6,9 +6,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -61,16 +64,13 @@ public class Login extends AppCompatActivity {
         mSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                // Store values at the time of the login attempt.
                 String email = edUsuario.getText().toString().trim();
                 String password = edPassword.getText().toString().trim();
 
                 if (!dialogAlert.verificaConexion(context)) {
-                    Log.e("Mesage ", "Entra aquí");
                     dialogAlert.showDialogErrorConexion(context);
                 } else {
-                    // showProgress(true);
+                    showProgress(true);
                     if (email.isEmpty() || password.isEmpty()) {
                         dialogAlert.showDialogFailed(context, "Alerta", "Rellene los campos", SweetAlertDialog.WARNING_TYPE);
                     } else {
@@ -97,16 +97,10 @@ public class Login extends AppCompatActivity {
                     errorSiginin = response.body().getError();
                     messageSignin = response.body().getMessage();
 
-                    Log.d(Service.TAG, "error: " + errorSiginin);
-                    Log.d(Service.TAG, "message: " + messageSignin);
-
                     if (errorSiginin == true) {
-
                         User user = response.body().getUser();
 
-
                         if (user.getIdRol() == 2 || user.getIdRol() == 3) {
-
                             localSync();
 
                             Intent intent = new Intent(context, MainActivity.class);
@@ -170,11 +164,9 @@ public class Login extends AppCompatActivity {
         mSignInButton = findViewById(R.id.btnIniciarSession);
         edPassword = findViewById(R.id.edPassword);
         edUsuario = findViewById(R.id.edUsuario);
-
         mProgressView = findViewById(R.id.login_progress);
 
-        // Animation slideUpIn = AnimationUtils.loadAnimation(context, R.anim.shide_in);
-        //imgBannner.startAnimation(slideUpIn);
+        edPassword.setImeOptions(EditorInfo.IME_ACTION_DONE);
     }
 
     private void setDataPrefrences() {
@@ -185,6 +177,21 @@ public class Login extends AppCompatActivity {
         editor.commit();
     }
 
+    @Override
+    public boolean dispatchTouchEvent(final MotionEvent ev) {
+        final View currentFocus = getCurrentFocus();
+        if (!(currentFocus instanceof EditText) || !isTouchInsideView(ev, currentFocus)) {
+            ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE))
+                    .hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+    private boolean isTouchInsideView(final MotionEvent ev, final View currentFocus) {
+        final int[] loc = new int[2];
+        currentFocus.getLocationOnScreen(loc);
+        return ev.getRawX() > loc[0] && ev.getRawY() > loc[1] && ev.getRawX() < (loc[0] + currentFocus.getWidth())
+                && ev.getRawY() < (loc[1] + currentFocus.getHeight());
+    }
 
     @Override
     protected void onDestroy() {

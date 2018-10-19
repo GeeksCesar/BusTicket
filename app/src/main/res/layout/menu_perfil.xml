@@ -12,8 +12,8 @@
         android:layout_width="@dimen/size_img_perfil"
         android:layout_height="@dimen/size_img_perfil"
         android:layout_centerHorizontal="true"
-        android:src="@mipmap/ic_launcher"
-        android:visibility="gone"
+        android:src="@mipmap/avatar_profile"
+        android:visibility="visible"
         android:scaleType="center"/>
 
     <TextView
@@ -29,9 +29,16 @@
         android:layout_below="@+id/tvNameUsuario" />
 
     <Button
+        android:id="@+id/btnChangePrint"
+        style="@style/ButtonCustomEnable"
+        android:text="Cambiar Impresora"
+        android:layout_above="@+id/btnCerrarSession"
+        android:layout_marginBottom="10dp"/>
+
+    <Button
         android:id="@+id/btnCerrarSession"
         style="@style/ButtonCustomEnable"
-        android:text="Cerrar Sessión"
+        android:text="Cerrar Sesión"
         android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>
