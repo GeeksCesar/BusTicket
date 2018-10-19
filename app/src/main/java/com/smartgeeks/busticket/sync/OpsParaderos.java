@@ -99,7 +99,7 @@ public class OpsParaderos {
             Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
-            HashMap<String, Paradero> expenseMap = new HashMap<String, Paradero>();
+            HashMap<Integer, Paradero> expenseMap = new HashMap<Integer, Paradero>();
             for (Paradero paradero : data) {
                 expenseMap.put(paradero.getIdRemoto(), paradero);
             }

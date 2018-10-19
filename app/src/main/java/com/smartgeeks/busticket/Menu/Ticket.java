@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.android.volley.AuthFailureError;
@@ -59,6 +60,7 @@ public class Ticket extends Fragment {
     Spinner spPlaca, spRuta, spHorarios;
     Button btnSiguiente, btnRecordarRuta, btnFinalizarRuta;
     private View mProgressView;
+    LinearLayout contentButton;
 
     private JSONArray resultPlaca;
     private JSONArray resultRuta;
@@ -256,10 +258,14 @@ public class Ticket extends Fragment {
         spRuta = view.findViewById(R.id.spRutas);
         spHorarios = view.findViewById(R.id.spHorarios);
         mProgressView = view.findViewById(R.id.login_progress);
+        contentButton = view.findViewById(R.id.contentButton);
 
         btnSiguiente.setBackgroundResource(R.drawable.bg_button_main);
         btnRecordarRuta.setBackgroundResource(R.drawable.bg_button_main);
         btnFinalizarRuta.setBackgroundResource(R.drawable.bg_button_main);
+
+        contentButton.setVisibility(View.GONE);
+        btnSiguiente.setVisibility(View.GONE);
 
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
         Log.e(Service.TAG, "estado_ruta: " + getStatusRuta);
@@ -435,7 +441,13 @@ public class Ticket extends Fragment {
 
     private void getRutasSQLite(int id_vehiculo) {
         listRuta.clear();
+        listHora.clear();
         listRutas = Ruta.find(Ruta.class, "vehiculo = ?", ""+id_vehiculo);
+
+        if (listRutas.size() == 0){
+            DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido rutas para este Vehiculo", SweetAlertDialog.WARNING_TYPE);
+        }
+
         for (Ruta ruta : listRutas) {
             String nameRuta = ruta.getPartida() + " - " + ruta.getDestino();
             listRuta.add(nameRuta);
@@ -456,7 +468,7 @@ public class Ticket extends Fragment {
         spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
 
         if (listHorarios.size() > 0) {
-            btnRecordarRuta.setVisibility(View.VISIBLE);
+            contentButton.setVisibility(View.VISIBLE);
             btnSiguiente.setVisibility(View.VISIBLE);
         }
     }
@@ -474,11 +486,9 @@ public class Ticket extends Fragment {
 
                     if (respuesta.equals("success")) {
                         btnFinalizarRuta.setEnabled(true);
-                        showProgress(false);
                         dialogAlert.showDialogFailed(context , "Exito" , "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE) ;
                     }else {
                         btnFinalizarRuta.setEnabled(true);
-                        showProgress(false);
                         dialogAlert.showDialogFailed(context , "Alerta" , "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE) ;
                     }
 

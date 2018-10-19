@@ -38,6 +38,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
 
+import com.smartgeeks.busticket.Login;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
@@ -106,7 +107,7 @@ public class SelectRutas extends AppCompatActivity {
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
+    static int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
     String ruta_inicio, ruta_fin, hora, horario, info, nombreEmpresa;
 
@@ -158,7 +159,7 @@ public class SelectRutas extends AppCompatActivity {
 
                 //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
                 ruta_inicio = parent.getItemAtPosition(position).toString();
-                id_paradero_inicio = Integer.parseInt(paraderosList.get(position).getIdRemoto());
+                id_paradero_inicio = paraderosList.get(position).getIdRemoto();
 
                 //getParaderosFin(id_ruta, id_paradero_inicio);
                 getParaderosFinSQLite(position);
@@ -175,22 +176,18 @@ public class SelectRutas extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
                 //id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
                 ruta_fin = parent.getItemAtPosition(position).toString();
-                id_paradero_fin = Integer.parseInt(Paradero.find(Paradero.class, "ruta = ? AND paradero = ?",
-                        new String[]{"" + id_ruta, ""+ruta_fin}, "remoto", "id", null).get(0).getIdRemoto());
+                id_paradero_fin = Paradero.find(Paradero.class, "ruta = ? AND paradero = ?",
+                        new String[]{"" + id_ruta, ""+ruta_fin}, "remoto", "remoto", null).get(0).getIdRemoto();
                 Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
                 Log.e(TAG, "Paradero fin: " + id_paradero_fin);
                 //getPrecio(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
 
                 try {
-                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position_tipo_usuario);
+                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
                     formatPrecio(precioPasaje);
-                    if (sizeTarifas == 0){
-                        Toast.makeText(context, "No se han definido precios para estos paraderos", Toast.LENGTH_SHORT).show();
-                    }
                 } catch (Exception e) {
                     e.getMessage();
                 }
-
 
             }
 
@@ -213,10 +210,14 @@ public class SelectRutas extends AppCompatActivity {
                 //getPrecio(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
 
                 try {
-                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, position);
+                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
                     formatPrecio(precioPasaje);
                 } catch (Exception e) {
                     e.getMessage();
+                }
+
+                if (sizeTarifas == 0){
+                    Toast.makeText(context, "No se han definido precios para este usuario.", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -386,6 +387,7 @@ public class SelectRutas extends AppCompatActivity {
 
         encontrarDispositivoBlue();
        //getParaderos(id_ruta); //webservice
+        Log.e(TAG, "Id Ruta: "+id_ruta);
         getParaderosSQLite(id_ruta);
 
         validarCheckBox();
@@ -444,11 +446,16 @@ public class SelectRutas extends AppCompatActivity {
         cbAsiento.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
                 if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);
-                    btnSiguiente.setVisibility(View.VISIBLE);
-                    btnFinalizar.setVisibility(View.GONE);
-                   // btnOlvidarRuta.setVisibility(View.GONE);
+
+                    if (sizeTarifas > 0){
+                        btnSiguiente.setVisibility(View.VISIBLE);
+                        btnFinalizar.setVisibility(View.GONE);
+                        // btnOlvidarRuta.setVisibility(View.GONE);
+                    }
+
                 }else {
                     btnSiguiente.setVisibility(View.GONE);
                    // btnOlvidarRuta.setVisibility(View.VISIBLE);
@@ -461,8 +468,11 @@ public class SelectRutas extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if (cbDePie.isChecked()) {
                     cbAsiento.setChecked(false);
-                    btnSiguiente.setVisibility(View.GONE);
-                    btnFinalizar.setVisibility(View.VISIBLE);
+
+                    if (sizeTarifas > 0){
+                        btnSiguiente.setVisibility(View.GONE);
+                        btnFinalizar.setVisibility(View.VISIBLE);
+                    }
 
                   //  btnOlvidarRuta.setVisibility(View.GONE);
                 }else{
@@ -475,6 +485,9 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     public void goBack(View view) {
+        listParaderos.clear();
+        listParaderoFin.clear();
+        lisUsuarios.clear();
         this.finish();
     }
 
@@ -825,7 +838,7 @@ public class SelectRutas extends AppCompatActivity {
         listParaderoFin.clear();
 
         paraderosList = Paradero.find(Paradero.class, "ruta = ?",
-                new String[]{"" + id_ruta}, "remoto", "id", null);
+                new String[]{"" + id_ruta}, "remoto", "remoto", null);
 
         if (paraderosList.size()==0){
             DialogAlert.showDialogFailed(context, "Atención","No se han definido paraderos para la ruta ", SweetAlertDialog.WARNING_TYPE);
@@ -861,6 +874,10 @@ public class SelectRutas extends AppCompatActivity {
 
         tipoUsuariosList = TipoUsuario.listAll(TipoUsuario.class, "remoto");
 
+        if (tipoUsuariosList.size()==0){
+            Log.e(TAG, "NO hay usuarios");
+        }
+
         for (TipoUsuario tipoUsuario : tipoUsuariosList) {
             lisUsuarios.add(tipoUsuario.getNombre());
         }
@@ -869,37 +886,15 @@ public class SelectRutas extends AppCompatActivity {
         spPasajero.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_tipo_pasajero, R.id.txtName, lisUsuarios));
     }
 
-    private double getPrecioSQLite(int id_paradero_inicio, int id_paradero_fin, int position) {
+    private double getPrecioSQLite(int id_paradero_inicio, int id_paradero_fin, int id_tipo_usuario) {
         List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
-                "parada_inicio = ? AND parada_fin = ?", "" + id_paradero_inicio,
-                "" + id_paradero_fin);
+                "parada_inicio = ? AND parada_fin = ? AND tipo_usuario = ?", "" + id_paradero_inicio,
+                "" + id_paradero_fin, ""+id_tipo_usuario);
 
-        double precio = 5000;
+        double precio = tarifaParaderos.get(0).getMonto();;
         Log.e(TAG, "Size price: " + tarifaParaderos.size());
         sizeTarifas = tarifaParaderos.size();
 
-        switch (position) {
-            case 0:
-                precio = tarifaParaderos.get(0).getEstudiante();
-                Log.e(TAG, "Estudiante: " + precio);
-                break;
-            case 1:
-                precio = tarifaParaderos.get(0).getNormal();
-                Log.e(TAG, "Normal: " + precio);
-                break;
-            case 2:
-                precio = tarifaParaderos.get(0).getFrecuente();
-                Log.e(TAG , "Frecuente: " + precio);
-                break;
-            case 3:
-                precio = tarifaParaderos.get(0).getAdulto_mayor();
-                Log.e(TAG, "Adulto: " + precio);
-                break;
-            case 4:
-                precio = tarifaParaderos.get(0).getVale_muni();
-                Log.e(TAG, "ValeMuni: " + precio);
-                break;
-        }
         return precio;
     }
 

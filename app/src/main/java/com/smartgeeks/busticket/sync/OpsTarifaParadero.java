@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,11 +27,13 @@ public class OpsTarifaParadero {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
-        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO);
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
+
+        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_TARIFAS_PARADERO,
+                        Constantes.GET_TARIFAS_PARADERO + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -95,7 +98,7 @@ public class OpsTarifaParadero {
             Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
-            HashMap<String, TarifaParadero> expenseMap = new HashMap<String, TarifaParadero>();
+            HashMap<Integer, TarifaParadero> expenseMap = new HashMap<Integer, TarifaParadero>();
             for (TarifaParadero tarifaParadero : data) {
                 expenseMap.put(tarifaParadero.getIdRemoto(), tarifaParadero);
             }
@@ -118,14 +121,12 @@ public class OpsTarifaParadero {
                     expenseMap.remove(tarifaParadero.getIdRemoto());
 
                     // Comprobar si necesita ser actualizado los datos
-                    boolean b1 = match.getParada_inicio() != tarifaParadero.getParada_fin();
-                    boolean b2 = match.getNormal() != tarifaParadero.getNormal();
-                    boolean b3 = match.getFrecuente() != tarifaParadero.getFrecuente();
-                    boolean b4 = match.getAdulto_mayor() != tarifaParadero.getAdulto_mayor();
-                    boolean b5 = match.getEstudiante() != tarifaParadero.getEstudiante();
-                    boolean b6 = match.getVale_muni() != tarifaParadero.getVale_muni();
+                    boolean b1 = match.getParadaInicio() != tarifaParadero.getParadaInicio();
+                    boolean b2 = match.getParadaFin() != tarifaParadero.getParadaFin();
+                    boolean b3 = match.getMonto() != tarifaParadero.getMonto();
+                    boolean b4 = match.getTipoUsuario() != tarifaParadero.getTipoUsuario();
 
-                    if (b1 || b2 || b3 || b4 || b5 || b6) {
+                    if (b1 || b2 || b3 || b4) {
                         Log.i(TAG, "Programando actualización de: " + tarifaParadero.getIdRemoto());
                         match.update();
                         numUpdates++;

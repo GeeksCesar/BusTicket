@@ -10,6 +10,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,11 +27,13 @@ public class OpsTipoUsuario {
 
     public static void realizarSincronizacionLocal(Context context) {
         Log.i(TAG, "Actualizando el cliente.");
-        Log.d(TAG, "Url: " + Constantes.GET_TIPOS_USUARIO);
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
+
+        Log.d(TAG, "Url: " + Constantes.GET_TIPOS_USUARIO + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_TIPOS_USUARIO,
+                        Constantes.GET_TIPOS_USUARIO + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
@@ -67,7 +70,8 @@ public class OpsTipoUsuario {
                     actualizarDatosLocales(response);
                     break;
                 case Constantes.FAILED: // FALLIDO
-                    Log.e(TAG, "Error al traer datos");
+                    String mesaje = response.getString(Constantes.MENSAJE);
+                    Log.e(TAG, mesaje);
                     break;
             }
 

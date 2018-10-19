@@ -6,58 +6,41 @@ import com.orm.dsl.Unique;
 public class TarifaParadero extends SugarRecord {
 
     @Unique
-    String remoto;
+    int remoto;
     int paradaInicio;
     int paradaFin;
-    double normal;
-    double frecuente;
-    double adultoMayor;
-    double estudiante;
-    double valeMuni;
+    int monto;
+    int tipoUsuario;
+
 
     public TarifaParadero() {
     }
 
-    public TarifaParadero(String remoto, int paradaInicio, int paradaFin, double normal, double frecuente, double adultoMayor, double estudiante, double valeMuni) {
+    public TarifaParadero(int remoto, int paradaInicio, int paradaFin, int monto, int tipoUsuario) {
         this.remoto = remoto;
         this.paradaInicio = paradaInicio;
         this.paradaFin = paradaFin;
-        this.normal = normal;
-        this.frecuente = frecuente;
-        this.adultoMayor = adultoMayor;
-        this.estudiante = estudiante;
-        this.valeMuni = valeMuni;
+        this.monto = monto;
+        this.tipoUsuario = tipoUsuario;
     }
 
-    public String getIdRemoto() {
+    public int getIdRemoto() {
         return remoto;
     }
 
-    public int getParada_inicio() {
+    public int getParadaInicio() {
         return paradaInicio;
     }
 
-    public int getParada_fin() {
+    public int getParadaFin() {
         return paradaFin;
     }
 
-    public double getNormal() {
-        return normal;
+    public int getMonto() {
+        return monto;
     }
 
-    public double getFrecuente() {
-        return frecuente;
-    }
-
-    public double getAdulto_mayor() {
-        return adultoMayor;
-    }
-
-    public double getEstudiante() {
-        return estudiante;
-    }
-
-    public double getVale_muni() {
-        return valeMuni;
+    public int getTipoUsuario() {
+        return tipoUsuario;
     }
 }

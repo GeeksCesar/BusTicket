@@ -6,24 +6,24 @@ import com.orm.dsl.Unique;
 public class Paradero extends SugarRecord {
 
     @Unique
-    String remoto;
+    int remoto;
     int ruta;
     String paradero;
 
     public Paradero() {
     }
 
-    public Paradero(String id_remoto, int ruta, String paradero) {
+    public Paradero(int id_remoto, int ruta, String paradero) {
         this.remoto = id_remoto;
         this.ruta = ruta;
         this.paradero = paradero;
     }
 
-    public String getIdRemoto() {
+    public int getIdRemoto() {
         return remoto;
     }
 
-    public void setIdRemoto(String remoto) {
+    public void setIdRemoto(int remoto) {
         this.remoto = remoto;
     }
 
