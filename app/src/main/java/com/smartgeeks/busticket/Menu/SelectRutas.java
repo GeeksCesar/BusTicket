@@ -142,6 +142,8 @@ public class SelectRutas extends AppCompatActivity {
     Button btnCancelar;
     ListView lstPrint;
 
+    boolean isEstadoRuta ;
+    SweetAlertDialog alertDialog ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,7 +217,7 @@ public class SelectRutas extends AppCompatActivity {
                     e.getMessage();
                 }
 
-                if (sizeTarifas == 0){
+                if (sizeTarifas == 0 || Integer.parseInt(tipoUsuariosList.get(0).getId_remoto()) > 0){
                     Toast.makeText(context, "No se han definido precios para este usuario.", Toast.LENGTH_SHORT).show();
                     contenedorCheckBox.setVisibility(View.GONE);
                     contenedorPrecio.setVisibility(View.GONE);
@@ -284,9 +286,54 @@ public class SelectRutas extends AppCompatActivity {
                     btnFinalizar.setEnabled(false);
                     btnFinalizar.setVisibility(View.GONE);
                     showProgress(true);
-                    registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
+
+                    if (DialogAlert.verificaConexion(context)){
+                        registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
+                    }else {
+                        printOffLine();
+                    }
+
                 }
 
+            }
+        });
+
+        btnSiguiente.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                precio_sum_pasaje = precioPasaje * countPasajes;
+                String precio = String.valueOf(precio_sum_pasaje) ;
+
+                if (ruta_inicio == ruta_fin) {
+                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                } else if (precio_sum_pasaje == 0 || precio == null){
+                    dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
+                    return;
+                } else {
+                    if (cbAsiento.isChecked() && DialogAlert.verificaConexion(context)) {
+                        Intent intent = new Intent(context, SelectSillas.class);
+                        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
+                        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+                        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
+                        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
+                        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
+                        intent.putExtra(SelectSillas.HORARIO, horario);
+                        intent.putExtra(SelectSillas.HORA, hora);
+                        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
+                        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
+                        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
+                        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
+                        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
+
+                        startActivity(intent);
+                    } else {
+                        // Si no hay conexión a internet, guardo el ticket localmente
+                        printOffLine();
+                    }
+                }
             }
         });
 
@@ -358,44 +405,8 @@ public class SelectRutas extends AppCompatActivity {
         listParaderos = new ArrayList<String>();
         lisUsuarios = new ArrayList<String>();
 
-        btnSiguiente.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                precio_sum_pasaje = precioPasaje * countPasajes;
-
-                if (ruta_inicio == ruta_fin) {
-                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
-                    return;
-                } else {
-                    if (cbAsiento.isChecked() && DialogAlert.verificaConexion(context)) {
-                        Intent intent = new Intent(context, SelectSillas.class);
-                        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
-                        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
-                        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
-                        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
-                        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                        intent.putExtra(SelectSillas.HORARIO, horario);
-                        intent.putExtra(SelectSillas.HORA, hora);
-                        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
-                        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
-                        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
-                        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
-                        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
-
-                        startActivity(intent);
-                    } else {
-                        // Si no hay conexión a internet, guardo el ticket localmente
-                        saveTicketLocal();
-                    }
-                }
-            }
-        });
-
         encontrarDispositivoBlue();
-       //getParaderos(id_ruta); //webservice
-        Log.e(TAG, "Id Ruta: "+id_ruta);
+
         getParaderosSQLite(id_ruta);
 
         validarCheckBox();
@@ -403,6 +414,61 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
+    private void printOffLine(){
+        saveTicketLocal();
+
+        alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+
+        alertDialog.setTitleText("Exito")
+                .setContentText("Guardo el ticket")
+                .show();
+
+        Button button = alertDialog.findViewById(R.id.confirm_button);
+        // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+        button.setBackgroundResource(R.drawable.bg_button_main);
+        button.setPadding(5, 5, 5, 5);
+        button.setText("Imprimir Ticket");
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    alertDialog.dismiss();
+
+                    getDataPrint();
+                    Log.e(Service.TAG, "estadoo: "+estadoPrint) ;
+                    if (estadoPrint == true){
+                        Log.e(Service.TAG, "entro estado") ;
+                        Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
+                        Log.e(Service.TAG, "parired: "+pairedDevice.size()) ;
+
+                        if (pairedDevice.size() > 0) {
+                            for (BluetoothDevice pairedDev : pairedDevice) {
+                                if (pairedDev.getName().equals(namePrint)) {
+                                    bluetoothDevice = pairedDev;
+                                    isEstadoRuta = true ;
+                                    abrirImpresoraBlue();
+                                    goIntentMain();
+                                    break;
+                                }else {
+                                    Log.e(Service.TAG  , "error no existe impresora");
+                                }
+                            }
+                        }else {
+                            Log.e(Service.TAG  , "error no existe impresora");
+                        }
+
+                    }else {
+                        showDialogTiquete();
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+    }
 
     public void getDataPrint(){
         namePrint = RutaPreferences.getInstance(context).getNamePrint() ;
@@ -963,7 +1029,7 @@ public class SelectRutas extends AppCompatActivity {
 
                     }
                 }
-
+                dialogPrint.hide();
             }
         });
 
@@ -1017,7 +1083,12 @@ public class SelectRutas extends AppCompatActivity {
             inputStream = bluetoothSocket.getInputStream();
 
             comenzarAEscucharDatos();
-            printData();
+
+            if (isEstadoRuta){
+                printDataOffLine();
+            }else {
+                printData();
+            }
 
         } catch (Exception ex) {
             Log.i(Service.TAG, "Error P: " +ex.getMessage());
@@ -1174,7 +1245,102 @@ public class SelectRutas extends AppCompatActivity {
 
             outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
 
-            dialogPrint.hide();
+        }catch (Exception ex){
+            ex.printStackTrace();
+            Log.e(Service.TAG , "error in printdata");
+        }
+
+
+    }
+
+    void printDataOffLine() throws IOException {
+        Log.d(Service.TAG, "entro a printDataOffLine") ;
+
+        String[] split = info.split(",");
+
+        byte[] command=null;
+        try{
+
+            byte[] arrayOfByte1 = { 27, 33, 0 };
+            byte[] format = { 27, 33, 0 };
+
+
+            byte[] centrado = {0x1B, 'a', 0x01};
+            byte[] der = {0x1B, 'a', 0x02};
+            byte[] izq = {0x1B, 'a', 0x00};
+
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
+
+            outputStream.write(izq);
+            String msg = "";
+            msg += "\n";
+            msg += "Tarifa:   " + nameUsuario;
+            msg += "\n";
+            msg += "Fecha:   " + Helpers.getDate();
+            msg += "\n";
+            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
+            String msg0 = "" ;
+            msg0 += "Horario:   " + hora;
+            msg0 += "\n";
+            msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
+            msg0 += "\n";
+            outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
+            String ruta = "" ;
+            ruta += "Ruta:  " + split[1] + "\n";
+            // Small
+            format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+            outputStream.write(format);
+            outputStream.write(ruta.getBytes(),0,ruta.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
+            String msg1 = "";
+            msg1 += "";
+            msg1 += "Inicio: " + ruta_inicio;
+            msg1 += "\n";
+            msg1 += "Termino: " + ruta_fin;
+            msg1 += "\n";
+            msg1 += "Vehiculo: " + split[0];
+            outputStream.write(msg1.getBytes(), 0, msg1.getBytes().length);
+            String msg2 = "";
+            msg2 += "\n";
+            msg2 += "Hora: " + Helpers.getTime();
+            msg2 += "\n";
+            msg2 += "\n";
+            outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
+
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            String precio = "";
+            precio += "Precio: "+getPrecioPasaje+"\n";
+
+            outputStream.write(format);
+            outputStream.write(precio.getBytes(),0,precio.getBytes().length);
+            format =new byte[]{ 27, 33, 0 };
+
+            outputStream.write(format);
+
+            try {
+                Bitmap bmp = BitmapFactory.decodeResource(getResources(),
+                        R.mipmap.img_logo_pdf);
+                byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
+
+                outputStream.write(data);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(Service.TAG, "PrintTools: the file isn't exists");
+            }
+
+            outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
 
         }catch (Exception ex){
             ex.printStackTrace();

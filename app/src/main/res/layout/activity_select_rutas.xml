@@ -49,9 +49,16 @@
         android:layout_below="@+id/contenedorHeader">
 
         <Spinner
-            android:id="@+id/spInicio"
+            android:id="@+id/spUsuarios"
             style="@style/SpnnerCustom"
             android:layout_marginHorizontal="@dimen/margin_horizontal_spinner" />
+
+        <Spinner
+            android:id="@+id/spInicio"
+            style="@style/SpnnerCustom"
+            android:layout_marginTop="@dimen/activity_ontenedor_margin"
+            android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
+            android:layout_below="@+id/spUsuarios"/>
 
         <Spinner
             android:id="@+id/spFIn"
@@ -61,20 +68,13 @@
             android:layout_below="@+id/spInicio"/>
 
 
-        <Spinner
-            android:id="@+id/spUsuarios"
-            style="@style/SpnnerCustom"
-            android:layout_marginTop="@dimen/activity_ontenedor_margin"
-            android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
-            android:layout_below="@+id/spFIn"/>
-
         <LinearLayout
             android:id="@+id/contenedorCheckbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="20dp"
-            android:layout_below="@+id/spUsuarios"
+            android:layout_below="@+id/spFIn"
             android:layout_marginHorizontal="35dp">
 
             <CheckBox

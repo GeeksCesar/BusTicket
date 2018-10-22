@@ -42,7 +42,6 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.MainActivity;
-import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.R;
@@ -52,6 +51,7 @@ import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.sync.SyncService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -221,6 +221,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         showDataTextView();
 
         encontrarDispositivoBlue();
+
+        remotoSync();
     }
 
     public void getDataPrint(){
@@ -567,16 +569,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                                                 if (pairedDev.getName().equals(namePrint)) {
                                                     bluetoothDevice = pairedDev;
                                                     abrirImpresoraBlue();
-                                                    goIntentMain();
+
                                                      break;
                                                 }else {
                                                     Log.e(Service.TAG  , "error no existe impresora");
-                                                    //Toast.makeText(SelectRutas.this, "No se puede imprimir", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         }else {
                                             Log.e(Service.TAG  , "error no existe impresora");
-                                            //Toast.makeText(SelectRutas.this, "No existe impresora", Toast.LENGTH_SHORT).show();
                                         }
 
                                     }else {
@@ -677,6 +677,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
             comenzarAEscucharDatos();
             printData();
+            goIntentMain();
 
         } catch (Exception ex) {
 
@@ -891,7 +892,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     }
                 }
-
+                dialogPrint.hide();
             }
         });
 
@@ -938,6 +939,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         startActivity(intent);
         finish();
     }
+
+    private void remotoSync() {
+        Intent sync = new Intent(context, SyncService.class);
+        sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
+        startService(sync);
+    }
+
 
 }
 

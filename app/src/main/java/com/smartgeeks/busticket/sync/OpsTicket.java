@@ -126,7 +126,7 @@ public class OpsTicket {
                     break;
 
                 case Constantes.FAILED:
-                    Log.i(TAG, mensaje);
+                    Log.e(TAG, mensaje);
                     break;
             }
         } catch (JSONException e) {
@@ -145,7 +145,7 @@ public class OpsTicket {
         // Si se registró remotamente, el ticket. Lo elimino de la base de datos local
         Ticket ticket = Ticket.findById(Ticket.class, idLocal);
         ticket.delete();
-        Log.i(TAG, "Registro " + idRemota + " sincronización completada");
+        Log.e(TAG, "Registro " + idRemota + " sincronización completada");
     }
 
 
