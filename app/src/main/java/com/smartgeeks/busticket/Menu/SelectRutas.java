@@ -437,11 +437,10 @@ public class SelectRutas extends AppCompatActivity {
                     alertDialog.dismiss();
 
                     getDataPrint();
-                    Log.e(Service.TAG, "estadoo: "+estadoPrint) ;
+
                     if (estadoPrint == true){
-                        Log.e(Service.TAG, "entro estado") ;
+
                         Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
-                        Log.e(Service.TAG, "parired: "+pairedDevice.size()) ;
 
                         if (pairedDevice.size() > 0) {
                             for (BluetoothDevice pairedDev : pairedDevice) {
@@ -474,9 +473,6 @@ public class SelectRutas extends AppCompatActivity {
     public void getDataPrint(){
         namePrint = RutaPreferences.getInstance(context).getNamePrint() ;
         estadoPrint = RutaPreferences.getInstance(context).getEstadoPrint();
-
-        Log.d(Service.TAG , "name print: "+namePrint);
-        Log.d(Service.TAG , "boolen print: "+estadoPrint);
     }
 
     private void saveTicketLocal() {
@@ -1314,6 +1310,8 @@ public class SelectRutas extends AppCompatActivity {
             String msg2 = "";
             msg2 += "\n";
             msg2 += "Hora: " + Helpers.getTime();
+            msg2 += "\n";
+            msg2 += "Cantidad: " + countPasajes;
             msg2 += "\n";
             msg2 += "\n";
             outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
