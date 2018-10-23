@@ -48,6 +48,7 @@ public class SplashScreen extends AppCompatActivity {
 
         if (session.equals("SessionSuccess")) {
             localSync();
+            remotoSync();
         }
 
         splash = new Thread() {
@@ -84,4 +85,11 @@ public class SplashScreen extends AppCompatActivity {
         sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
         startService(sync);
     }
+
+    private void remotoSync() {
+        Intent sync = new Intent(context, SyncService.class);
+        sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
+        startService(sync);
+    }
+
 }
