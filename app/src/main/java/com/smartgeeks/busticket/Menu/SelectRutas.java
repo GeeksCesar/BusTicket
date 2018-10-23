@@ -1214,6 +1214,8 @@ public class SelectRutas extends AppCompatActivity {
             msg2 += "\n";
             msg2 += "Hora: " + Helpers.getTime();
             msg2 += "\n";
+            msg2 += "Cantidad: " + countPasajes;
+            msg2 += "\n";
             msg2 += "\n";
             outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
 

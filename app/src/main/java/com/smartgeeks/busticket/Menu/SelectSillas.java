@@ -593,7 +593,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     } else {
                         String sillas = jsonObject.getString("silla");
-                        dialogAlert.showDialogFailed(context, "Error", respuesta + sillas, SweetAlertDialog.ERROR_TYPE);
+                        dialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas +"\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
                         btnConfirmarTicket.setEnabled(true);
                         btnConfirmarTicket.setVisibility(View.VISIBLE);
                         showProgress(false);
