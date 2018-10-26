@@ -30,9 +30,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -84,7 +88,8 @@ public class SelectRutas extends AppCompatActivity {
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    LinearLayout contenedorCheckBox, contenedorPrecio ;
+    private View mProgressView;
+    View contenedorCheckBox, contenedorPrecio ;
     Button btnSiguiente, btnFinalizar, btnOlvidarRuta,  btnMenos, btnMas ;
     Spinner spInicio, spFin, spPasajero ;
     CheckBox cbAsiento, cbDePie ;
@@ -107,13 +112,13 @@ public class SelectRutas extends AppCompatActivity {
     RequestQueue requestQueue;
     StringRequest stringRequest;
 
-    int countPasajes = 1, precio_sum_pasaje, precioPasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
+    int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
     String ruta_inicio, ruta_fin, hora, horario, info, nombreEmpresa;
 
     Context context;
 
-    private View mProgressView;
+
 
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible, id_empresa;
     String nameUsuario, getPrecioPasaje;
@@ -153,17 +158,48 @@ public class SelectRutas extends AppCompatActivity {
         setContentView(R.layout.activity_select_rutas);
 
         initWidget();
-        showView();
+
+        spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                id_tipo_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
+                position_tipo_usuario = position;
+
+                nameUsuario = parent.getItemAtPosition(position).toString();
+
+                try {
+                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
+                    valor_pasaje = precioPasaje * countPasajes ;
+
+                    formatPrecio(valor_pasaje);
+                } catch (Exception e) {
+                    e.getMessage();
+                }
+
+                if (id_tipo_usuario == 0){
+                    showView(false);
+                } else if (sizeTarifas == 0 && Integer.parseInt(tipoUsuariosList.get(0).getId_remoto()) > 0){
+                    Toast.makeText(context, "No se han definido precios para este usuario.", Toast.LENGTH_SHORT).show();
+                    showView(false);
+                }else {
+                    showView(true);
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         spInicio.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                //id_paradero_inicio = Integer.parseInt(getIdParadero(position)) ;
                 ruta_inicio = parent.getItemAtPosition(position).toString();
                 id_paradero_inicio = paraderosList.get(position).getIdRemoto();
 
-                //getParaderosFin(id_ruta, id_paradero_inicio);
                 getParaderosFinSQLite(position);
             }
 
@@ -176,56 +212,18 @@ public class SelectRutas extends AppCompatActivity {
         spFin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                //id_paradero_fin = Integer.parseInt(getIdParaderoFin(position)) ;
                 ruta_fin = parent.getItemAtPosition(position).toString();
                 id_paradero_fin = Paradero.find(Paradero.class, "ruta = ? AND paradero = ?",
                         new String[]{"" + id_ruta, ""+ruta_fin}, "remoto", "remoto", null).get(0).getIdRemoto();
 
-                Log.e(TAG, "Paradero inicio: " + id_paradero_inicio);
-                Log.e(TAG, "Paradero fin: " + id_paradero_fin);
-                Log.e(TAG, "tipo usuario: " + id_tipo_usuario);
-
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
-                    formatPrecio(precioPasaje);
+                    valor_pasaje = precioPasaje * countPasajes ;
+                    formatPrecio(valor_pasaje);
                 } catch (Exception e) {
                     e.getMessage();
                 }
 
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        spPasajero.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //id_tipo_usuario = Integer.parseInt(getIdUsuario(position)) ;
-                id_tipo_usuario = Integer.parseInt(tipoUsuariosList.get(position).getId_remoto());
-                position_tipo_usuario = position;
-
-                nameUsuario = parent.getItemAtPosition(position).toString();
-
-                try {
-                    precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
-                    formatPrecio(precioPasaje);
-                } catch (Exception e) {
-                    e.getMessage();
-                }
-
-
-                if (sizeTarifas == 0 && Integer.parseInt(tipoUsuariosList.get(0).getId_remoto()) > 0){
-                    Toast.makeText(context, "No se han definido precios para este usuario.", Toast.LENGTH_SHORT).show();
-                    contenedorCheckBox.setVisibility(View.GONE);
-                    contenedorPrecio.setVisibility(View.GONE);
-                }else {
-                    contenedorCheckBox.setVisibility(View.VISIBLE);
-                    contenedorPrecio.setVisibility(View.VISIBLE);
-                }
             }
 
             @Override
@@ -364,9 +362,6 @@ public class SelectRutas extends AppCompatActivity {
         btnFinalizar.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
 
-        contenedorCheckBox.setVisibility(View.GONE);
-        contenedorPrecio.setVisibility(View.GONE);
-
         bundle = getIntent().getExtras();
 
         estadoRuta = RutaPreferences.getInstance(context).getEstadoRuta();
@@ -417,6 +412,7 @@ public class SelectRutas extends AppCompatActivity {
 
     private void printOffLine(){
         saveTicketLocal();
+
 
         alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
@@ -496,9 +492,9 @@ public class SelectRutas extends AppCompatActivity {
         // se cambie el estado = 1
     }
 
-    private void showView() {
-        contenedorCheckBox.setVisibility(View.VISIBLE);
-        contenedorPrecio.setVisibility(View.VISIBLE);
+   private void showView(boolean show) {
+       contenedorCheckBox.setVisibility(show ? View.VISIBLE : View.GONE);
+       contenedorPrecio.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
 
@@ -812,6 +808,7 @@ public class SelectRutas extends AppCompatActivity {
                         btnFinalizar.setVisibility(View.VISIBLE);
                         showProgress(false);
 
+
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
                         alertDialog.setTitleText("Exito")
@@ -864,6 +861,7 @@ public class SelectRutas extends AppCompatActivity {
                             }
                         });
 
+
                     } else {
                         dialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket", SweetAlertDialog.ERROR_TYPE);
                         btnFinalizar.setEnabled(true);
@@ -878,8 +876,21 @@ public class SelectRutas extends AppCompatActivity {
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                dialogAlert.showDialogErrorConexion(context);
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(Service.TAG, "error: " + volleyError.getMessage());
+                if (volleyError instanceof TimeoutError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof ServerError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof NoConnectionError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof NetworkError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }
             }
         }) {
             @Override
@@ -950,15 +961,6 @@ public class SelectRutas extends AppCompatActivity {
         lisUsuarios.clear();
 
         tipoUsuariosList = TipoUsuario.listAll(TipoUsuario.class, "remoto");
-
-        if (tipoUsuariosList.size()==0){
-            Log.e(TAG, "NO hay usuarios");
-            contenedorPrecio.setVisibility(View.GONE);
-            contenedorCheckBox.setVisibility(View.GONE);
-        }else {
-            contenedorPrecio.setVisibility(View.VISIBLE);
-            contenedorCheckBox.setVisibility(View.VISIBLE);
-        }
 
         for (TipoUsuario tipoUsuario : tipoUsuariosList) {
             lisUsuarios.add(tipoUsuario.getNombre());
@@ -1056,7 +1058,7 @@ public class SelectRutas extends AppCompatActivity {
             if (pairedDevice.size() > 0) {
                 for (BluetoothDevice pairedDev : pairedDevice) {
                     lisPrintBluetooth.add(pairedDev.getName());
-                    Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
+                   // Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
                 }
             }else {
                 Log.d(Service.TAG, "no hay lista de bluetooth");

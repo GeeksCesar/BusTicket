@@ -272,7 +272,7 @@ public class Ticket extends Fragment {
         btnSiguiente.setVisibility(View.GONE);
 
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
-        Log.e(Service.TAG, "estado_ruta: " + getStatusRuta);
+
 
         if (getStatusRuta) {
             Intent intent = new Intent(context, SelectRutas.class);
@@ -517,53 +517,6 @@ public class Ticket extends Fragment {
         requestQueue.add(stringRequest);
     }
 
-    private String getIdVehiculo(int position) {
-        String id_vehiculo = "";
-        try {
-            JSONObject object = resultPlaca.getJSONObject(position);
-            id_vehiculo = object.getString("idVehiculo");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return id_vehiculo;
-    }
-
-    private String getIdRuta(int position) {
-        String idRuta = "";
-        try {
-            JSONObject object = resultRuta.getJSONObject(position);
-            idRuta = object.getString("idRuta");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return idRuta;
-    }
-
-    private String getIdRutaDisponible(int position) {
-        String idRuta = "";
-        try {
-            JSONObject object = resultRuta.getJSONObject(position);
-            idRuta = object.getString("idRutaDisponible");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return idRuta;
-    }
-
-    private String getIdHorario(int position) {
-        String idHorario = "";
-        try {
-            JSONObject object = resultHorarios.getJSONObject(position);
-            idHorario = object.getString("idHorario");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return idHorario;
-    }
 
     // Broadcast receiver que recibe las emisiones desde los servicios
     private class ResponseReceiver extends BroadcastReceiver {

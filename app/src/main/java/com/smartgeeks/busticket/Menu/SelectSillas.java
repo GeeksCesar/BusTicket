@@ -33,9 +33,13 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -535,9 +539,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     Log.w(Service.TAG, "consecutivo: " + countConsecutivo);
 
 
-                    if (!error) {
+                   if (!error) {
                         showProgress(false);
                         countConsecutivo = jsonObject.getInt("count") + 1;
+
 
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
@@ -591,6 +596,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                             }
                         });
 
+
                     } else {
                         String sillas = jsonObject.getString("silla");
                         dialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas +"\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
@@ -608,9 +614,21 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                dialogAlert.showDialogErrorConexion(context);
-                Log.e(Service.TAG, "error: " + error.getMessage());
+            public void onErrorResponse(VolleyError volleyError) {
+                Log.e(Service.TAG, "error: " + volleyError.getMessage());
+                if (volleyError instanceof TimeoutError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof ServerError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof NoConnectionError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }else if (volleyError instanceof NetworkError){
+                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
+                    return;
+                }
             }
         }) {
             @Override
