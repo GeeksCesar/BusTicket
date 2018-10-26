@@ -287,7 +287,7 @@ public class SelectRutas extends AppCompatActivity {
                     showProgress(true);
 
                     if (DialogAlert.verificaConexion(context)){
-                        registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
+                        registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta_disponible, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
                     }else {
                         printOffLine();
                     }
@@ -791,7 +791,7 @@ public class SelectRutas extends AppCompatActivity {
         return id_tipo_usuario;
     }
 
-    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final int countPasajes) {
+    private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta_disponible, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final int countPasajes) {
 
         stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
             @Override
@@ -899,7 +899,7 @@ public class SelectRutas extends AppCompatActivity {
 
                 params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
-                params.put("id_ruta", String.valueOf(id_ruta));
+                params.put("id_ruta", String.valueOf(id_ruta_disponible));
                 params.put("id_operador", String.valueOf(id_operador));
                 params.put("hora", hora);
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
