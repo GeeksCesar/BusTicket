@@ -70,10 +70,11 @@ public class Login extends AppCompatActivity {
                 if (!dialogAlert.verificaConexion(context)) {
                     dialogAlert.showDialogErrorConexion(context);
                 } else {
-                    showProgress(true);
                     if (email.isEmpty() || password.isEmpty()) {
                         dialogAlert.showDialogFailed(context, "Alerta", "Rellene los campos", SweetAlertDialog.WARNING_TYPE);
                     } else {
+                        showProgress(true);
+                        mSignInButton.setVisibility(View.GONE);
                         signIn(email, password);
                     }
 
@@ -112,6 +113,7 @@ public class Login extends AppCompatActivity {
                         } else {
                             dialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
+                            mSignInButton.setVisibility(View.VISIBLE);
                         }
 
 
@@ -119,9 +121,11 @@ public class Login extends AppCompatActivity {
                         if (messageSignin.equals("Password Incorrecta")) {
                             dialogAlert.showDialogFailed(context, "Error", "Contraseña incorrecta", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
+                            mSignInButton.setVisibility(View.VISIBLE);
                         } else if (messageSignin.equals("Usuario no existe")) {
                             dialogAlert.showDialogFailed(context, "Error", "Usuario no Existe", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
+                            mSignInButton.setVisibility(View.VISIBLE);
                         }
                     }
 
@@ -129,6 +133,7 @@ public class Login extends AppCompatActivity {
                 } else {
                     dialogAlert.showDialogErrorConexion(context);
                     showProgress(false);
+                    mSignInButton.setVisibility(View.VISIBLE);
                 }
 
             }
@@ -138,6 +143,7 @@ public class Login extends AppCompatActivity {
                 Log.d(Service.TAG, "response: " + t.getMessage());
                 dialogAlert.showDialogErrorConexion(context);
                 showProgress(false);
+                mSignInButton.setVisibility(View.VISIBLE);
             }
         });
 
