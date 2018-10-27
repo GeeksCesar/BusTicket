@@ -79,7 +79,6 @@ public class SelectRutas extends AppCompatActivity {
     public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
-    public static final String HORA = "HORA";
     public static final String HORARIO = "HORARIO";
 
     public static final String INFO = "INFO";
@@ -114,7 +113,7 @@ public class SelectRutas extends AppCompatActivity {
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
-    String ruta_inicio, ruta_fin, hora, horario, info, nombreEmpresa;
+    String ruta_inicio, ruta_fin, horario, info, nombreEmpresa;
 
     Context context;
 
@@ -293,9 +292,9 @@ public class SelectRutas extends AppCompatActivity {
                 } else {
                     btnFinalizar.setEnabled(false);
                     btnFinalizar.setVisibility(View.GONE);
-                    showProgress(true);
 
                     if (DialogAlert.verificaConexion(context)){
+                        showProgress(true);
                         registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta_disponible, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
                     }else {
                         printOffLine();
@@ -329,7 +328,6 @@ public class SelectRutas extends AppCompatActivity {
                         intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                         intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
                         intent.putExtra(SelectSillas.HORARIO, horario);
-                        intent.putExtra(SelectSillas.HORA, hora);
                         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
                         intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
                         intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
@@ -339,6 +337,7 @@ public class SelectRutas extends AppCompatActivity {
                         startActivity(intent);
                     } else {
                         // Si no hay conexión a internet, guardo el ticket localmente
+                        btnSiguiente.setVisibility(View.GONE);
                         printOffLine();
                     }
                 }
@@ -389,7 +388,6 @@ public class SelectRutas extends AppCompatActivity {
             id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
             id_vehiculo = bundle.getInt(ID_VEHICULO);
             id_horario = bundle.getInt(ID_HORARIO);
-            hora = bundle.getString(HORA);
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
@@ -399,11 +397,14 @@ public class SelectRutas extends AppCompatActivity {
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
             id_vehiculo = RutaPreferences.getInstance(context).getIdVehiculo();
             id_horario = RutaPreferences.getInstance(context).getIdHorario();
-            hora = RutaPreferences.getInstance(context).getHora();
+            horario = RutaPreferences.getInstance(context).getHora();
             info = RutaPreferences.getInstance(context).getInformacion();
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
         }
+
+        Log.e(TAG, "Horario: "+horario);
+        Log.e(TAG, "Ruta: "+id_ruta_disponible);
 
         id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
@@ -421,7 +422,7 @@ public class SelectRutas extends AppCompatActivity {
 
     private void printOffLine(){
         saveTicketLocal();
-
+        btnFinalizar.setEnabled(true);
 
         alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
@@ -487,7 +488,7 @@ public class SelectRutas extends AppCompatActivity {
         ticket.setParadaDestino(id_paradero_fin);
         ticket.setIdRutaDisponible(id_ruta_disponible);
         ticket.setIdOperador(UsuarioPreferences.getInstance(context).getIdUser());
-        ticket.setHoraSalida(hora);
+        ticket.setHoraSalida(horario);
         ticket.setTipoUsuario(id_tipo_usuario);
         ticket.setFecha(Helpers.getCurrentDate());
         ticket.setHora(Helpers.getCurrentTime());
@@ -910,7 +911,7 @@ public class SelectRutas extends AppCompatActivity {
                 params.put("id_paradero_fin", String.valueOf(id_paradero_final));
                 params.put("id_ruta", String.valueOf(id_ruta_disponible));
                 params.put("id_operador", String.valueOf(id_operador));
-                params.put("hora", hora);
+                params.put("hora", horario);
                 params.put("id_tipo_usuario", String.valueOf(id_tipo_usuario));
                 params.put("total_pagar", String.valueOf(valor_pagar));
                 params.put("cantidad", String.valueOf(countPasajes));
@@ -1199,7 +1200,7 @@ public class SelectRutas extends AppCompatActivity {
             msg += "\n";
             outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
             String msg0 = "" ;
-            msg0 += "Horario:   " + hora;
+            msg0 += "Horario:   " + horario;
             msg0 += "\n";
             msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
             msg0 += "\n";
@@ -1298,7 +1299,7 @@ public class SelectRutas extends AppCompatActivity {
             msg += "\n";
             outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
             String msg0 = "" ;
-            msg0 += "Horario:   " + hora;
+            msg0 += "Horario:   " + horario;
             msg0 += "\n";
             msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
             msg0 += "\n";
