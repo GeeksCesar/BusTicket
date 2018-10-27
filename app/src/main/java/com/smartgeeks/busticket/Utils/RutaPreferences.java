@@ -38,7 +38,7 @@ public class RutaPreferences {
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.putInt(ID_RUTA, ruta.getRuta_id());
-        editor.putInt(ID_RUTA_DISPONIBLE, ruta.getRuta_id());
+        editor.putInt(ID_RUTA_DISPONIBLE, ruta.getRuta_disponible_id());
         editor.putInt(ID_VEHICULO, ruta.getVehiculo_id());
         editor.putInt(ID_HORARIO, ruta.getHorario_id());
         editor.putString(HORARIO, ruta.getHorario());

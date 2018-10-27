@@ -86,11 +86,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_INICIO = "PARADERO_INCIO";
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
-    public static final String HORA = "HORA";
     public static final String TIPO_USUARIO = "TIPO_USUARIO";
     public static final String NAME_USUARIO = "NAME_USUARIO" ;
 
-    private String TAG = "SelectSillas";
+    private static final String TAG = SelectSillas.class.getSimpleName();
 
     LinearLayout contenedor_bus;
     private List<Silla> listSillasOcupadas = new ArrayList<>();
@@ -150,7 +149,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         initWidgets();
         // Obtengo los datos del vehículo
         showProgressDialog();
-        getSillasOcupadasEnParadas(id_ruta_disponible);
+        getSillasOcupadasEnParadas();
         //getSillasOcupadas(id_ruta_disponible);
 
 
@@ -468,16 +467,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     /**
      * Consultar sillas ocupadas por horario de ruta
-     *
-     * @param id_ruta_disponible
      */
-    private void getSillasOcupadasEnParadas(int id_ruta_disponible) {
+    private void getSillasOcupadasEnParadas() {
 
-        Log.e(Service.TAG, "hora: "+horario);
+        Log.e(TAG, "Request horario: "+horario);
+        Log.e(TAG, "Request id_ruta_disponible: " + id_ruta_disponible);
 
-        Log.e(Service.TAG, "id_ruta_disponible: " + id_ruta_disponible);
         String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
-        Log.i(Service.TAG, "rutas_ocupada: " + URL);
+        Log.i(TAG, "rutas_ocupada: " + URL);
 
         stringRequest = new StringRequest(URL, new Response.Listener<String>() {
             @Override

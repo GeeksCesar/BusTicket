@@ -54,6 +54,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class Ticket extends Fragment {
 
+    private static String TAG = Ticket.class.getSimpleName();
     View view;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
@@ -189,6 +190,8 @@ public class Ticket extends Fragment {
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG, "Horario pref: "+horario);
+                        Log.e(TAG, "Ruta pref: "+id_ruta_disponible);
 
                         RutaPojo ruta = new RutaPojo();
 
@@ -221,12 +224,14 @@ public class Ticket extends Fragment {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e(TAG, "Horario: "+hora);
+                Log.e(TAG, "Ruta: "+id_ruta_disponible);
+
                 Intent intent = new Intent(context, SelectRutas.class);
                 intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
                 intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
                 intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
-                intent.putExtra(SelectRutas.HORA, hora);
                 intent.putExtra(SelectRutas.HORARIO, horario);
 
                 intent.putExtra(SelectRutas.INFO, placa + "," + ruta_info + "," + hora);
