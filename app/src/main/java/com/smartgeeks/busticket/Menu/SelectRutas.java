@@ -292,9 +292,9 @@ public class SelectRutas extends AppCompatActivity {
                 } else {
                     btnFinalizar.setEnabled(false);
                     btnFinalizar.setVisibility(View.GONE);
-                    showProgress(true);
 
                     if (DialogAlert.verificaConexion(context)){
+                        showProgress(true);
                         registerTicket(id_paradero_inicio, id_paradero_fin, id_ruta_disponible, id_operador, id_tipo_usuario, precio_sum_pasaje,countPasajes);
                     }else {
                         printOffLine();
@@ -337,6 +337,7 @@ public class SelectRutas extends AppCompatActivity {
                         startActivity(intent);
                     } else {
                         // Si no hay conexión a internet, guardo el ticket localmente
+                        btnSiguiente.setVisibility(View.GONE);
                         printOffLine();
                     }
                 }
@@ -421,7 +422,7 @@ public class SelectRutas extends AppCompatActivity {
 
     private void printOffLine(){
         saveTicketLocal();
-
+        btnFinalizar.setEnabled(true);
 
         alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
