@@ -15,6 +15,7 @@ public class UsuarioPreferences {
     public static final String KEY_RUT = "rut";
     public static final String KEY_ID_EMPRESA = "id_empresa";
     public static final String KEY_NAME_EMPRESA = "name_empresa";
+    public static final String KEY_DESC_EMPRESA = "desc_empresa";
 
 
     private static Context mContext;
@@ -40,6 +41,7 @@ public class UsuarioPreferences {
         editor.putInt(KEY_ID_EMPRESA, user.getId_empresa());
         editor.putString(KEY_RUT, user.getRut());
         editor.putString(KEY_NAME_EMPRESA, user.getNombreEmpresa());
+        editor.putString(KEY_DESC_EMPRESA, user.getDescEmpresa());
 
         editor.apply();
 
@@ -74,6 +76,11 @@ public class UsuarioPreferences {
     public String getNombreEmpresa() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_NAME_EMPRESA, "");
+    }
+
+    public String getDescEmpresa() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_DESC_EMPRESA, "Su mejor compañía");
     }
 }
 

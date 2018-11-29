@@ -23,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,8 +40,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
-
-import com.smartgeeks.busticket.Login;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
@@ -113,7 +110,7 @@ public class SelectRutas extends AppCompatActivity {
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
-    String ruta_inicio, ruta_fin, horario, info, nombreEmpresa;
+    String ruta_inicio, ruta_fin, horario, info, nombreEmpresa, desc_empresa;
 
     Context context;
 
@@ -392,6 +389,7 @@ public class SelectRutas extends AppCompatActivity {
             info = bundle.getString(INFO);
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         } else {
             id_ruta = RutaPreferences.getInstance(context).getIdRuta();
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
@@ -401,6 +399,7 @@ public class SelectRutas extends AppCompatActivity {
             info = RutaPreferences.getInstance(context).getInformacion();
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
 
         Log.e(TAG, "Horario: "+horario);
@@ -1185,6 +1184,14 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
+            if (!desc_empresa.isEmpty()){
+                // Mensaje de la empresa, text small
+                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                outputStream.write(format);
+                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                // end - mensaje empresa
+            }
+
             format =new byte[]{ 27, 33, 0 };
 
             outputStream.write(format);
@@ -1285,6 +1292,14 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(centrado);
             outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+
+            if (!desc_empresa.isEmpty()){
+                // Mensaje de la empresa, text small
+                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                outputStream.write(format);
+                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                // end - mensaje empresa
+            }
 
             format =new byte[]{ 27, 33, 0 };
 

@@ -98,7 +98,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     int id_tarifa, countConsecutivo;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible, id_empresa;
     String getPrecioPasaje;
-    String horario, info_ruta, nombreEmpresa, nombreUsuario;
+    String horario, info_ruta, nombreEmpresa, nombreUsuario, desc_empresa;
     Context context;
     DialogAlert dialogAlert = new DialogAlert();
     Button btnConfirmarTicket;
@@ -205,6 +205,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         nombreUsuario = bundle.getString(NAME_USUARIO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
 
@@ -780,6 +781,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             outputStream.write(centrado);
             outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+
+            if (!desc_empresa.isEmpty()){
+                // Mensaje de la empresa, text small
+                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                outputStream.write(format);
+                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                // end - mensaje empresa
+            }
 
             format =new byte[]{ 27, 33, 0 };
 
