@@ -7,8 +7,8 @@ public class Constantes {
     public static final int ESTADO_SYNC = 1;
 
     //private static final String IP = "http://10.0.3.2";  192.168.0.104
-    private static final String IP = "http://testing.smartgeeks.com.co/";
-    private static final String PROYECT = "busticket/apisync/";
+    private static final String IP = "http://test.appbusticket.com/";
+    private static final String PROYECT = "apisync/";
 
     /**
      * URLs del Web Service
