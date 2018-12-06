@@ -109,7 +109,7 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                id_ruta = listRutas.get(position).getRuta();
                 id_ruta_disponible = listRutas.get(position).getRutaDisponible();
 
                 getHorarioSQLite(id_ruta+"");

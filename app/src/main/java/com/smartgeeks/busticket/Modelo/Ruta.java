@@ -16,18 +16,24 @@ public class Ruta extends SugarRecord {
     String destino;
     int vehiculo;
     int rutaDisponible;
+    int ruta;
 
     public Ruta() {
     }
 
-    public Ruta(String remoto, String partida, String destino, int vehiculo, int rutaDisponible) {
+    public Ruta(String remoto, String partida, String destino, int vehiculo, int rutaDisponible, int ruta) {
         this.remoto = remoto;
         this.partida = partida;
         this.destino = destino;
         this.vehiculo = vehiculo;
         this.rutaDisponible = rutaDisponible;
+        this.ruta = ruta;
     }
 
+    /**
+     * El idRemoto, corresponde al id de ruta disponible
+     * @return remoto
+     */
     public String getIdRemoto() {
         return remoto;
     }
@@ -46,5 +52,9 @@ public class Ruta extends SugarRecord {
 
     public int getRutaDisponible() {
         return rutaDisponible;
+    }
+
+    public int getRuta() {
+        return ruta;
     }
 }
