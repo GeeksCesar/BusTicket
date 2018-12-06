@@ -510,9 +510,6 @@ public class SelectRutas extends AppCompatActivity {
     private void formatPrecio(int precio) {
         String formatPrecio = formatea.format(precio);
         formatPrecio = formatPrecio.replace(',', '.');
-        if (precioPasaje == 1) {
-            precioPasaje = precio;
-        }
         tvPrecioPasaje.setText("$ " + formatPrecio);
         getPrecioPasaje = "$ " + formatPrecio ;
 
@@ -810,8 +807,8 @@ public class SelectRutas extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
 
                     String respuesta = jsonObject.getString("message");
-                    countConsecutivo = jsonObject.getInt("count") + 1;
-
+                    countConsecutivo = jsonObject.getInt("count");
+                    Log.e(TAG, "Consecutivo: "+countConsecutivo);
                     if (respuesta.equals("success")) {
                         btnFinalizar.setEnabled(true);
                         btnFinalizar.setVisibility(View.VISIBLE);
