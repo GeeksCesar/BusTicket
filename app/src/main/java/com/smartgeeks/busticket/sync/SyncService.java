@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.smartgeeks.busticket.Utils.Constantes;
 
@@ -25,6 +26,7 @@ public class SyncService extends IntentService {
             switch (action) {
                 case Constantes.ACTION_RUN_LOCAL_SYNC:
                     handleLocalSync();
+                    Toast.makeText(this, "Sincronización finalizada", Toast.LENGTH_SHORT).show();
                     break;
                 case Constantes.ACTION_RUN_REMOTE_SYNC:
                     handleRemoteSync();

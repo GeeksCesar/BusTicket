@@ -49,6 +49,7 @@ import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
+import com.smartgeeks.busticket.Utils.InternetCheck;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
@@ -316,31 +317,47 @@ public class SelectRutas extends AppCompatActivity {
                     dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
-                    if (cbAsiento.isChecked() && DialogAlert.verificaConexion(context)) {
-                        Intent intent = new Intent(context, SelectSillas.class);
-                        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
-                        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
-                        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
-                        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
-                        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                        intent.putExtra(SelectSillas.HORARIO, horario);
-                        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
-                        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
-                        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
-                        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
-                        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
+                    if (cbAsiento.isChecked()) {
 
-                        startActivity(intent);
-                    } else {
-                        // Si no hay conexión a internet, guardo el ticket localmente
-                        btnSiguiente.setVisibility(View.GONE);
-                        printOffLine();
+                        new InternetCheck(new InternetCheck.Consumer() {
+                            @Override
+                            public void accept(Boolean internet) {
+                                if (internet) {
+                                    Log.e("TAG", "Internet is connected");
+                                    //doSomethingOnConnected();
+                                    startSelectSillasActivity();
+                                } else {
+                                    Log.e("TAG", "Internet is not connected");
+                                    //doSomethingOnNoInternet();
+                                    // Si no hay conexión a internet, guardo el ticket localmente
+                                    btnSiguiente.setVisibility(View.GONE);
+                                    printOffLine();
+                                }
+                            }
+                        }).execute();
                     }
                 }
             }
         });
 
+    }
+
+    private void startSelectSillasActivity() {
+        Intent intent = new Intent(context, SelectSillas.class);
+        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
+        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
+        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
+        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
+        intent.putExtra(SelectSillas.HORARIO, horario);
+        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
+        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
+        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
+        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
+        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
+
+        startActivity(intent);
     }
 
     private void initWidget() {
@@ -520,7 +537,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-               if (DialogAlert.verificaConexion(context)){
+               if (Helpers.isConnectedToNetwork(context)){
                     btnSiguiente.setText("Siguiente");
                 }else{
                     btnSiguiente.setText("Finalizar");

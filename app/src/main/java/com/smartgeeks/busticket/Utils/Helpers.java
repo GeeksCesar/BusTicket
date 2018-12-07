@@ -1,13 +1,21 @@
 package com.smartgeeks.busticket.Utils;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import static com.smartgeeks.busticket.Menu.SelectRutas.TAG;
 
 public class Helpers {
 
@@ -69,6 +77,53 @@ public class Helpers {
         }
 
         return time;
+    }
+
+    public static boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        }
+        catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+
+        return false;
+    }
+
+    public static void isConectedIntenet(){
+        new InternetCheck(new InternetCheck.Consumer() {
+            @Override
+            public void accept(Boolean internet) {
+                if (internet) {
+                    Log.d("TAG", "Internet is connected");
+                    //doSomethingOnConnected();
+                } else {
+                    Log.d("TAG", "Internet is not connected");
+                    //doSomethingOnNoInternet();
+                }
+            }
+        }).execute();
+    }
+
+    public static boolean isConnectedToNetwork(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        boolean isConnected = false;
+        if (connectivityManager != null) {
+            NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
+        }
+
+        return isConnected;
+    }
+
+    public static boolean isNetworkConnected(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null;
     }
 
 }
