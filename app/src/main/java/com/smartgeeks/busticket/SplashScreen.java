@@ -42,7 +42,6 @@ public class SplashScreen extends AppCompatActivity {
         progresBar = findViewById(R.id.progresBar);
         progresBar.getIndeterminateDrawable().setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_IN);
 
-
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         session = UsuarioPreferences.getInstance(context).getSessionUser();
 
@@ -57,15 +56,7 @@ public class SplashScreen extends AppCompatActivity {
                 try {
                     //Duracion
                     sleep(2000);
-                    if (session.equals("SessionSuccess")) {
-                        intent = new Intent(context, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                    } else if (session.equals("SessionFailed")) {
-                        intent = new Intent(context, Login.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                    }
+                    goNextScreen();
 
                 } catch (Exception e) {
 
@@ -75,6 +66,18 @@ public class SplashScreen extends AppCompatActivity {
         splash.start();
 
 
+    }
+
+    private void goNextScreen() {
+        if (session.equals("SessionSuccess")) {
+            intent = new Intent(context, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else if (session.equals("SessionFailed")) {
+            intent = new Intent(context, Login.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 
     private void localSync() {
@@ -91,5 +94,6 @@ public class SplashScreen extends AppCompatActivity {
         sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
         startService(sync);
     }
+
 
 }

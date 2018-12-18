@@ -323,15 +323,13 @@ public class SelectRutas extends AppCompatActivity {
                             @Override
                             public void accept(Boolean internet) {
                                 if (internet) {
-                                    Log.e("TAG", "Internet is connected");
+                                    Log.e("TAG", "Hay conexión a Internet");
                                     //doSomethingOnConnected();
                                     startSelectSillasActivity();
                                 } else {
-                                    Log.e("TAG", "Internet is not connected");
+                                    Log.e("TAG", "No hay conexión a Internet");
                                     //doSomethingOnNoInternet();
-                                    // Si no hay conexión a internet, guardo el ticket localmente
-                                    btnSiguiente.setVisibility(View.GONE);
-                                    printOffLine();
+                                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexión.", SweetAlertDialog.WARNING_TYPE);
                                 }
                             }
                         }).execute();
@@ -537,11 +535,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-               if (Helpers.isConnectedToNetwork(context)){
-                    btnSiguiente.setText("Siguiente");
-                }else{
-                    btnSiguiente.setText("Finalizar");
-                }
+                btnSiguiente.setText("Siguiente");
 
                 if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);

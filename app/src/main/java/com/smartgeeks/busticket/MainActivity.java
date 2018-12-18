@@ -19,7 +19,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Menu.Inicio;

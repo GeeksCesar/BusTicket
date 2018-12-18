@@ -1,7 +1,6 @@
 package com.smartgeeks.busticket.Utils;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
@@ -10,12 +9,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import static com.smartgeeks.busticket.Menu.SelectRutas.TAG;
 
 public class Helpers {
 
