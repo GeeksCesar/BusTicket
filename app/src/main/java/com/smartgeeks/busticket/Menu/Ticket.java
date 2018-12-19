@@ -1,7 +1,6 @@
 package com.smartgeeks.busticket.Menu;
 
 
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,7 +20,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -38,17 +36,13 @@ import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -114,7 +108,7 @@ public class Ticket extends Fragment {
         spRuta.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                id_ruta = Integer.parseInt(listRutas.get(position).getIdRemoto());
+                id_ruta = listRutas.get(position).getRuta();
                 id_ruta_disponible = listRutas.get(position).getRutaDisponible();
 
                 getHorarioSQLite(id_ruta+"");

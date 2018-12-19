@@ -107,7 +107,7 @@ public class Login extends AppCompatActivity {
                             Intent intent = new Intent(context, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
-                            UsuarioPreferences.getInstance(context).userPreferences(response.body().getUser());
+                            UsuarioPreferences.getInstance(context).userPreferences(user);
                             setDataPrefrences();
                             overridePendingTransition(R.anim.left_in, R.anim.left_out);
                         } else {

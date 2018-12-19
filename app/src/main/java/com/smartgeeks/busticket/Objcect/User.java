@@ -29,6 +29,10 @@ public class User {
     @Expose
     private String nombreEmpresa;
 
+    @SerializedName("descEmpresa")
+    @Expose
+    private String descEmpresa;
+
     //GETTER && SETTER
     public int getIdUsuario() {
         return idUsuario;
@@ -76,5 +80,13 @@ public class User {
 
     public void setNombreEmpresa(String nombreEmpresa) {
         this.nombreEmpresa = nombreEmpresa;
+    }
+
+    public String getDescEmpresa() {
+        return descEmpresa;
+    }
+
+    public void setDescEmpresa(String descEmpresa) {
+        this.descEmpresa = descEmpresa;
     }
 }

@@ -22,10 +22,6 @@ import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
-import javax.security.auth.login.LoginException;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
-
 public class Perfil extends Fragment {
 
     View view;

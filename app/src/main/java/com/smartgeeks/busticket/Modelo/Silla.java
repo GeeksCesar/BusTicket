@@ -1,9 +1,6 @@
 package com.smartgeeks.busticket.Modelo;
 
 
-import com.orm.SugarRecord;
-import com.orm.dsl.Table;
-
 public class Silla {
 
     int numeroSilla;

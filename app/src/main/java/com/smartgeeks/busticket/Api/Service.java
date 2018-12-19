@@ -4,7 +4,7 @@ public class Service {
 
     public static final String TAG = "Test";
 
-    public static final String URL = "http://test.appbusticket.com/";
+    public static final String URL = "http://mi.appbusticket.com/";
 
     public static ApiService getApiService() {
         return RetrofitClient.getClient(URL).create(ApiService.class);

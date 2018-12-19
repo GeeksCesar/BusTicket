@@ -23,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,8 +40,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
-
-import com.smartgeeks.busticket.Login;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
@@ -52,6 +49,7 @@ import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
+import com.smartgeeks.busticket.Utils.InternetCheck;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
@@ -113,7 +111,7 @@ public class SelectRutas extends AppCompatActivity {
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
     int countConsecutivo; ;
-    String ruta_inicio, ruta_fin, horario, info, nombreEmpresa;
+    String ruta_inicio, ruta_fin, horario, info, nombreEmpresa, desc_empresa;
 
     Context context;
 
@@ -319,31 +317,45 @@ public class SelectRutas extends AppCompatActivity {
                     dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
-                    if (cbAsiento.isChecked() && DialogAlert.verificaConexion(context)) {
-                        Intent intent = new Intent(context, SelectSillas.class);
-                        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
-                        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
-                        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
-                        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
-                        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
-                        intent.putExtra(SelectSillas.HORARIO, horario);
-                        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
-                        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
-                        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
-                        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
-                        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
+                    if (cbAsiento.isChecked()) {
 
-                        startActivity(intent);
-                    } else {
-                        // Si no hay conexión a internet, guardo el ticket localmente
-                        btnSiguiente.setVisibility(View.GONE);
-                        printOffLine();
+                        new InternetCheck(new InternetCheck.Consumer() {
+                            @Override
+                            public void accept(Boolean internet) {
+                                if (internet) {
+                                    Log.e("TAG", "Hay conexión a Internet");
+                                    //doSomethingOnConnected();
+                                    startSelectSillasActivity();
+                                } else {
+                                    Log.e("TAG", "No hay conexión a Internet");
+                                    //doSomethingOnNoInternet();
+                                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexión.", SweetAlertDialog.WARNING_TYPE);
+                                }
+                            }
+                        }).execute();
                     }
                 }
             }
         });
 
+    }
+
+    private void startSelectSillasActivity() {
+        Intent intent = new Intent(context, SelectSillas.class);
+        intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes);
+        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje);
+        intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo);
+        intent.putExtra(SelectSillas.ID_RUTA, id_ruta);
+        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+        intent.putExtra(SelectSillas.ID_HORARIO, id_horario);
+        intent.putExtra(SelectSillas.HORARIO, horario);
+        intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
+        intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
+        intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
+        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
+        intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
+
+        startActivity(intent);
     }
 
     private void initWidget() {
@@ -392,6 +404,7 @@ public class SelectRutas extends AppCompatActivity {
             info = bundle.getString(INFO);
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         } else {
             id_ruta = RutaPreferences.getInstance(context).getIdRuta();
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
@@ -401,6 +414,7 @@ public class SelectRutas extends AppCompatActivity {
             info = RutaPreferences.getInstance(context).getInformacion();
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
 
         Log.e(TAG, "Horario: "+horario);
@@ -511,9 +525,6 @@ public class SelectRutas extends AppCompatActivity {
     private void formatPrecio(int precio) {
         String formatPrecio = formatea.format(precio);
         formatPrecio = formatPrecio.replace(',', '.');
-        if (precioPasaje == 1) {
-            precioPasaje = precio;
-        }
         tvPrecioPasaje.setText("$ " + formatPrecio);
         getPrecioPasaje = "$ " + formatPrecio ;
 
@@ -524,11 +535,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-               if (DialogAlert.verificaConexion(context)){
-                    btnSiguiente.setText("Siguiente");
-                }else{
-                    btnSiguiente.setText("Finalizar");
-                }
+                btnSiguiente.setText("Siguiente");
 
                 if (cbAsiento.isChecked()) {
                     cbDePie.setChecked(false);
@@ -811,8 +818,8 @@ public class SelectRutas extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
 
                     String respuesta = jsonObject.getString("message");
-                    countConsecutivo = jsonObject.getInt("count") + 1;
-
+                    countConsecutivo = jsonObject.getInt("count");
+                    Log.e(TAG, "Consecutivo: "+countConsecutivo);
                     if (respuesta.equals("success")) {
                         btnFinalizar.setEnabled(true);
                         btnFinalizar.setVisibility(View.VISIBLE);
@@ -1185,6 +1192,14 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
+            if (!desc_empresa.isEmpty()){
+                // Mensaje de la empresa, text small
+                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                outputStream.write(format);
+                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                // end - mensaje empresa
+            }
+
             format =new byte[]{ 27, 33, 0 };
 
             outputStream.write(format);
@@ -1285,6 +1300,14 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(centrado);
             outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+
+            if (!desc_empresa.isEmpty()){
+                // Mensaje de la empresa, text small
+                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                outputStream.write(format);
+                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                // end - mensaje empresa
+            }
 
             format =new byte[]{ 27, 33, 0 };
 

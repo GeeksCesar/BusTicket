@@ -126,8 +126,9 @@ public class OpsRuta {
                     boolean b2 = match.getDestino() != null && !match.getDestino().equals(ruta.getDestino());
                     boolean b3 = match.getVehiculo() != ruta.getVehiculo();
                     boolean b4 = match.getRutaDisponible() != ruta.getRutaDisponible();
+                    boolean b5 = match.getRuta() != ruta.getRuta();
 
-                    if (b1 || b2 || b3 || b4) {
+                    if (b1 || b2 || b3 || b4 || b5) {
                         Log.i(TAG, "Programando actualización de: " + ruta.getIdRemoto());
                         match.update();
                         numUpdates++;
