@@ -103,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
         bundle = getIntent().getExtras();
 
         if (bundle != null){
-            Log.e(Service.TAG, "entro a bundle") ;
             goBack = bundle.getBoolean(BACK, false);
 
             if (goBack == true){
@@ -113,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }else {
-            Log.e(Service.TAG, "no entro a bundle") ;
             setFragment(1);
         }
 

@@ -179,7 +179,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     showProgress(true);
                     registerTicket(id_paradero_incio, id_paradero_final, id_ruta_disponible, id_operador, id_tipo_usuario, precio_pasaje, listSillas);
 
-
                 }
 
             }
@@ -227,6 +226,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         encontrarDispositivoBlue();
 
         remotoSync();
+
+        getDataPrint();
     }
 
     public void getDataPrint(){
@@ -533,11 +534,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                     String respuesta = jsonObject.getString("message");
                     boolean error = jsonObject.getBoolean("error");
                     Log.w(Service.TAG, "respuesta: " + respuesta);
-                    Log.w(Service.TAG, "id_tarifa: " + id_tarifa);
-                    Log.w(Service.TAG, "consecutivo: " + countConsecutivo);
 
-
-                   if (!error) {
+                    if (!error) {
                         showProgress(false);
                         countConsecutivo = jsonObject.getInt("count") + 1;
 
@@ -550,7 +548,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                         Button button = alertDialog.findViewById(R.id.confirm_button);
                         // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
                         button.setBackgroundResource(R.drawable.bg_button_main);
-                        button.setPadding(5, 5, 5, 5);
+                        button.setPadding(15, 5, 15, 5);
                         button.setText("Imprimir Ticket");
 
                         button.setOnClickListener(new View.OnClickListener() {
@@ -562,27 +560,25 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                                     getDataPrint();
 
-                                    if (estadoPrint == true){
-                                        Log.e(Service.TAG, "entro estado") ;
+                                    if (estadoPrint == true) {
+                                        Log.e(Service.TAG, "entro estado: " + estadoPrint);
                                         Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
-                                        Log.e(Service.TAG, "parired: "+pairedDevice.size()) ;
 
                                         if (pairedDevice.size() > 0) {
                                             for (BluetoothDevice pairedDev : pairedDevice) {
                                                 if (pairedDev.getName().equals(namePrint)) {
+                                                    Log.e(Service.TAG, "name impresora_ " + namePrint);
                                                     bluetoothDevice = pairedDev;
                                                     abrirImpresoraBlue();
 
-                                                     break;
-                                                }else {
-                                                    Log.e(Service.TAG  , "error no existe impresora");
+                                                    break;
                                                 }
                                             }
-                                        }else {
-                                            Log.e(Service.TAG  , "error no existe impresora");
+                                        } else {
+                                            Log.e(Service.TAG, "error devices bluetooh");
                                         }
 
-                                    }else {
+                                    } else {
                                         showDialogTiquete();
                                     }
 
@@ -593,10 +589,9 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                             }
                         });
 
-
                     } else {
                         String sillas = jsonObject.getString("silla");
-                        dialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas +"\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
+                        dialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas + "\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
                         btnConfirmarTicket.setEnabled(true);
                         btnConfirmarTicket.setVisibility(View.VISIBLE);
                         showProgress(false);
@@ -613,6 +608,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e(Service.TAG, "error: " + volleyError.getMessage());
+                showProgress(false);
                 if (volleyError instanceof TimeoutError){
                     dialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
                     return;
@@ -696,7 +692,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             goIntentMain();
 
         } catch (Exception ex) {
-
             Log.i("Error P", "" + ex.getMessage());
 
         }
@@ -762,7 +757,6 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
     void printData() throws IOException {
-
         byte[] command=null;
         try{
             String[] split = info_ruta.split(",");
@@ -956,7 +950,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     }
 
-    private void goIntentMain(){
+    private void goIntentMain() {
+        try{
+            disconnectBT();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
         Log.d(Service.TAG, "entro a goIntentMain");
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.BACK , true) ;
@@ -970,6 +970,17 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         startService(sync);
     }
 
+    // Disconnect Printer //
+    void disconnectBT() throws IOException{
+        try {
+            stopWorker=true;
+            outputStream.close();
+            inputStream.close();
+            bluetoothSocket.close();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
 
 }
 

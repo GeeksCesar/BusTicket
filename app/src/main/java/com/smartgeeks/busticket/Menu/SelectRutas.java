@@ -516,9 +516,9 @@ public class SelectRutas extends AppCompatActivity {
         // se cambie el estado = 1
     }
 
-   private void showView(boolean show) {
-       contenedorCheckBox.setVisibility(show ? View.VISIBLE : View.GONE);
-       contenedorPrecio.setVisibility(show ? View.VISIBLE : View.GONE);
+    private void showView(boolean show) {
+        contenedorCheckBox.setVisibility(show ? View.VISIBLE : View.GONE);
+        contenedorPrecio.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
 
@@ -1386,12 +1386,29 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    private void goIntentMain(){
-        Log.d(Service.TAG, "entro a goIntentMain");
+    private void goIntentMain() {
+        try{
+            disconnectBT();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(MainActivity.BACK , true) ;
+        intent.putExtra(MainActivity.BACK, true);
         startActivity(intent);
         finish();
+    }
+
+    // Disconnect Printer //
+    void disconnectBT() throws IOException {
+        try {
+            stopWorker = true;
+            outputStream.close();
+            inputStream.close();
+            bluetoothSocket.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
