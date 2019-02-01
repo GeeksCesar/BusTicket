@@ -82,5 +82,13 @@ public class UsuarioPreferences {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_DESC_EMPRESA, "Su mejor compañía");
     }
+
+    public void setDescEmpresa(String msg) {
+        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(KEY_DESC_EMPRESA, msg);
+        editor.apply();
+    }
+
 }
 

@@ -7,13 +7,22 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 import com.smartgeeks.busticket.sync.SyncService;
+import com.smartgeeks.busticket.sync.VolleySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -46,6 +55,7 @@ public class SplashScreen extends AppCompatActivity {
         session = UsuarioPreferences.getInstance(context).getSessionUser();
 
         if (session.equals("SessionSuccess")) {
+            getDataUser();
             localSync();
             remotoSync();
         }
@@ -55,7 +65,7 @@ public class SplashScreen extends AppCompatActivity {
             public void run() {
                 try {
                     //Duracion
-                    sleep(2000);
+                    sleep(3000);
                     goNextScreen();
 
                 } catch (Exception e) {
@@ -66,6 +76,32 @@ public class SplashScreen extends AppCompatActivity {
         splash.start();
 
 
+    }
+
+    private void getDataUser() {
+        VolleySingleton.getInstance(context).addToRequestQueue(
+                new StringRequest(
+                        Request.Method.GET,
+                        Constantes.GET_MESSAGE_COMPANY + UsuarioPreferences.getInstance(context).getIdEmpresa(),
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                try {
+                                    JSONObject object = new JSONObject(response);
+                                    UsuarioPreferences.getInstance(context).setDescEmpresa(object.getString("data"));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Log.e("SplashScreen", "" + error);
+                            }
+                        }
+                )
+        );
     }
 
     private void goNextScreen() {

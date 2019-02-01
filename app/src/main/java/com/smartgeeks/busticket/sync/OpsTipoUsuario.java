@@ -8,6 +8,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
+import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
@@ -142,13 +143,8 @@ public class OpsTipoUsuario {
 
             // Insertar items resultantes
             Log.i(TAG, "Programando inserción de TipoUsuarios ");
-            for (TipoUsuario ruta : expenseMap.values()) {
-                ruta.save();
-                numInserts++;
-            }
-
-            Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes + " Nuevos: " + numInserts);
-            Log.e(TAG, "Sincronización finalizada.");
+            SugarRecord.saveInTx(expenseMap.values());
+            Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes);
 
         } catch (JSONException e) {
             e.printStackTrace();

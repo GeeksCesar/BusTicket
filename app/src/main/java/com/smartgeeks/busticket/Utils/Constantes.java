@@ -29,6 +29,8 @@ public class Constantes {
 
     public static final String GET_SUBRUTAS = "horarios";
 
+    public static final String GET_MESSAGE_COMPANY = IP + PROYECT + "getMsgEmpresa/";
+
     /**
      * Campos de las repuestas JSON
      */

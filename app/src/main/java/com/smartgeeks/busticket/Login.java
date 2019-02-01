@@ -67,11 +67,11 @@ public class Login extends AppCompatActivity {
                 String email = edUsuario.getText().toString().trim();
                 String password = edPassword.getText().toString().trim();
 
-                if (!dialogAlert.verificaConexion(context)) {
+                if (!DialogAlert.verificaConexion(context)) {
                     dialogAlert.showDialogErrorConexion(context);
                 } else {
                     if (email.isEmpty() || password.isEmpty()) {
-                        dialogAlert.showDialogFailed(context, "Alerta", "Rellene los campos", SweetAlertDialog.WARNING_TYPE);
+                        DialogAlert.showDialogFailed(context, "Alerta", "Rellene los campos", SweetAlertDialog.WARNING_TYPE);
                     } else {
                         showProgress(true);
                         mSignInButton.setVisibility(View.GONE);
@@ -102,16 +102,13 @@ public class Login extends AppCompatActivity {
                         User user = response.body().getUser();
 
                         if (user.getIdRol() == 2 || user.getIdRol() == 3) {
-                            localSync();
-
-                            Intent intent = new Intent(context, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
                             UsuarioPreferences.getInstance(context).userPreferences(user);
                             setDataPrefrences();
-                            overridePendingTransition(R.anim.left_in, R.anim.left_out);
+                            localSync();
+                            goMainActivity();
+
                         } else {
-                            dialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
+                            DialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
                             mSignInButton.setVisibility(View.VISIBLE);
                         }
@@ -119,11 +116,11 @@ public class Login extends AppCompatActivity {
 
                     } else if (errorSiginin == false) {
                         if (messageSignin.equals("Password Incorrecta")) {
-                            dialogAlert.showDialogFailed(context, "Error", "Contraseña incorrecta", SweetAlertDialog.ERROR_TYPE);
+                            DialogAlert.showDialogFailed(context, "Error", "Contraseña incorrecta", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
                             mSignInButton.setVisibility(View.VISIBLE);
                         } else if (messageSignin.equals("Usuario no existe")) {
-                            dialogAlert.showDialogFailed(context, "Error", "Usuario no Existe", SweetAlertDialog.ERROR_TYPE);
+                            DialogAlert.showDialogFailed(context, "Error", "Usuario no Existe", SweetAlertDialog.ERROR_TYPE);
                             showProgress(false);
                             mSignInButton.setVisibility(View.VISIBLE);
                         }
@@ -146,6 +143,28 @@ public class Login extends AppCompatActivity {
                 mSignInButton.setVisibility(View.VISIBLE);
             }
         });
+
+    }
+
+    private void goMainActivity() {
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    //Duracion
+                    sleep(5000);
+
+                    Intent intent = new Intent(context, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.left_in, R.anim.left_out);
+
+                } catch (Exception e) {
+
+                }
+            }
+        }.start();
 
     }
 

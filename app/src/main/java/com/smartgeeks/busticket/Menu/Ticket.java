@@ -1,14 +1,12 @@
 package com.smartgeeks.busticket.Menu;
 
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -32,7 +30,6 @@ import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Objcect.RutaPojo;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
@@ -95,7 +92,8 @@ public class Ticket extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
 
-                getRutasSQLite(id_vehiculo);
+                //getRutasSQLite(id_vehiculo);
+                new QueryRoutes().execute("" + id_vehiculo);
                 placa = listPlacas.get(position);
             }
 
@@ -111,7 +109,8 @@ public class Ticket extends Fragment {
                 id_ruta = listRutas.get(position).getRuta();
                 id_ruta_disponible = listRutas.get(position).getRutaDisponible();
 
-                getHorarioSQLite(id_ruta+"");
+                //getHorarioSQLite(id_ruta+"");
+                new QueryShedules().execute(id_ruta + "");
                 ruta_info = listRuta.get(position);
             }
 
@@ -148,8 +147,8 @@ public class Ticket extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        if (!dialogAlert.verificaConexion(context)) {
-                            dialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
+                        if (!DialogAlert.verificaConexion(context)) {
+                            DialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
                             dialog.cancel();
                         }else {
                             dialog.cancel();
@@ -238,18 +237,6 @@ public class Ticket extends Fragment {
         return view;
     }
 
-    private void alertActionServiceSync() {
-        // Filtro de acciones que serán alertadas
-        IntentFilter filter = new IntentFilter(
-                Constantes.ACTION_RUN_LOCAL_SYNC);
-        filter.addAction(Constantes.ACTION_FINISH_SYNC);
-
-        // Crear un nuevo ResponseReceiver
-        ResponseReceiver receiver = new ResponseReceiver();
-        // Registrar el receiver y su filtro
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver, filter);
-    }
-
     private void init() {
         context = getActivity();
         requestQueue = Volley.newRequestQueue(context);
@@ -285,147 +272,8 @@ public class Ticket extends Fragment {
         listRuta = new ArrayList<String>();
         listHora = new ArrayList<String>();
 
-        getVehiculosSQLite();
-    }
-
-    private void getHorario(int id_vehiculo) {
-        listHora.clear();
-
-        String URL = Service.GET_HORARIO + id_vehiculo;
-        Log.w(Service.TAG, "horarios: " + URL);
-        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                JSONObject jsonObject = null;
-                try {
-                    jsonObject = new JSONObject(response);
-                    resultHorarios = jsonObject.getJSONArray("horarios");
-                    Log.v(Service.TAG, "json: " + resultHorarios);
-                    if (resultHorarios.length() > 0) {
-
-                        btnSiguiente.setVisibility(View.VISIBLE);
-                        btnRecordarRuta.setVisibility(View.VISIBLE);
-
-                        for (int i = 0; i < resultHorarios.length(); i++) {
-                            try {
-                                JSONObject json = resultHorarios.getJSONObject(i);
-                                String hora = json.getString("hora");
-                                String horario = json.getString("horario");
-
-                                listHora.add(hora);
-                                listHorario.add(horario);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //setAdapter
-                        spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
-                    } else {
-                        btnSiguiente.setVisibility(View.GONE);
-                        btnRecordarRuta.setVisibility(View.GONE);
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-
-            }
-        });
-        requestQueue.add(stringRequest);
-
-    }
-
-    private void getRutas(int id_vehiculo) {
-        listRuta.clear();
-        String URL = Service.GET_RUTAS + id_vehiculo;
-        Log.w(Service.TAG, "rutas: " + URL);
-        stringRequest = new StringRequest(URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                JSONObject jsonObject = null;
-                try {
-                    jsonObject = new JSONObject(response);
-                    resultRuta = jsonObject.getJSONArray("rutas");
-                    Log.v(Service.TAG, "json: " + resultRuta);
-                    if (resultRuta.length() > 0) {
-                        for (int i = 0; i < resultRuta.length(); i++) {
-                            try {
-                                JSONObject json = resultRuta.getJSONObject(i);
-                                String nombreIda = json.getString("Inicio");
-                                String nombreVuelta = json.getString("Termina");
-
-                                String nameRuta = nombreIda + " - " + nombreVuelta;
-
-                                listRuta.add(nameRuta);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //setAdapter
-                        spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
-                    } else {
-
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-
-            }
-        });
-        requestQueue.add(stringRequest);
-    }
-
-    private void getVehiculos(int id) {
-        listPlacas.clear();
-
-        stringRequest = new StringRequest(Service.GET_VEHICULOS + id, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                JSONObject jsonObject = null;
-                try {
-                    jsonObject = new JSONObject(response);
-                    resultPlaca = jsonObject.getJSONArray("vehiculos");
-                    Log.d(Service.TAG, "vehiculos: " + resultPlaca);
-                    if (resultPlaca.length() > 0) {
-                        for (int i = 0; i < resultPlaca.length(); i++) {
-                            try {
-                                JSONObject json = resultPlaca.getJSONObject(i);
-                                String nombreInstitucion = json.getString("placa");
-
-                                listPlacas.add(nombreInstitucion);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        //setAdapter
-                        spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
-                    } else {
-
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-
-            }
-        });
-
-        requestQueue.add(stringRequest);
-
+        //getVehiculosSQLite();
+        new QueryVehicles().execute();
     }
 
     /**
@@ -493,11 +341,11 @@ public class Ticket extends Fragment {
                     if (respuesta.equals("success")) {
                         showProgress(false);
                         btnFinalizarRuta.setEnabled(false);
-                        dialogAlert.showDialogFailed(context , "Exito" , "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE) ;
+                        DialogAlert.showDialogFailed(context, "Exito", "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE);
                     }else {
                         showProgress(false);
                         btnFinalizarRuta.setEnabled(true);
-                        dialogAlert.showDialogFailed(context , "Alerta" , "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE) ;
+                        DialogAlert.showDialogFailed(context, "Alerta", "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE);
                     }
 
                 } catch (JSONException e) {
@@ -516,20 +364,82 @@ public class Ticket extends Fragment {
         requestQueue.add(stringRequest);
     }
 
+    /**
+     * Queries
+     */
+    private class QueryVehicles extends AsyncTask<String, Void, String> {
 
-    // Broadcast receiver que recibe las emisiones desde los servicios
-    private class ResponseReceiver extends BroadcastReceiver {
-
-        // Sin instancias
-        private ResponseReceiver() {
+        @Override
+        protected String doInBackground(String... strings) {
+            listPlacas.clear();
+            listVehiculos = Vehiculo.listAll(Vehiculo.class);
+            for (Vehiculo vehiculo : listVehiculos) {
+                listPlacas.add(vehiculo.getPlaca());
+            }
+            return null;
         }
 
         @Override
-        public void onReceive(Context context, Intent intent) {
-            switch (intent.getAction()) {
-                case Constantes.ACTION_FINISH_SYNC:
-                    //getVehiculosSQLite();
-                    break;
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            //setAdapter
+            spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
+        }
+    }
+
+    private class QueryRoutes extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            listRuta.clear();
+            listHora.clear();
+            Log.e(TAG, "Id Vehículo: " + strings[0]);
+            listRutas = Ruta.find(Ruta.class, "vehiculo = ?", strings[0]);
+
+            if (listRutas.size() == 0) {
+                DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido rutas para este Vehiculo", SweetAlertDialog.WARNING_TYPE);
+            }
+
+            for (Ruta ruta : listRutas) {
+                String nameRuta = ruta.getPartida() + " - " + ruta.getDestino();
+                listRuta.add(nameRuta);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
+        }
+    }
+
+    private class QueryShedules extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            listHora.clear();
+            Log.e(TAG, "Id Ruta: " + strings[0]);
+            listHorarios = Horario.find(Horario.class, "ruta = ?", new String[]{strings[0]},
+                    "hora", "hora", null);
+
+            for (Horario horario : listHorarios) {
+                listHora.add(Helpers.formatTwelveHours(horario.getHora()));
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            //setAdapter
+            spHorarios.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_horario, R.id.txtName, listHora));
+
+            if (listHorarios.size() > 0) {
+                contentButton.setVisibility(View.VISIBLE);
+                btnSiguiente.setVisibility(View.VISIBLE);
             }
         }
     }

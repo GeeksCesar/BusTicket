@@ -5,10 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.InternetCheck;
 
 
 public class SyncService extends IntentService {
@@ -30,12 +28,6 @@ public class SyncService extends IntentService {
             switch (action) {
                 case Constantes.ACTION_RUN_LOCAL_SYNC:
                     handleLocalSync();
-                    new InternetCheck(new InternetCheck.Consumer() {
-                        @Override
-                        public void accept(Boolean internet) {
-                            Toast.makeText(context, "Sincronización finalizada", Toast.LENGTH_SHORT).show();
-                        }
-                    }).execute();
 
                     break;
                 case Constantes.ACTION_RUN_REMOTE_SYNC:

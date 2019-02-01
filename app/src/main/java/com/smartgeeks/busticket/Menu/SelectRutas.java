@@ -28,7 +28,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
@@ -58,9 +57,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,7 +109,7 @@ public class SelectRutas extends AppCompatActivity {
     StringRequest stringRequest;
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
-    int countConsecutivo; ;
+    int countConsecutivo = 0;
     String ruta_inicio, ruta_fin, horario, info, nombreEmpresa, desc_empresa;
 
     Context context;
@@ -167,10 +166,12 @@ public class SelectRutas extends AppCompatActivity {
 
                 try {
                     precioPasaje = (int) getPrecioSQLite(id_paradero_inicio, id_paradero_fin, id_tipo_usuario);
+                    Log.e(TAG, "Precio del pasaje: " + precioPasaje);
                     valor_pasaje = precioPasaje * countPasajes ;
 
                     formatPrecio(valor_pasaje);
                 } catch (Exception e) {
+                    Log.e(TAG, "Error al obtener precio del pasaje");
                     e.getMessage();
                 }
 
@@ -282,10 +283,10 @@ public class SelectRutas extends AppCompatActivity {
                 String precio = String.valueOf(precio_sum_pasaje) ;
 
                 if (ruta_inicio == ruta_fin) {
-                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else if (precio_sum_pasaje == 0 || precio == null){
-                    dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
                     btnFinalizar.setEnabled(false);
@@ -311,10 +312,10 @@ public class SelectRutas extends AppCompatActivity {
                 String precio = String.valueOf(precio_sum_pasaje) ;
 
                 if (ruta_inicio == ruta_fin) {
-                    dialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Las opciones de paradero deben ser distintas", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else if (precio_sum_pasaje == 0 || precio == null){
-                    dialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Verifique el valor de pasaje", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
                     if (cbAsiento.isChecked()) {
@@ -329,7 +330,7 @@ public class SelectRutas extends AppCompatActivity {
                                 } else {
                                     Log.e("TAG", "No hay conexión a Internet");
                                     //doSomethingOnNoInternet();
-                                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexión.", SweetAlertDialog.WARNING_TYPE);
+                                    DialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexión.", SweetAlertDialog.WARNING_TYPE);
                                 }
                             }
                         }).execute();
@@ -880,7 +881,7 @@ public class SelectRutas extends AppCompatActivity {
 
 
                     } else {
-                        dialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket", SweetAlertDialog.ERROR_TYPE);
+                        DialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket", SweetAlertDialog.ERROR_TYPE);
                         btnFinalizar.setEnabled(true);
                         btnFinalizar.setVisibility(View.VISIBLE);
                         showProgress(false);
@@ -896,22 +897,22 @@ public class SelectRutas extends AppCompatActivity {
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e(Service.TAG, "error: " + volleyError.getMessage());
                 if (volleyError instanceof TimeoutError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof ServerError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof NoConnectionError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof NetworkError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
 
                 params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
@@ -927,7 +928,6 @@ public class SelectRutas extends AppCompatActivity {
                 return params;
             }
         };
-        ;
 
         requestQueue.add(stringRequest);
 
@@ -993,7 +993,6 @@ public class SelectRutas extends AppCompatActivity {
                 "" + id_paradero_fin, ""+id_tipo_usuario);
 
         double precio = tarifaParaderos.get(0).getMonto();
-        Log.e(TAG, "Size price: " + tarifaParaderos.size());
         sizeTarifas = tarifaParaderos.size();
 
         return precio;
@@ -1015,7 +1014,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
-                TextView text = (TextView) view.findViewById(android.R.id.text1);
+                TextView text = view.findViewById(android.R.id.text1);
                 text.setTextColor(Color.BLACK);
                 return view;
             }
@@ -1140,7 +1139,7 @@ public class SelectRutas extends AppCompatActivity {
                                                 encodedByte, 0,
                                                 encodedByte.length
                                         );
-                                        final String data = new String(encodedByte, "US-ASCII");
+                                        final String data = new String(encodedByte, StandardCharsets.US_ASCII);
                                         readBufferPosition = 0;
                                         handler.post(new Runnable() {
                                             @Override
@@ -1169,7 +1168,7 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    void printData() throws IOException {
+    void printData() {
         Log.d(Service.TAG, "entro a printdata") ;
 
         String[] split = info.split(",");
@@ -1279,7 +1278,7 @@ public class SelectRutas extends AppCompatActivity {
 
     }
 
-    void printDataOffLine() throws IOException {
+    void printDataOffLine() {
         Log.d(Service.TAG, "entro a printDataOffLine") ;
 
         String[] split = info.split(",");
@@ -1400,7 +1399,7 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     // Disconnect Printer //
-    void disconnectBT() throws IOException {
+    void disconnectBT() {
         try {
             stopWorker = true;
             outputStream.close();

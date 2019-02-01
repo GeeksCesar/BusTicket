@@ -32,7 +32,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
@@ -61,9 +60,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,10 +158,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 listSillas = "";
 
                 if (sillasSeleccionadas.size() == 0) {
-                    dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Debe seleccionar puestos", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else if (sillasSeleccionadas.size() < cant_puestos) {
-                    dialogAlert.showDialogFailed(context, "Error", "Debe seleccionar " + cant_puestos + " Puestos", SweetAlertDialog.NORMAL_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Debe seleccionar " + cant_puestos + " Puestos", SweetAlertDialog.NORMAL_TYPE);
                     return;
                 } else {
                     for (int i = 0; i < sillasSeleccionadas.size(); i++) {
@@ -416,7 +415,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         if (isChecked == true) {
             sillasSeleccionadas.add(silla_seleccionda);
             if (sillasSeleccionadas.size() > cant_puestos) {
-                dialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los " + cant_puestos + " puestos.", SweetAlertDialog.ERROR_TYPE);
+                DialogAlert.showDialogFailed(context, "Error", "Ya has seleccionado los " + cant_puestos + " puestos.", SweetAlertDialog.ERROR_TYPE);
                 removeSillaFromArray(silla_seleccionda);
                 buttonView.setChecked(false);
                 buttonView.setTextColor(ContextCompat.getColor(context, R.color.md_black_1000));
@@ -537,8 +536,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     if (!error) {
                         showProgress(false);
-                        countConsecutivo = jsonObject.getInt("count") + 1;
-
+                        countConsecutivo = jsonObject.getInt("count");
+                        Log.e(TAG, "Consecutivo: " + countConsecutivo);
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
                         alertDialog.setTitleText("Exito")
@@ -591,7 +590,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     } else {
                         String sillas = jsonObject.getString("silla");
-                        dialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas + "\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
+                        DialogAlert.showDialogFailed(context, "OCUPADO", respuesta + sillas + "\n Seleccione otro", SweetAlertDialog.ERROR_TYPE);
                         btnConfirmarTicket.setEnabled(true);
                         btnConfirmarTicket.setVisibility(View.VISIBLE);
                         showProgress(false);
@@ -610,22 +609,22 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 Log.e(Service.TAG, "error: " + volleyError.getMessage());
                 showProgress(false);
                 if (volleyError instanceof TimeoutError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof ServerError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof NoConnectionError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }else if (volleyError instanceof NetworkError){
-                    dialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
+                    DialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
 
                 params.put("id_paradero_inicio", String.valueOf(id_paradero_inicio));
@@ -726,7 +725,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                                                 encodedByte, 0,
                                                 encodedByte.length
                                         );
-                                        final String data = new String(encodedByte, "US-ASCII");
+                                        final String data = new String(encodedByte, StandardCharsets.US_ASCII);
                                         readBufferPosition = 0;
                                         handler.post(new Runnable() {
                                             @Override
@@ -756,7 +755,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     }
 
-    void printData() throws IOException {
+    void printData() {
         byte[] command=null;
         try{
             String[] split = info_ruta.split(",");
@@ -880,7 +879,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
-                TextView text = (TextView) view.findViewById(android.R.id.text1);
+                TextView text = view.findViewById(android.R.id.text1);
                 text.setTextColor(Color.BLACK);
                 return view;
             }
@@ -971,7 +970,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     }
 
     // Disconnect Printer //
-    void disconnectBT() throws IOException{
+    void disconnectBT() {
         try {
             stopWorker=true;
             outputStream.close();
