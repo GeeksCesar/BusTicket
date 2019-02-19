@@ -15,14 +15,14 @@ import java.util.Calendar;
 
 public class Helpers {
 
-    static Calendar calendar = Calendar.getInstance();
-
     public static String getCurrentDate() {
+        Calendar calendar = Calendar.getInstance();
         String fecha = calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
         return fecha;
     }
 
     public static String getCurrentTime() {
+        Calendar calendar = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         String hora = dateFormat.format(calendar.getTime());
         return hora;

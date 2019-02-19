@@ -1,9 +1,9 @@
 package com.smartgeeks.busticket;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
@@ -23,6 +23,13 @@ import android.widget.TextView;
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
+import com.smartgeeks.busticket.Modelo.Horario;
+import com.smartgeeks.busticket.Modelo.Paradero;
+import com.smartgeeks.busticket.Modelo.Ruta;
+import com.smartgeeks.busticket.Modelo.SubRuta;
+import com.smartgeeks.busticket.Modelo.TarifaParadero;
+import com.smartgeeks.busticket.Modelo.TipoUsuario;
+import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
@@ -39,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
     ImageButton btnAbrirMenu;
     ImageView ivBanner;
     ListView navList;
-    ProgressDialog progressDialog;
     DrawerLayout drawer;
     //_STRING OPCIONES DEL MENU
     final String[] MenuItems = {"Perfil", "Inicio", "Tickets", "Cerrar Sesión"};
@@ -122,28 +128,6 @@ public class MainActivity extends AppCompatActivity {
                 drawer.openDrawer(navList);
             }
         });
-
-        loadDialog();
-    }
-
-    private void loadDialog() {
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setMessage("Cargando datos...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    //Duracion
-                    sleep(5000);
-                    progressDialog.dismiss();
-
-                } catch (Exception e) {
-
-                }
-            }
-        }.start();
     }
 
     public void setFragment(int pos) {
@@ -206,15 +190,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cerrarSession() {
-        Intent intent = new Intent(context, Login.class);
-        preferences = context.getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        preferences.edit().clear().commit();
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        new TruncateDatabase().execute();
     }
 
-    private void clearRuta(){
+    private void clearRuta() {
         preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         preferences.edit().clear().commit();
+    }
+
+    private class TruncateDatabase extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            // Borrado de datos
+            preferences = context.getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+            preferences.edit().clear().commit();
+
+            TipoUsuario.deleteAll(TipoUsuario.class);
+            TarifaParadero.deleteAll(TarifaParadero.class);
+            Vehiculo.deleteAll(Vehiculo.class);
+            Ruta.deleteAll(Ruta.class);
+            Horario.deleteAll(Horario.class);
+            Paradero.deleteAll(Paradero.class);
+            SubRuta.deleteAll(SubRuta.class);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Intent intent = new Intent(context, Login.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 }

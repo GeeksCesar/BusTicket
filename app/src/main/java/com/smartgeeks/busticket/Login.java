@@ -1,9 +1,12 @@
 package com.smartgeeks.busticket;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -60,6 +63,11 @@ public class Login extends AppCompatActivity {
 
         initWidget();
 
+        // Filtro de acciones que serán alertadas
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_SYNC);
+        ResponseReceiver receiver = new ResponseReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
 
         mSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +113,6 @@ public class Login extends AppCompatActivity {
                             UsuarioPreferences.getInstance(context).userPreferences(user);
                             setDataPrefrences();
                             localSync();
-                            goMainActivity();
 
                         } else {
                             DialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
@@ -147,25 +154,10 @@ public class Login extends AppCompatActivity {
     }
 
     private void goMainActivity() {
-
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    //Duracion
-                    sleep(5000);
-
-                    Intent intent = new Intent(context, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.left_in, R.anim.left_out);
-
-                } catch (Exception e) {
-
-                }
-            }
-        }.start();
-
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        overridePendingTransition(R.anim.left_in, R.anim.left_out);
     }
 
     private void localSync() {
@@ -224,6 +216,24 @@ public class Login extends AppCompatActivity {
         if (call != null) {
             call.cancel();
             call = null;
+        }
+    }
+
+    // Broadcast receiver que recibe las emisiones desde los servicios
+    private class ResponseReceiver extends BroadcastReceiver {
+
+        // Sin instancias
+        private ResponseReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Constantes.ACTION_FINISH_SYNC:
+                    goMainActivity();
+                    Log.e("Pruebita", "Finalizado guardado de datos");
+                    break;
+            }
         }
     }
 

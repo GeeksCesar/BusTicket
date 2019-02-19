@@ -1,6 +1,8 @@
 package com.smartgeeks.busticket.sync;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -26,7 +28,7 @@ public class OpsTarifaParadero {
     private static final String TAG = OpsTarifaParadero.class.getSimpleName();
     private static final Gson gson = new Gson();
 
-    public static void realizarSincronizacionLocal(Context context) {
+    public static void realizarSincronizacionLocal(final Context context) {
         Log.i(TAG, "Actualizando el cliente.");
         int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
@@ -40,7 +42,7 @@ public class OpsTarifaParadero {
                             public void onResponse(String response) {
                                 try {
                                     JSONObject object = new JSONObject(response);
-                                    procesarRespuestaGet(object);
+                                    procesarRespuestaGet(object, context);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
@@ -50,6 +52,9 @@ public class OpsTarifaParadero {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error);
+                                // Emisión para avisar que se terminó el servicio
+                                Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
                             }
                         }
                 )
@@ -61,14 +66,14 @@ public class OpsTarifaParadero {
      *
      * @param response Respuesta en formato Json
      */
-    private static void procesarRespuestaGet(JSONObject response) {
+    private static void procesarRespuestaGet(JSONObject response, Context context) {
         try {
             // Obtener atributo "estado"
             String estado = response.getString(Constantes.ESTADO);
 
             switch (estado) {
                 case Constantes.SUCCESS: // EXITO
-                    actualizarDatosLocales(response);
+                    actualizarDatosLocales(response, context);
                     break;
                 case Constantes.FAILED: // FALLIDO
                     Log.e(TAG, "Error al traer datos");
@@ -86,10 +91,9 @@ public class OpsTarifaParadero {
      *
      * @param response Respuesta en formato Json obtenida del servidor
      */
-    private static void actualizarDatosLocales(JSONObject response) {
+    private static void actualizarDatosLocales(JSONObject response, Context context) {
 
         JSONArray tarifas_paradero = null;
-
         try {
             // Obtener array "tarifas_paradero"
             tarifas_paradero = response.getJSONArray(Constantes.TARIFAS_PARADERO);
@@ -146,6 +150,10 @@ public class OpsTarifaParadero {
             SugarRecord.saveInTx(expenseMap.values());
             Log.i(TAG, "Programando inserción de tarifas_paradero ");
             Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes);
+
+            // Emisión para avisar que se terminó el servicio
+            Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
 
         } catch (JSONException e) {
             e.printStackTrace();

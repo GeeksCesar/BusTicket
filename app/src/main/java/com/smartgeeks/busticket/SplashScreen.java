@@ -1,11 +1,14 @@
 package com.smartgeeks.busticket;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
@@ -46,6 +49,11 @@ public class SplashScreen extends AppCompatActivity {
 
         context = SplashScreen.this;
 
+        // Filtro de acciones que serán alertadas
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_SYNC);
+        ResponseReceiver receiver = new ResponseReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+
         progresBar = findViewById(R.id.progresBar);
         //Style ProgressBar
         progresBar = findViewById(R.id.progresBar);
@@ -53,12 +61,6 @@ public class SplashScreen extends AppCompatActivity {
 
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         session = UsuarioPreferences.getInstance(context).getSessionUser();
-
-        if (session.equals("SessionSuccess")) {
-            getDataUser();
-            localSync();
-            remotoSync();
-        }
 
         splash = new Thread() {
             @Override
@@ -69,7 +71,7 @@ public class SplashScreen extends AppCompatActivity {
                     goNextScreen();
 
                 } catch (Exception e) {
-
+                    e.getMessage();
                 }
             }
         };
@@ -106,9 +108,9 @@ public class SplashScreen extends AppCompatActivity {
 
     private void goNextScreen() {
         if (session.equals("SessionSuccess")) {
-            intent = new Intent(context, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            getDataUser();
+            localSync();
+            remotoSync();
         } else if (session.equals("SessionFailed")) {
             intent = new Intent(context, Login.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -129,6 +131,26 @@ public class SplashScreen extends AppCompatActivity {
         Intent sync = new Intent(context, SyncService.class);
         sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
         startService(sync);
+    }
+
+    // Broadcast receiver que recibe las emisiones desde los servicios
+    private class ResponseReceiver extends BroadcastReceiver {
+
+        // Sin instancias
+        private ResponseReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Constantes.ACTION_FINISH_SYNC:
+                    Intent next = new Intent(context, MainActivity.class);
+                    next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(next);
+                    Log.e("Pruebita", "Finalizado guardado de datos");
+                    break;
+            }
+        }
     }
 
 

@@ -34,7 +34,6 @@ import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,19 +47,15 @@ public class Ticket extends Fragment {
     private static String TAG = Ticket.class.getSimpleName();
     View view;
     Context context;
-    DialogAlert dialogAlert = new DialogAlert();
     Spinner spPlaca, spRuta, spHorarios;
     Button btnSiguiente, btnRecordarRuta, btnFinalizarRuta;
     private View mProgressView;
     LinearLayout contentButton;
 
-    private JSONArray resultPlaca;
-    private JSONArray resultRuta;
-    private JSONArray resultHorarios;
     private ArrayList<String> listPlacas;
     private ArrayList<String> listRuta;
     private ArrayList<String> listHora;
-    private ArrayList<String> listHorario = new ArrayList<>();
+
 
     private List<Vehiculo> listVehiculos = new ArrayList<>();
     private List<Ruta> listRutas = new ArrayList<>();
@@ -92,7 +87,6 @@ public class Ticket extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
                 id_vehiculo = Integer.parseInt(listVehiculos.get(position).getIdRemoto());
 
-                //getRutasSQLite(id_vehiculo);
                 new QueryRoutes().execute("" + id_vehiculo);
                 placa = listPlacas.get(position);
             }
@@ -357,7 +351,6 @@ public class Ticket extends Fragment {
             public void onErrorResponse(VolleyError error) {
                 btnFinalizarRuta.setEnabled(true);
                 showProgress(false);
-                dialogAlert.showDialogErrorConexion(context);
             }
         });
 
