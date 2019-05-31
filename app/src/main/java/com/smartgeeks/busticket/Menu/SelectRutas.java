@@ -469,7 +469,7 @@ public class SelectRutas extends AppCompatActivity {
                                     bluetoothDevice = pairedDev;
                                     isEstadoRuta = true ;
                                     abrirImpresoraBlue();
-                                    goIntentMain();
+                                    //goIntentMain();
                                     break;
                                 }else {
                                     Log.e(Service.TAG  , "error no existe impresora");
@@ -857,8 +857,8 @@ public class SelectRutas extends AppCompatActivity {
                                                 if (pairedDev.getName().equals(namePrint)) {
                                                     bluetoothDevice = pairedDev;
                                                     abrirImpresoraBlue();
-                                                    goIntentMain();
-                                                   // break;
+                                                    //goIntentMain();
+                                                   break;
                                                 }else {
                                                     Log.e(Service.TAG  , "error no existe impresora");
                                                     //Toast.makeText(SelectRutas.this, "No se puede imprimir", Toast.LENGTH_SHORT).show();
@@ -1104,6 +1104,7 @@ public class SelectRutas extends AppCompatActivity {
             }else {
                 printData();
             }
+            goIntentMain();
 
         } catch (Exception ex) {
             Log.i(Service.TAG, "Error P: " +ex.getMessage());
@@ -1185,10 +1186,13 @@ public class SelectRutas extends AppCompatActivity {
             byte[] der = {0x1B, 'a', 0x02};
             byte[] izq = {0x1B, 'a', 0x00};
 
+            // Espacio superior
+            outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(format);
+            outputStream.write(new byte[]{ 27, 33, 0 });
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -1206,7 +1210,7 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            msg += "Ticket N:   " + countConsecutivo;
+            //msg += "Ticket N:   " + countConsecutivo;
             msg += "\n";
             msg += "Tarifa:   " + nameUsuario;
             msg += "\n";
@@ -1260,8 +1264,10 @@ public class SelectRutas extends AppCompatActivity {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
-
                 outputStream.write(data);
+
+                // Espacio Inferior
+                outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1294,10 +1300,13 @@ public class SelectRutas extends AppCompatActivity {
             byte[] der = {0x1B, 'a', 0x02};
             byte[] izq = {0x1B, 'a', 0x00};
 
+            // Espacio Superior
+            outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(format);
+            outputStream.write(new byte[]{ 27, 33, 0 });
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -1367,8 +1376,10 @@ public class SelectRutas extends AppCompatActivity {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
-
                 outputStream.write(data);
+
+                // Espacio inferior
+                outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();

@@ -769,10 +769,13 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             byte[] der = {0x1B, 'a', 0x02};
             byte[] izq = {0x1B, 'a', 0x00};
 
+            // Espacio superior
+            outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(format);
+            outputStream.write(new byte[]{ 27, 33, 0 });
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -790,7 +793,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            msg += "Ticket N:   " + countConsecutivo;
+            //msg += "Ticket N:   " + countConsecutivo;
             msg += "\n";
             msg += "Tarifa:   " + nombreUsuario;
             msg += "\n";
@@ -844,8 +847,10 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
-
                 outputStream.write(data);
+
+                // Espacio inferior
+                outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();
