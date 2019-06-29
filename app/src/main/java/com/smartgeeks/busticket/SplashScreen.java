@@ -114,6 +114,7 @@ public class SplashScreen extends AppCompatActivity {
         } else if (session.equals("SessionFailed")) {
             intent = new Intent(context, Login.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            finish();
             startActivity(intent);
         }
     }
@@ -147,7 +148,7 @@ public class SplashScreen extends AppCompatActivity {
                     Intent next = new Intent(context, MainActivity.class);
                     next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(next);
-                    Log.e("Pruebita", "Finalizado guardado de datos");
+                    Log.e("Splash", "Finalizado guardado de datos");
                     break;
             }
         }

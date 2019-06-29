@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -33,6 +34,7 @@ import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
+import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -214,13 +216,24 @@ public class Ticket extends Fragment {
                 Log.e(TAG, "Horario: "+hora);
                 Log.e(TAG, "Ruta: "+id_ruta_disponible);
 
-                Intent intent = new Intent(context, SelectRutas.class);
-                intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
-                intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
-                intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
-                intent.putExtra(SelectRutas.HORARIO, horario);
+                Intent intent;
+                if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
+                    intent = new Intent(context, PreciosRutaConductor.class);
+                    intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
+                    intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                    intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
+                    intent.putExtra(SelectRutas.HORARIO, horario);
+                } else {
+                    intent = new Intent(context, SelectRutas.class);
+                    intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
+                    intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(SelectRutas.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                    intent.putExtra(SelectRutas.ID_HORARIO, id_horario);
+                    intent.putExtra(SelectRutas.HORARIO, horario);
+                }
 
+                Log.e(TAG, UsuarioPreferences.getInstance(context).getRoleVenta());
                 intent.putExtra(SelectRutas.INFO, placa + "," + ruta_info + "," + hora);
                 startActivity(intent);
             }

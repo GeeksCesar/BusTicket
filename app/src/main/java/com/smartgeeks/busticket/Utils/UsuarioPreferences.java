@@ -16,6 +16,7 @@ public class UsuarioPreferences {
     public static final String KEY_ID_EMPRESA = "id_empresa";
     public static final String KEY_NAME_EMPRESA = "name_empresa";
     public static final String KEY_DESC_EMPRESA = "desc_empresa";
+    public static final String KEY_ROLE_VENTA = "role_venta"; // Operador o Conductor
 
 
     private static Context mContext;
@@ -89,6 +90,19 @@ public class UsuarioPreferences {
         editor.putString(KEY_DESC_EMPRESA, msg);
         editor.apply();
     }
+
+    public void setRoleVenta(String role) {
+        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(KEY_ROLE_VENTA, role);
+        editor.apply();
+    }
+
+    public String getRoleVenta() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_ROLE_VENTA, "operador");
+    }
+
 
 }
 

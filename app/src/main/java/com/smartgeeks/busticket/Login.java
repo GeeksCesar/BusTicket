@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -112,7 +114,7 @@ public class Login extends AppCompatActivity {
                         if (user.getIdRol() == 2 || user.getIdRol() == 3) {
                             UsuarioPreferences.getInstance(context).userPreferences(user);
                             setDataPrefrences();
-                            localSync();
+                            dialogSelectRoleUser();
 
                         } else {
                             DialogAlert.showDialogFailed(context, "Error", "No tiene permiso", SweetAlertDialog.ERROR_TYPE);
@@ -150,6 +152,35 @@ public class Login extends AppCompatActivity {
                 mSignInButton.setVisibility(View.VISIBLE);
             }
         });
+
+    }
+
+    private void dialogSelectRoleUser() {
+
+        SweetAlertDialog alertDialog = new SweetAlertDialog(Login.this,
+                SweetAlertDialog.NORMAL_TYPE);
+                alertDialog.setTitleText("¿Quieres ingresar Como Conductor?")
+                .setContentText("Con este perfil se omiten algunas " +
+                        "funcionalidades para la venta de tickets.")
+                .setConfirmText("Aceptar")
+                .setCancelText("Cancelar")
+                .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        sDialog.dismissWithAnimation();
+                        localSync();
+                        UsuarioPreferences.getInstance(Login.this).setRoleVenta("conductor");
+                    }
+                })
+                .setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        sDialog.cancel();
+                        UsuarioPreferences.getInstance(Login.this).setRoleVenta("operador");
+                        localSync();
+                    }
+                })
+                .show();
 
     }
 
@@ -192,6 +223,7 @@ public class Login extends AppCompatActivity {
 
         editor.putString(UsuarioPreferences.KEY_SESSION, "SessionSuccess");
         editor.commit();
+
     }
 
     @Override
@@ -230,8 +262,8 @@ public class Login extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
                 case Constantes.ACTION_FINISH_SYNC:
+                    Log.e("Login", "Finalizado guardado de datos");
                     goMainActivity();
-                    Log.e("Pruebita", "Finalizado guardado de datos");
                     break;
             }
         }
