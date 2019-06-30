@@ -11,17 +11,19 @@ public class TarifaParadero extends SugarRecord {
     int paradaFin;
     int monto;
     int tipoUsuario;
+    int idRuta;
 
 
     public TarifaParadero() {
     }
 
-    public TarifaParadero(int remoto, int paradaInicio, int paradaFin, int monto, int tipoUsuario) {
+    public TarifaParadero(int remoto, int paradaInicio, int paradaFin, int monto, int tipoUsuario, int idRuta) {
         this.remoto = remoto;
         this.paradaInicio = paradaInicio;
         this.paradaFin = paradaFin;
         this.monto = monto;
         this.tipoUsuario = tipoUsuario;
+        this.idRuta = idRuta;
     }
 
     public int getIdRemoto() {
@@ -42,5 +44,9 @@ public class TarifaParadero extends SugarRecord {
 
     public int getTipoUsuario() {
         return tipoUsuario;
+    }
+
+    public int getIdRuta() {
+        return idRuta;
     }
 }

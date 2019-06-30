@@ -130,8 +130,9 @@ public class OpsTarifaParadero {
                     boolean b2 = match.getParadaFin() != tarifaParadero.getParadaFin();
                     boolean b3 = match.getMonto() != tarifaParadero.getMonto();
                     boolean b4 = match.getTipoUsuario() != tarifaParadero.getTipoUsuario();
+                    boolean b5 = match.getIdRuta() != tarifaParadero.getIdRuta();
 
-                    if (b1 || b2 || b3 || b4) {
+                    if (b1 || b2 || b3 || b4 || b5) {
                         Log.i(TAG, "Programando actualización de: " + tarifaParadero.getIdRemoto());
                         match.update();
                         numUpdates++;

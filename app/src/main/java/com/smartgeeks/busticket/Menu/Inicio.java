@@ -54,6 +54,9 @@ public class Inicio extends Fragment {
             public void onClick(View view) {
                 activity = (MainActivity) getActivity();
                 activity.setFragment(2);
+
+                // Realizar sincronización remota de datos locales
+                sendData();
             }
         });
 
