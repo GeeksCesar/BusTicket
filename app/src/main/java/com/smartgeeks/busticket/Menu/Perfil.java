@@ -112,6 +112,7 @@ public class Perfil extends Fragment {
 
         namePrint = RutaPreferences.getInstance(context).getNamePrint();
         estadoPrint = RutaPreferences.getInstance(context).getEstadoPrint();
+        RutaPreferences.getInstance(context).setEstadoRuta(false);
 
         Log.e(Service.TAG, "namePrint: "+namePrint);
         Log.e(Service.TAG, "estadoPrint"+estadoPrint) ;

@@ -417,6 +417,7 @@ public class SelectRutas extends AppCompatActivity {
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
             desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
+        nombreEmpresa = nombreEmpresa.trim().toUpperCase();
 
         Log.e(TAG, "Horario: "+horario);
         Log.e(TAG, "Ruta: "+id_ruta_disponible);
@@ -969,7 +970,7 @@ public class SelectRutas extends AppCompatActivity {
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(new byte[]{ 27, 33, 0 });
+            outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -987,7 +988,7 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            //msg += "Ticket N:   " + countConsecutivo;
+            msg += "Ticket N:   " + countConsecutivo;
             msg += "\n";
             msg += "Tarifa:   " + nameUsuario;
             msg += "\n";
@@ -1028,9 +1029,7 @@ public class SelectRutas extends AppCompatActivity {
 
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            String precio = "";
-            precio += "Precio: "+getPrecioPasaje+"\n";
-
+            String precio = "Precio: "+getPrecioPasaje+"\n";
             outputStream.write(format);
             outputStream.write(precio.getBytes(),0,precio.getBytes().length);
             format =new byte[]{ 27, 33, 0 };
@@ -1083,7 +1082,7 @@ public class SelectRutas extends AppCompatActivity {
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(new byte[]{ 27, 33, 0 });
+            outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){

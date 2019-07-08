@@ -193,8 +193,13 @@ public class Ticket extends Fragment {
 
                         RutaPreferences.getInstance(context).rutaPreferences(ruta);
 
-                        Intent intent = new Intent(context, SelectRutas.class);
-                        startActivity(intent);
+                        if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
+                            Intent intent = new Intent(context, PreciosRutaConductor.class);
+                            startActivity(intent);
+                        } else {
+                            Intent intent = new Intent(context, SelectRutas.class);
+                            startActivity(intent);
+                        }
                     }
                 });
 
@@ -224,7 +229,6 @@ public class Ticket extends Fragment {
                     intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
                     intent.putExtra(PreciosRutaConductor.HORARIO, horario);
                     intent.putExtra(PreciosRutaConductor.INFO, placa + "," + ruta_info + "," + hora);
-                    intent.putExtra(PreciosRutaConductor.RUTA, ruta_info);
                 } else {
                     intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
@@ -268,12 +272,16 @@ public class Ticket extends Fragment {
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
 
 
-        if (getStatusRuta) {
-            Intent intent = new Intent(context, SelectRutas.class);
-            startActivity(intent);
-            getActivity().finish();
-        } else {
-
+        if (getStatusRuta){
+            if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
+                Intent intent = new Intent(context, PreciosRutaConductor.class);
+                startActivity(intent);
+                getActivity().finish();
+            } else {
+                Intent intent = new Intent(context, SelectRutas.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
         }
 
         listPlacas = new ArrayList<String>();

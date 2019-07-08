@@ -80,6 +80,13 @@ public class RutaPreferences {
         return sharedPreferences.getString(INFORMACION, "");
     }
 
+    public void setEstadoRuta(boolean estado){
+        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(ESTADO, estado);
+        editor.apply();
+    }
+
     public boolean getEstadoRuta() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(ESTADO, false);

@@ -27,6 +27,7 @@ import com.smartgeeks.busticket.Modelo.Signin;
 import com.smartgeeks.busticket.Objcect.User;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 import com.smartgeeks.busticket.sync.SyncService;
 
@@ -159,9 +160,8 @@ public class Login extends AppCompatActivity {
 
         SweetAlertDialog alertDialog = new SweetAlertDialog(Login.this,
                 SweetAlertDialog.NORMAL_TYPE);
-                alertDialog.setTitleText("¿Quieres ingresar Como Conductor?")
-                .setContentText("Con este perfil se omiten algunas " +
-                        "funcionalidades para la venta de tickets.")
+                alertDialog.setTitleText("¿Quieres ingresar en modo Conductor?")
+                .setContentText("Con este modo podrá vender Tickets en 2 clicks")
                 .setConfirmText("Aceptar")
                 .setCancelText("Cancelar")
                 .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
@@ -169,6 +169,7 @@ public class Login extends AppCompatActivity {
                     public void onClick(SweetAlertDialog sDialog) {
                         sDialog.dismissWithAnimation();
                         localSync();
+                        RutaPreferences.getInstance(context).setEstadoRuta(false);
                         UsuarioPreferences.getInstance(Login.this).setRoleVenta("conductor");
                     }
                 })

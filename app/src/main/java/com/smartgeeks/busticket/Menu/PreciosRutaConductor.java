@@ -79,7 +79,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     public static final String HORARIO = "HORARIO";
 
     public static final String INFO = "INFO";
-    public static final String RUTA = "RUTA";
     public static final String TAG = PreciosRutaConductor.class.getSimpleName();
 
 
@@ -98,7 +97,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible, id_empresa;
     int countConsecutivo = 0;
-    String nameUsuario;
 
     SharedPreferences preferences ;
     SharedPreferences.Editor editor ;
@@ -137,7 +135,15 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
         initWidget();
 
+        findViewById(R.id.btn_olvidar_ruta).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+                preferences.edit().clear().commit();
 
+                goIntentMain();
+            }
+        });
     }
 
     private void initWidget() {
@@ -157,7 +163,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             id_horario = bundle.getInt(ID_HORARIO);
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
-            ruta = bundle.getString(RUTA);
+            ruta = bundle.getString(INFO).split(",")[1];
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
             desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
@@ -168,17 +174,20 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             id_horario = RutaPreferences.getInstance(context).getIdHorario();
             horario = RutaPreferences.getInstance(context).getHora();
             info = RutaPreferences.getInstance(context).getInformacion();
+            ruta = RutaPreferences.getInstance(context).getInformacion().split(",")[1];
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
             nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
             desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
+        nombreEmpresa = nombreEmpresa.trim().toUpperCase();
 
         Log.e(TAG, "Horario: "+horario);
         Log.e(TAG, "Ruta: "+id_ruta_disponible);
+        Log.e(TAG, "Nombre Empresa: "+nombreEmpresa);
 
         // Listado de Precios para la ruta (Entre paraderos)
         List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
-                "id_ruta = ?", new String[]{"" + id_ruta}, "monto", "monto", null);
+                "id_ruta = ?", new String[]{"" + id_ruta}, "monto", "monto DESC", null);
 
         Log.e(TAG, "" + tarifaParaderos.size());
 
@@ -240,7 +249,12 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 .show();
 
         Button button = sweetdialog.findViewById(R.id.confirm_button);
-        button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorBlue));
+        button.setTextSize(25);
+        button.setBackgroundColor(ContextCompat.getColor(this,R.color.colorBlue));
+
+        float density = context.getResources().getDisplayMetrics().density;
+        int paddingPixel = (int)(30 * density);
+        button.setPadding(paddingPixel, 5, paddingPixel, 5);
     }
 
     private void checkInternetConection() {
@@ -635,7 +649,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(new byte[]{ 27, 33, 0 });
+            outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -654,10 +668,9 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             String msg = "";
             msg += "\n";
             if (countConsecutivo > 0)
-                msg += "Ticket N:   " + countConsecutivo;
-            msg += "\n";
-            msg += "Tarifa:   " + nameUsuario;
-            msg += "\n";
+                msg += "Ticket N:   " + countConsecutivo + "\n";
+
+
             msg += "Fecha:   " + Helpers.getDate();
             msg += "\n";
             outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
@@ -694,7 +707,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             String precio = "";
             precio += "Precio: " + formatPrecio(precio_sum_pasaje) + "\n";
-
             outputStream.write(format);
             outputStream.write(precio.getBytes(),0,precio.getBytes().length);
             format =new byte[]{ 27, 33, 0 };

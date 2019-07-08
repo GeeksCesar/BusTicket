@@ -206,7 +206,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-
+        nombreEmpresa = nombreEmpresa.trim().toUpperCase();
         getPrecioPasaje =  "$ "+formatPrecio(precio_pasaje);
 
 
@@ -775,7 +775,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
-            outputStream.write(new byte[]{ 27, 33, 0 });
+            outputStream.write(format);
             outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
 
             if (!desc_empresa.isEmpty()){
@@ -793,7 +793,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            //msg += "Ticket N:   " + countConsecutivo;
+            msg += "Ticket N:   " + countConsecutivo;
             msg += "\n";
             msg += "Tarifa:   " + nombreUsuario;
             msg += "\n";
@@ -834,9 +834,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            String precio = "";
-            precio += "Precio: "+getPrecioPasaje+"\n";
-
+            String precio = "Precio: "+getPrecioPasaje+"\n";
             outputStream.write(format);
             outputStream.write(precio.getBytes(),0,precio.getBytes().length);
             format =new byte[]{ 27, 33, 0 };
