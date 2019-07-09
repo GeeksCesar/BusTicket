@@ -6,17 +6,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -225,22 +221,6 @@ public class Login extends AppCompatActivity {
         editor.putString(UsuarioPreferences.KEY_SESSION, "SessionSuccess");
         editor.commit();
 
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(final MotionEvent ev) {
-        final View currentFocus = getCurrentFocus();
-        if (!(currentFocus instanceof EditText) || !isTouchInsideView(ev, currentFocus)) {
-            ((InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE))
-                    .hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
-        return super.dispatchTouchEvent(ev);
-    }
-    private boolean isTouchInsideView(final MotionEvent ev, final View currentFocus) {
-        final int[] loc = new int[2];
-        currentFocus.getLocationOnScreen(loc);
-        return ev.getRawX() > loc[0] && ev.getRawY() > loc[1] && ev.getRawX() < (loc[0] + currentFocus.getWidth())
-                && ev.getRawY() < (loc[1] + currentFocus.getHeight());
     }
 
     @Override
