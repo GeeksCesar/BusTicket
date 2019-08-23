@@ -253,7 +253,7 @@ public class Inicio extends Fragment {
             double precios[] = {2000,1500,1200,800};
             // Consultar registros por sincronizar
             int indice = 0;
-            for (int i = 0; i < 25; i++){
+            for (int i = 0; i < 52; i++){
 
                 if (indice > 3)
                     indice = 0;
