@@ -54,12 +54,14 @@ public class Constantes {
     /**
      * Constantes para SyncService (Sincronización)
      */
+    //public static final String ACTION_FINISH_SYNC = "com.smartgeeks.busticket.action.ACTION_FINISH_SYNC";
+
     public static final String ACTION_RUN_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_LOCAL_SYNC";
-    public static final String ACTION_FINISH_SYNC = "com.smartgeeks.busticket.action.ACTION_FINISH_SYNC";
+    public static final String ACTION_FINISH_LOCAL_SYNC = "com.smartgeeks.busticket.action.ACTION_FINISH_LOCAL_SYNC";
+
+    public static final String ACTION_FINISH_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_FINISH_REMOTE_SYNC";
     public static final String ACTION_RUN_REMOTE_SYNC = "com.smartgeeks.busticket.action.ACTION_RUN_REMOTE_SYNC";
-
-
-    public static final String EXTRA_PROGRESS = "com.example.services.extra.PROGRESS";
+    public static final String EXTRA_PROGRESS = "com.smartgeeks.busticket.extra.PROGRESS";
 
     /**
      * Tipo de cuenta para la sincronización

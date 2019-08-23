@@ -4,8 +4,10 @@ import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +15,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -53,6 +56,7 @@ import com.smartgeeks.busticket.Utils.InternetCheck;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.sync.SyncServiceRemote;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,6 +106,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     SharedPreferences.Editor editor ;
 
     boolean estadoRuta , estadoPrint;
+    private boolean state_sync = false;
     String namePrint;
 
     //Configuracion Impresora
@@ -134,6 +139,14 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         setContentView(R.layout.activity_precio_rutas_conductor);
 
         initWidget();
+
+        // Filtro de acciones que serán alertadas
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_RUN_REMOTE_SYNC);
+        filter.addAction(Constantes.EXTRA_PROGRESS);
+        filter.addAction(Constantes.ACTION_FINISH_REMOTE_SYNC);
+        ResponseReceiver receiver = new ResponseReceiver();
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
+                receiver, filter);
 
         findViewById(R.id.btn_olvidar_ruta).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -263,10 +276,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             public void accept(Boolean internet) {
                 if (internet) {
                     // Enviar Ticket al servidor
-                    Log.e("TAG", "Hay conexión a Internet");
-                    //doSomethingOnConnected
                     registerTicket();
-
+                    remoteSync(); // Enviar Tickets locales
                 } else {
                     // Guardar Ticket en Bd Local para sincronización
                     Log.e("TAG", "No hay conexión a Internet");
@@ -759,6 +770,34 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             bluetoothSocket.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Ejecutar el servicio de Sincronización Remota
+     */
+    private void remoteSync() {
+        if (!state_sync){
+            Intent sync = new Intent(context, SyncServiceRemote.class);
+            sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
+            getApplicationContext().startService(sync);
+        }
+    }
+
+    // Broadcast receiver que recibe las emisiones desde los servicios
+    private class ResponseReceiver extends BroadcastReceiver {
+
+        // Sin instancias
+        private ResponseReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+
+                case Constantes.ACTION_RUN_REMOTE_SYNC:
+                    state_sync = intent.getBooleanExtra(Constantes.EXTRA_PROGRESS, false);
+            }
         }
     }
 

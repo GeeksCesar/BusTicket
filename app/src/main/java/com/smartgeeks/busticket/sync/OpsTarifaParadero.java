@@ -53,7 +53,7 @@ public class OpsTarifaParadero {
                             public void onErrorResponse(VolleyError error) {
                                 Log.e(TAG, "" + error);
                                 // Emisión para avisar que se terminó el servicio
-                                Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
+                                Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
                             }
                         }
@@ -153,7 +153,8 @@ public class OpsTarifaParadero {
             Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes);
 
             // Emisión para avisar que se terminó el servicio
-            Intent localIntent = new Intent(Constantes.ACTION_FINISH_SYNC);
+            Log.e(TAG, "...Emisión de finalización de sincronización local...");
+            Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
             LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
 
         } catch (JSONException e) {

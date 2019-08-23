@@ -21,7 +21,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
-import com.smartgeeks.busticket.sync.SyncService;
+import com.smartgeeks.busticket.sync.SyncServiceLocal;
+import com.smartgeeks.busticket.sync.SyncServiceRemote;
 import com.smartgeeks.busticket.sync.VolleySingleton;
 
 import org.json.JSONException;
@@ -50,7 +51,7 @@ public class SplashScreen extends AppCompatActivity {
         context = SplashScreen.this;
 
         // Filtro de acciones que serán alertadas
-        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_SYNC);
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC);
         ResponseReceiver receiver = new ResponseReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
@@ -110,7 +111,7 @@ public class SplashScreen extends AppCompatActivity {
         if (session.equals("SessionSuccess")) {
             getDataUser();
             localSync();
-            remotoSync();
+            remoteSync();
         } else if (session.equals("SessionFailed")) {
             intent = new Intent(context, Login.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -123,13 +124,13 @@ public class SplashScreen extends AppCompatActivity {
         /**
          * Ejecutar el servicio de Sincronización Local
          */
-        Intent sync = new Intent(context, SyncService.class);
+        Intent sync = new Intent(context, SyncServiceLocal.class);
         sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
         startService(sync);
     }
 
-    private void remotoSync() {
-        Intent sync = new Intent(context, SyncService.class);
+    private void remoteSync() {
+        Intent sync = new Intent(context, SyncServiceRemote.class);
         sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
         startService(sync);
     }
@@ -144,7 +145,7 @@ public class SplashScreen extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case Constantes.ACTION_FINISH_SYNC:
+                case Constantes.ACTION_FINISH_LOCAL_SYNC:
                     Intent next = new Intent(context, MainActivity.class);
                     next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(next);

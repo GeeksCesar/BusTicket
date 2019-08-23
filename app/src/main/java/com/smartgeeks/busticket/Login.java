@@ -25,7 +25,7 @@ import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
-import com.smartgeeks.busticket.sync.SyncService;
+import com.smartgeeks.busticket.sync.SyncServiceLocal;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
@@ -63,7 +63,7 @@ public class Login extends AppCompatActivity {
         initWidget();
 
         // Filtro de acciones que serán alertadas
-        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_SYNC);
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC);
         ResponseReceiver receiver = new ResponseReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
 
@@ -156,10 +156,9 @@ public class Login extends AppCompatActivity {
 
         SweetAlertDialog alertDialog = new SweetAlertDialog(Login.this,
                 SweetAlertDialog.NORMAL_TYPE);
-                alertDialog.setTitleText("¿Quieres ingresar en modo Conductor?")
-                .setContentText("Con este modo podrá vender Tickets en 2 clicks")
-                .setConfirmText("Aceptar")
-                .setCancelText("Cancelar")
+                alertDialog.setTitleText("Selecciona el modo de venta")
+                .setConfirmText("Conductor")
+                .setCancelText("Boletería")
                 .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
                     @Override
                     public void onClick(SweetAlertDialog sDialog) {
@@ -192,7 +191,7 @@ public class Login extends AppCompatActivity {
         /**
          * Ejecutar el servicio de Sincronización Local
          */
-        Intent sync = new Intent(context, SyncService.class);
+        Intent sync = new Intent(context, SyncServiceLocal.class);
         sync.setAction(Constantes.ACTION_RUN_LOCAL_SYNC);
         startService(sync);
     }
@@ -242,7 +241,7 @@ public class Login extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case Constantes.ACTION_FINISH_SYNC:
+                case Constantes.ACTION_FINISH_LOCAL_SYNC:
                     Log.e("Login", "Finalizado guardado de datos");
                     goMainActivity();
                     break;

@@ -1,6 +1,8 @@
 package com.smartgeeks.busticket.sync;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -29,11 +31,11 @@ public class OpsTicket {
      */
     public static void realizarSincronizacionRemota(final Context context) {
         Log.e(TAG, "Actualizando el servidor...");
+        final Intent localIntent = new Intent(Constantes.ACTION_RUN_REMOTE_SYNC);
 
         iniciarActualizacion();
 
         List<Ticket> tickets_to_sync = obtenerRegistrosSucios();
-        Log.i("Count ", "" + Ticket.count(Ticket.class));
         Log.e(TAG, "Se encontraron " + tickets_to_sync.size() + " registros por Sincronizar.");
 
         if (tickets_to_sync.size() > 0) {
@@ -52,12 +54,20 @@ public class OpsTicket {
                                     public void onResponse(JSONObject response) {
                                         Log.i(TAG, "response: " + response);
                                         procesarRespuestaInsert(response, idLocal);
+
+                                        localIntent.putExtra(Constantes.EXTRA_PROGRESS, true);
+                                        LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
                                     }
                                 },
                                 new Response.ErrorListener() {
                                     @Override
                                     public void onErrorResponse(VolleyError error) {
                                         Log.e(TAG, "Error Volley: " + error.getMessage());
+
+                                        // Emisión para avisar que se terminó el servicio
+                                        localIntent.putExtra(Constantes.EXTRA_PROGRESS, false);
+                                        LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
+
                                     }
                                 }
 
@@ -77,10 +87,16 @@ public class OpsTicket {
                         }
                 );
             }
+
         } else {
             Log.i(TAG, "No se requiere sincronización");
         }
 
+        // Emisión para avisar que se terminó el servicio
+        Log.e(TAG, "...Emisión de finalización de sincronización Remota...");
+
+        localIntent.putExtra(Constantes.EXTRA_PROGRESS, false);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
     }
 
     private static JSONObject setJSONObject(Ticket ticket) {
@@ -141,6 +157,7 @@ public class OpsTicket {
         // Si se registró remotamente, el ticket. Lo elimino de la base de datos local
         Ticket ticket = Ticket.findById(Ticket.class, idLocal);
         ticket.delete();
+
         Log.e(TAG, "Registro " + idRemota + " sincronización completada");
     }
 

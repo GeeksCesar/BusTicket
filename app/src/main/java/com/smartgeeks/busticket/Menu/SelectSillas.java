@@ -6,8 +6,10 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +18,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
@@ -54,7 +57,7 @@ import com.smartgeeks.busticket.Utils.Helpers;
 import com.smartgeeks.busticket.Utils.PrintPicture;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
-import com.smartgeeks.busticket.sync.SyncService;
+import com.smartgeeks.busticket.sync.SyncServiceRemote;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -103,6 +106,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     Button btnConfirmarTicket;
     TextView tvVehiculo, tvRuta, tvHora, tvInicio, tvFin;
     ProgressDialog progress;
+    private boolean state_sync = false;
 
     private View mProgressView;
 
@@ -150,6 +154,14 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         showProgressDialog();
         getSillasOcupadasEnParadas();
         //getSillasOcupadas(id_ruta_disponible);
+
+        // Filtro de acciones que serán alertadas
+        IntentFilter filter = new IntentFilter(Constantes.ACTION_RUN_REMOTE_SYNC);
+        filter.addAction(Constantes.EXTRA_PROGRESS);
+        filter.addAction(Constantes.ACTION_FINISH_REMOTE_SYNC);
+        ResponseReceiver receiver = new ResponseReceiver();
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
+                receiver, filter);
 
 
         btnConfirmarTicket.setOnClickListener(new View.OnClickListener() {
@@ -224,7 +236,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
         encontrarDispositivoBlue();
 
-        remotoSync();
+        remoteSync();
 
         getDataPrint();
     }
@@ -966,10 +978,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         finish();
     }
 
-    private void remotoSync() {
-        Intent sync = new Intent(context, SyncService.class);
-        sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
-        startService(sync);
+    private void remoteSync() {
+        if (!state_sync){
+            Intent sync = new Intent(context, SyncServiceRemote.class);
+            sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
+            getApplicationContext().startService(sync);
+        }
     }
 
     // Disconnect Printer //
@@ -983,6 +997,27 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             ex.printStackTrace();
         }
     }
+
+    // Broadcast receiver que recibe las emisiones desde los servicios
+    private class ResponseReceiver extends BroadcastReceiver {
+
+        // Sin instancias
+        private ResponseReceiver() {
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+
+                case Constantes.ACTION_RUN_REMOTE_SYNC:
+
+                    state_sync = intent.getBooleanExtra(Constantes.EXTRA_PROGRESS, false);
+
+                    break;
+            }
+        }
+    }
+
 
 }
 

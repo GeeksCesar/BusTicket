@@ -20,10 +20,15 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:icon">
 
-        <!-- SERVICIO DE SINCRONIZACION -->
+        <!-- SERVICIO DE SINCRONIZACION LOCAL-->
         <service
-            android:name=".sync.SyncService"
-            android:exported="false" ></service>
+            android:name=".sync.SyncServiceLocal"
+            android:exported="false" />
+
+        <!-- SERVICIO DE SINCRONIZACION REMOTA-->
+        <service
+            android:name=".sync.SyncServiceRemote"
+            android:exported="false" />
 
         <!-- Sugar Atribbutes -->
         <meta-data
@@ -76,9 +81,6 @@
             android:name=".Menu.SelectSillas"
             android:screenOrientation="portrait" />
 
-        <service
-            android:name=".sync.SyncService"
-            android:exported="false"></service>
     </application>
 
 </manifest>
