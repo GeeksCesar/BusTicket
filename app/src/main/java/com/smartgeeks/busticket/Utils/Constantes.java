@@ -8,7 +8,7 @@ public class Constantes {
 
     //private static final String IP = "http://10.0.3.2";  192.168.0.104
     public static final String HOST = "mi.appbusticket.com";
-    private static final String IP = "http://mi.appbusticket.com/";
+    private static final String IP = "https://mi.appbusticket.com/";
     private static final String PROYECT = "apisync/";
 
     /**
