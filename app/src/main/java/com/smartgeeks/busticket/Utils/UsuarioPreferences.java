@@ -17,6 +17,7 @@ public class UsuarioPreferences {
     public static final String KEY_NAME_EMPRESA = "name_empresa";
     public static final String KEY_DESC_EMPRESA = "desc_empresa";
     public static final String KEY_ROLE_VENTA = "role_venta"; // Operador o Conductor
+    public static final String KEY_ID_TIPO_USUARIO = "id_tipo_usuario";
 
 
     private static Context mContext;
@@ -69,6 +70,11 @@ public class UsuarioPreferences {
         return sharedPreferences.getInt(KEY_ID_EMPRESA, 0);
     }
 
+    public int getIdTipoUsuario() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getInt(KEY_ID_TIPO_USUARIO, 0);
+    }
+
     public String getRut() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_RUT, "");
@@ -95,6 +101,13 @@ public class UsuarioPreferences {
         SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(KEY_ROLE_VENTA, role);
+        editor.apply();
+    }
+
+    public void setIdTipoUsuario(int idTipoUsuario) {
+        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(KEY_ID_TIPO_USUARIO, idTipoUsuario);
         editor.apply();
     }
 

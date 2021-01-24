@@ -16,6 +16,7 @@ public class Constantes {
      */
     public static final String GET_TIPOS_USUARIO = IP + PROYECT + "getTiposUsuario/";
     public static final String GET_TARIFAS_PARADERO = IP + PROYECT + "getTarifasParadero/";
+    public static final String GET_TARIFAS_PARADERO_TIPO_USUARIO = IP + PROYECT + "getTarifasParaderoTipoUsuario/";
     /**
      * Los siguientes se consultan por id de empresa
      */

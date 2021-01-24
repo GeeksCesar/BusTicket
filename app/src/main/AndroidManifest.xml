@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
         android:name="com.orm.SugarApp"
@@ -20,17 +20,16 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:icon">
 
-        <!-- SERVICIO DE SINCRONIZACION LOCAL-->
+        <activity android:name=".Menu.SelectTarifa"
+            android:screenOrientation="portrait" />
+
+        <!-- SERVICIO DE SINCRONIZACION LOCAL -->
         <service
             android:name=".sync.SyncServiceLocal"
-            android:exported="false" />
-
-        <!-- SERVICIO DE SINCRONIZACION REMOTA-->
+            android:exported="false" /> <!-- SERVICIO DE SINCRONIZACION REMOTA -->
         <service
             android:name=".sync.SyncServiceRemote"
-            android:exported="false" />
-
-        <!-- Sugar Atribbutes -->
+            android:exported="false" /> <!-- Sugar Atribbutes -->
         <meta-data
             android:name="DATABASE"
             android:value="busticket.db" />
@@ -80,7 +79,6 @@
         <activity
             android:name=".Menu.SelectSillas"
             android:screenOrientation="portrait" />
-
     </application>
 
 </manifest>
