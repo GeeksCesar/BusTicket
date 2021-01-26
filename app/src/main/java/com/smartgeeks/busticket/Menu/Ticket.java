@@ -222,13 +222,14 @@ public class Ticket extends Fragment {
 
                 Intent intent;
                 if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
-                    intent = new Intent(context, PreciosRutaConductor.class);
-                    intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
-                    intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
-                    intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                    intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
-                    intent.putExtra(PreciosRutaConductor.HORARIO, horario);
-                    intent.putExtra(PreciosRutaConductor.INFO, placa + "," + ruta_info + "," + hora);
+                    Log.e(TAG, "ENTRO CONDUCTOR");
+                    intent = new Intent(context, SelectTarifa.class);
+                    intent.putExtra(SelectTarifa.ID_RUTA, id_ruta);
+                    intent.putExtra(SelectTarifa.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(SelectTarifa.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                    intent.putExtra(SelectTarifa.ID_HORARIO, id_horario);
+                    intent.putExtra(SelectTarifa.HORARIO, horario);
+                    intent.putExtra(SelectTarifa.INFO, placa + "," + ruta_info + "," + hora);
                 } else {
                     intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID_RUTA, id_ruta);

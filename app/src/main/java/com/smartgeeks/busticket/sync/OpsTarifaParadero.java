@@ -30,13 +30,13 @@ public class OpsTarifaParadero {
 
     public static void realizarSincronizacionLocal(final Context context) {
         Log.i(TAG, "Actualizando el cliente.");
-        int getIdTipoUsuario = UsuarioPreferences.getInstance(context).getIdTipoUsuario();
+        int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO_TIPO_USUARIO + getIdTipoUsuario);
+        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_TARIFAS_PARADERO + getIdTipoUsuario,
+                        Constantes.GET_TARIFAS_PARADERO + idEmpresa,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

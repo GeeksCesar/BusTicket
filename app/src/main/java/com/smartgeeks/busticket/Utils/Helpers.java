@@ -43,7 +43,7 @@ public class Helpers {
     }
 
     public static String getTime() {
-        // Obtener la fecha y hora del telefono
+        // Hora del telefono
         Calendar calendar = Calendar.getInstance();
         DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         String hora = dateFormat.format(calendar.getTime());

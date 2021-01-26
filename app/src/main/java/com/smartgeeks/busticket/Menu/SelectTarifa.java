@@ -2,6 +2,7 @@ package com.smartgeeks.busticket.Menu;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
@@ -35,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -51,7 +54,20 @@ public class SelectTarifa extends AppCompatActivity {
     Context context;
     RecyclerView rvTarifas;
 
-    private static final String TAG = SelectTarifa.class.getSimpleName();
+    public static final String ID_RUTA = "ID";
+    public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
+    public static final String ID_VEHICULO = "ID_VEHICULO";
+    public static final String ID_HORARIO = "ID_HORARIO";
+    public static final String HORARIO = "HORARIO";
+
+    public static final String INFO = "INFO";
+    private static final String TAG = "SELECTTARIFA";
+
+    Bundle bundle;
+    DecimalFormat formatea = new DecimalFormat("###,###.##");
+
+    int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible, id_empresa;
+    String horario, info, nombreEmpresa, desc_empresa, ruta = "";
 
     ApiService apiService;
     Call<TarifaUsuario> call ;
@@ -75,7 +91,7 @@ public class SelectTarifa extends AppCompatActivity {
     private void initWidgets() {
         context = SelectTarifa.this;
         apiService = Service.getApiService();
-        //bundle = getIntent().getExtras();
+
         tvFecha = findViewById(R.id.tvTxtDate);
         tvHora = findViewById(R.id.tvTxtHora);
         rvTarifas = findViewById(R.id.rv_tarifas);
@@ -88,13 +104,42 @@ public class SelectTarifa extends AppCompatActivity {
         rvTarifas.addItemDecoration(dividerItemDecoration);
         getTarifas();
 
+        bundle = getIntent().getExtras();
+
+        if (bundle != null) {
+            id_ruta = bundle.getInt(ID_RUTA);
+            id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
+            id_vehiculo = bundle.getInt(ID_VEHICULO);
+            id_horario = bundle.getInt(ID_HORARIO);
+            horario = bundle.getString(HORARIO);
+            info = bundle.getString(INFO);
+            ruta = bundle.getString(INFO).split(",")[1];
+            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+
+        }else{
+
+        }
+
         rvTarifas.addOnItemTouchListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void OnItemClick(View view, int position) {
+
+                Intent intent;
                 Tarifa tarifa = tarifaLists.get(position);
-                UsuarioPreferences.getInstance(SelectTarifa.this).setIdTipoUsuario(Integer.parseInt(tarifa.getId()));
+                Log.e(TAG, "ID_TIPO_USU: "+tarifa.getId());
+                intent = new Intent(context, PreciosRutaConductor.class);
+                intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
+                intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId());
+                intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
+                intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
+                intent.putExtra(PreciosRutaConductor.HORARIO, horario);
+                intent.putExtra(PreciosRutaConductor.INFO, info);
+                startActivity(intent);
             }
         }));
+
+
 
     }
 
@@ -134,7 +179,7 @@ public class SelectTarifa extends AppCompatActivity {
      * Consultar tarifas
      */
     private void getTarifas() {
-        call = apiService.allTarifas(10);
+        call = apiService.allTarifas(UsuarioPreferences.getInstance(context).getIdEmpresa());
 
         call.enqueue(new Callback<TarifaUsuario>() {
             @Override

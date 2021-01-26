@@ -77,6 +77,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 public class PreciosRutaConductor extends AppCompatActivity implements AdapterPrecios.ItemClickListener {
 
     public static final String ID_RUTA = "ID";
+    public static final String ID_TIPO_USUARIO = "ID_TIPO_USUARIO";
     public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
@@ -95,7 +96,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     int countPasajes = 1, precio_sum_pasaje = 0, id_tipo_usuario = 0,
             id_paradero_inicio = 0, id_paradero_fin = 0;
-    String horario, info, nombreEmpresa, desc_empresa, ruta = "";
+    String horario, info, nombreEmpresa, desc_empresa, ruta = "", get_id_tipo_usuario = "";
 
     Context context;
 
@@ -173,6 +174,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             id_ruta = bundle.getInt(ID_RUTA);
             id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
             id_vehiculo = bundle.getInt(ID_VEHICULO);
+            get_id_tipo_usuario = bundle.getString(ID_TIPO_USUARIO);
             id_horario = bundle.getInt(ID_HORARIO);
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
@@ -195,14 +197,16 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         nombreEmpresa = nombreEmpresa.trim().toUpperCase();
 
         Log.e(TAG, "Horario: "+horario);
-        Log.e(TAG, "Ruta: "+id_ruta_disponible);
+        Log.e(TAG, "Ruta: "+id_ruta);
+        Log.e(TAG, "Tipo usuario: "+get_id_tipo_usuario);
+        Log.e(TAG, "ID_Ruta: "+id_ruta_disponible);
         Log.e(TAG, "Nombre Empresa: "+nombreEmpresa);
 
         // Listado de Precios para la ruta (Entre paraderos)
         List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
-                "id_ruta = ?", new String[]{"" + id_ruta}, "monto", "monto DESC", null);
+                "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, ""+get_id_tipo_usuario}, "monto", "monto DESC", null);
 
-        Log.e(TAG, "" + tarifaParaderos.size());
+        Log.e(TAG, "count-> " + tarifaParaderos.size());
 
         progress_save = findViewById(R.id.progress_save);
         tv_ruta = findViewById(R.id.tv_ruta);
@@ -330,7 +334,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
      */
     private void registerTicket() {
         Log.e(TAG, "Enviando Ticket al servidor");
-        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE,
+        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE_TEST,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -343,8 +347,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                             if (respuesta.equals("success")) {
 
                                 showProgress(false);
-                                countConsecutivo = jsonObject.getInt("count");
-                                Log.e(TAG, "Consecutivo: " + countConsecutivo);
+                            //    countConsecutivo = jsonObject.getInt("count");
+                            //    Log.e(TAG, "Consecutivo: " + countConsecutivo);
 
                                 try {
 
@@ -678,8 +682,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            if (countConsecutivo > 0)
-                msg += "Ticket N:   " + countConsecutivo + "\n";
+
+            msg += "Ticket N:   " +id_ruta_disponible+"_"+ Helpers.getDate() + "_"+Helpers.getCurrentTime() +"\n";
 
 
             msg += "Fecha:   " + Helpers.getDate();
