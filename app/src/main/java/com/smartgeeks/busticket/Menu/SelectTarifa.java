@@ -212,4 +212,8 @@ public class SelectTarifa extends AppCompatActivity {
         }
     }
 
+    public void goBack(View view) {
+        this.finish();
+    }
+
 }

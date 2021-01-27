@@ -57,6 +57,21 @@ public class Helpers {
         return date;
     }
 
+    public static String getDateTicket() {
+        Calendar calendar = Calendar.getInstance();
+        String date = String.format("%d%d%d",
+                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR));
+        return date;
+    }
+
+    public static String getTimeTicket() {
+        // Hora del telefono
+        Calendar calendar = Calendar.getInstance();
+        DateFormat dateFormat = new SimpleDateFormat("HHmmss");
+        String hora = dateFormat.format(calendar.getTime());
+        return hora;
+    }
+
     public static String formatTwelveHours(String hour){
         String time;
         String[] split = hour.split(":");

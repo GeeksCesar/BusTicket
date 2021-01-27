@@ -29,10 +29,10 @@ public class OpsTarifaParadero {
     private static final Gson gson = new Gson();
 
     public static void realizarSincronizacionLocal(final Context context) {
-        Log.i(TAG, "Actualizando el cliente.");
+        //Log.i(TAG, "Actualizando el cliente.");
         int idEmpresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
-        Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO + idEmpresa);
+        //Log.d(TAG, "Url: " + Constantes.GET_TARIFAS_PARADERO + idEmpresa);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
@@ -100,7 +100,7 @@ public class OpsTarifaParadero {
             // Parsear con Gson
             TarifaParadero[] res = gson.fromJson(tarifas_paradero != null ? tarifas_paradero.toString() : null, TarifaParadero[].class);
             List<TarifaParadero> data = Arrays.asList(res);
-            Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
+           // Log.e(TAG, "Se encontraron " + data.size() + " registros remotos.");
 
             // Tabla hash para recibir las entradas entrantes
             HashMap<Integer, TarifaParadero> expenseMap = new HashMap<Integer, TarifaParadero>();
@@ -109,7 +109,7 @@ public class OpsTarifaParadero {
             }
 
             List<TarifaParadero> locales = TarifaParadero.find(TarifaParadero.class, "remoto IS NOT NULL");
-            Log.i(TAG, "Se encontraron " + locales.size() + " registros locales.");
+            //Log.i(TAG, "Se encontraron " + locales.size() + " registros locales.");
 
             // Encontrar datos obsoletos
             int numUpdates = 0;
@@ -133,11 +133,11 @@ public class OpsTarifaParadero {
                     boolean b5 = match.getIdRuta() != tarifaParadero.getIdRuta();
 
                     if (b1 || b2 || b3 || b4 || b5) {
-                        Log.i(TAG, "Programando actualización de: " + tarifaParadero.getIdRemoto());
+                   //     Log.i(TAG, "Programando actualización de: " + tarifaParadero.getIdRemoto());
                         match.update();
                         numUpdates++;
                     } else {
-                        Log.i(TAG, "No hay acciones para este registro: " + tarifaParadero.getIdRemoto());
+                  ///      Log.i(TAG, "No hay acciones para este registro: " + tarifaParadero.getIdRemoto());
                     }
                 } else {
                     // Debido a que la entrada no existe, es removida de la base de datos
@@ -149,11 +149,11 @@ public class OpsTarifaParadero {
 
             // Insertar items resultantes
             SugarRecord.saveInTx(expenseMap.values());
-            Log.i(TAG, "Programando inserción de tarifas_paradero ");
-            Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes);
+       //     Log.i(TAG, "Programando inserción de tarifas_paradero ");
+          //  Log.i(TAG, "Actualizaciones: " + numUpdates + " Borrados: " + numDeletes);
 
             // Emisión para avisar que se terminó el servicio
-            Log.e(TAG, "...Emisión de finalización de sincronización local...");
+       //     Log.e(TAG, "...Emisión de finalización de sincronización local...");
             Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
             LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
 

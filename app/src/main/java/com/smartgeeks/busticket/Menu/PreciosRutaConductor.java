@@ -683,8 +683,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             String msg = "";
             msg += "\n";
 
-            msg += "Ticket N:   " +id_ruta_disponible+"_"+ Helpers.getDate() + "_"+Helpers.getCurrentTime() +"\n";
-
+            msg += "Ticket N:   " +id_ruta_disponible+"_"+ Helpers.getDateTicket() + "_"+Helpers.getTimeTicket() +"\n";
 
             msg += "Fecha:   " + Helpers.getDate();
             msg += "\n";
@@ -749,7 +748,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             Log.e(Service.TAG , "error in printdata");
         }
 
-        goIntentMain();
+        goIntentTarifas();
     }
 
     private void goIntentMain() {
@@ -761,6 +760,18 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(MainActivity.BACK, true);
+        startActivity(intent);
+        finish();
+    }
+
+    private void goIntentTarifas() {
+        try{
+            disconnectBT();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        Intent intent = new Intent(context, SelectTarifa.class);
         startActivity(intent);
         finish();
     }
