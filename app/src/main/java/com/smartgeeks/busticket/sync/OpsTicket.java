@@ -155,8 +155,12 @@ public class OpsTicket {
      */
     private static void finalizarActualizacion(String idRemota, Long idLocal) {
         // Si se registró remotamente, el ticket. Lo elimino de la base de datos local
-        Ticket ticket = Ticket.findById(Ticket.class, idLocal);
-        ticket.delete();
+        try {
+            Ticket ticket = Ticket.findById(Ticket.class, idLocal);
+            ticket.delete();
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
 
         Log.e(TAG, "Registro " + idRemota + " sincronización completada");
     }

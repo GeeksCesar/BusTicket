@@ -15,33 +15,21 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
-import com.smartgeeks.busticket.Login;
-import com.smartgeeks.busticket.Modelo.Silla;
+import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.TarifaUsuario;
-import com.smartgeeks.busticket.Objcect.Tarifa;
+import com.smartgeeks.busticket.Modelo.TipoUsuario;
+import com.smartgeeks.busticket.Objects.Tarifa;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.RecyclerItemClickListener;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -50,9 +38,7 @@ import retrofit2.Response;
 
 public class SelectTarifa extends AppCompatActivity {
 
-    TextView  tvFecha, tvHora;
     Context context;
-    RecyclerView rvTarifas;
 
     public static final String ID_RUTA = "ID";
     public static final String ID_RUTA_DISPONIBLE = "ID_RUTA_DISPONIBLE";
@@ -71,38 +57,51 @@ public class SelectTarifa extends AppCompatActivity {
 
     ApiService apiService;
     Call<TarifaUsuario> call ;
-    List<Tarifa> tarifaLists;
+    List<TipoUsuario> tarifaLists = new ArrayList<TipoUsuario>();
     RecyclerView.LayoutManager layoutManager;
     AdapterTarifas adapterListTarifas ;
+
+    private ActivitySelectTarifaBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_select_tarifa);
+
+        binding = ActivitySelectTarifaBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         Thread myThread = null;
         Runnable runnable = new CountDownRunner();
         myThread= new Thread(runnable);
         myThread.start();
         initWidgets();
+        setupOnBackButton();
+    }
+
+    private void setupOnBackButton() {
+        binding.imgBtnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     private void initWidgets() {
         context = SelectTarifa.this;
         apiService = Service.getApiService();
 
-        tvFecha = findViewById(R.id.tvTxtDate);
-        tvHora = findViewById(R.id.tvTxtHora);
-        rvTarifas = findViewById(R.id.rv_tarifas);
-
-        rvTarifas.setHasFixedSize(true);
+        binding.rvTarifas.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
-        rvTarifas.setLayoutManager(layoutManager);
-        rvTarifas.setItemAnimator(new DefaultItemAnimator());
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvTarifas.getContext(), LinearLayoutManager.VERTICAL);
-        rvTarifas.addItemDecoration(dividerItemDecoration);
-        getTarifas();
+        binding.rvTarifas.setLayoutManager(layoutManager);
+        binding.rvTarifas.setItemAnimator(new DefaultItemAnimator());
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(binding.rvTarifas.getContext(), LinearLayoutManager.VERTICAL);
+        binding.rvTarifas.addItemDecoration(dividerItemDecoration);
+
+//        getTarifas();
+        getTarifasLocal();
 
         bundle = getIntent().getExtras();
 
@@ -115,21 +114,18 @@ public class SelectTarifa extends AppCompatActivity {
             info = bundle.getString(INFO);
             ruta = bundle.getString(INFO).split(",")[1];
             id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-
-        }else{
-
         }
 
-        rvTarifas.addOnItemTouchListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
+        binding.rvTarifas.addOnItemTouchListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void OnItemClick(View view, int position) {
 
                 Intent intent;
-                Tarifa tarifa = tarifaLists.get(position);
+                TipoUsuario tarifa = tarifaLists.get(position);
                 Log.e(TAG, "ID_TIPO_USU: "+tarifa.getId());
                 intent = new Intent(context, PreciosRutaConductor.class);
                 intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
-                intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId());
+                intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId_remoto());
                 intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
                 intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
@@ -140,7 +136,17 @@ public class SelectTarifa extends AppCompatActivity {
         }));
 
 
+    }
 
+    private void getTarifasLocal() {
+        List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class, "remoto");
+        for (TipoUsuario tipoUsuario: tipoUsuarios) {
+            if (Integer.parseInt( tipoUsuario.getId_remoto() ) != 0)
+                tarifaLists.add(tipoUsuario);
+        }
+
+        adapterListTarifas = new AdapterTarifas(context, tarifaLists);
+        binding.rvTarifas.setAdapter(adapterListTarifas);
     }
 
     public void doWork() {
@@ -171,8 +177,8 @@ public class SelectTarifa extends AppCompatActivity {
         String formato_fecha =  String.format("%1$td-%1$tm-%1$tY", fecha);
         String formato_hora =  String.format("%1$tH:%1$tM", fecha);
 
-        tvFecha.setText(formato_fecha);
-        tvHora.setText(formato_hora +" "+sb);
+        binding.tvTxtDate.setText(formato_fecha);
+        binding.tvTxtHora.setText(formato_hora +" "+sb);
     }
 
     /**
@@ -184,9 +190,10 @@ public class SelectTarifa extends AppCompatActivity {
         call.enqueue(new Callback<TarifaUsuario>() {
             @Override
             public void onResponse(Call<TarifaUsuario> call, Response<TarifaUsuario> response) {
-                tarifaLists = response.body().getTarifas();
+                Log.e(TAG, "onResponse: "+response.body().toString());
+//                tarifaLists = response.body().getTarifas();
                 adapterListTarifas = new AdapterTarifas(context,tarifaLists );
-                rvTarifas.setAdapter(adapterListTarifas);
+                binding.rvTarifas.setAdapter(adapterListTarifas);
             }
 
             @Override
@@ -210,10 +217,6 @@ public class SelectTarifa extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    public void goBack(View view) {
-        this.finish();
     }
 
 }

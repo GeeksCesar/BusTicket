@@ -2,7 +2,7 @@ package com.smartgeeks.busticket.Modelo;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.smartgeeks.busticket.Objcect.User;
+import com.smartgeeks.busticket.Objects.User;
 
 public class Signin {
 

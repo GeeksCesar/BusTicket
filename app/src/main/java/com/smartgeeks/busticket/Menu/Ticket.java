@@ -28,7 +28,7 @@ import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
-import com.smartgeeks.busticket.Objcect.RutaPojo;
+import com.smartgeeks.busticket.Objects.RutaPojo;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.Helpers;
@@ -231,6 +231,7 @@ public class Ticket extends Fragment {
                     intent.putExtra(SelectTarifa.HORARIO, horario);
                     intent.putExtra(SelectTarifa.INFO, placa + "," + ruta_info + "," + hora);
                 } else {
+                    // Modo Boleteria
                     intent = new Intent(context, SelectRutas.class);
                     intent.putExtra(SelectRutas.ID_RUTA, id_ruta);
                     intent.putExtra(SelectRutas.ID_VEHICULO, id_vehiculo);

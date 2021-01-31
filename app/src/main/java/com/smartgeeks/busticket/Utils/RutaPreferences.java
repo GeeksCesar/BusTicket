@@ -3,7 +3,7 @@ package com.smartgeeks.busticket.Utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.smartgeeks.busticket.Objcect.RutaPojo;
+import com.smartgeeks.busticket.Objects.RutaPojo;
 
 public class RutaPreferences {
 

@@ -97,7 +97,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private List<Silla> listSillasOcupadas = new ArrayList<>();
     private List<Integer> sillasSeleccionadas = new ArrayList<>();
     Bundle bundle;
-    int id_tarifa, countConsecutivo;
+    int id_tarifa;
     int cant_puestos, precio_pasaje, id_vehiculo, id_horario, id_paradero_incio, id_paradero_final, id_tipo_usuario, id_operador, id_ruta, id_ruta_disponible, id_empresa;
     String getPrecioPasaje;
     String horario, info_ruta, nombreEmpresa, nombreUsuario, desc_empresa;
@@ -107,6 +107,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     TextView tvVehiculo, tvRuta, tvHora, tvInicio, tvFin;
     ProgressDialog progress;
     private boolean state_sync = false;
+    private String numVoucher = "";
 
     private View mProgressView;
 
@@ -548,8 +549,8 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
                     if (!error) {
                         showProgress(false);
-                        countConsecutivo = jsonObject.getInt("count");
-                        Log.e(TAG, "Consecutivo: " + countConsecutivo);
+                        numVoucher = jsonObject.getString("num_voucher");
+                        Log.e(TAG, "Num Voucher: " + numVoucher);
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
                         alertDialog.setTitleText("Exito")
@@ -648,6 +649,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 params.put("total_pagar", String.valueOf(valor_pagar));
                 params.put("sillas", listSillas);
                 params.put("id_empresa", String.valueOf(id_empresa));
+                params.put("id_vehiculo", String.valueOf(id_vehiculo));
 
                 return params;
             }
@@ -805,7 +807,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             outputStream.write(izq);
             String msg = "";
             msg += "\n";
-            msg += "Ticket N:   " + countConsecutivo;
+            msg += "Ticket N:   " + numVoucher;
             msg += "\n";
             msg += "Tarifa:   " + nombreUsuario;
             msg += "\n";

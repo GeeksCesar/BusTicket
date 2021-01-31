@@ -20,7 +20,7 @@ import android.widget.ImageView;
 import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.Signin;
-import com.smartgeeks.busticket.Objcect.User;
+import com.smartgeeks.busticket.Objects.User;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
 import com.smartgeeks.busticket.Utils.RutaPreferences;
@@ -31,6 +31,11 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+/**
+ * user: PRUEBA
+ * password: prueba321
+ */
 
 public class Login extends AppCompatActivity {
 

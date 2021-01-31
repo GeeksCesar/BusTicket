@@ -109,7 +109,7 @@ public class SelectRutas extends AppCompatActivity {
     StringRequest stringRequest;
 
     int countPasajes = 1, precio_sum_pasaje, precioPasaje, valor_pasaje, id_tipo_usuario, id_paradero_inicio, id_paradero_fin, position_tipo_usuario, sizeTarifas;
-    int countConsecutivo = 0;
+    private String numVoucher = "";
     String ruta_inicio, ruta_fin, horario, info, nombreEmpresa, desc_empresa;
 
     Context context;
@@ -269,7 +269,7 @@ public class SelectRutas extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-                preferences.edit().clear().commit();
+                preferences.edit().clear().apply();
 
                 goIntentMain();
             }
@@ -324,11 +324,11 @@ public class SelectRutas extends AppCompatActivity {
                             @Override
                             public void accept(Boolean internet) {
                                 if (internet) {
-                                    Log.e("TAG", "Hay conexión a Internet");
+                                    Log.e(TAG, "Hay conexión a Internet");
                                     //doSomethingOnConnected();
                                     startSelectSillasActivity();
                                 } else {
-                                    Log.e("TAG", "No hay conexión a Internet");
+                                    Log.e(TAG, "No hay conexión a Internet");
                                     //doSomethingOnNoInternet();
                                     DialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexión.", SweetAlertDialog.WARNING_TYPE);
                                 }
@@ -403,9 +403,6 @@ public class SelectRutas extends AppCompatActivity {
             id_horario = bundle.getInt(ID_HORARIO);
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
-            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-            nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
-            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         } else {
             id_ruta = RutaPreferences.getInstance(context).getIdRuta();
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
@@ -413,10 +410,11 @@ public class SelectRutas extends AppCompatActivity {
             id_horario = RutaPreferences.getInstance(context).getIdHorario();
             horario = RutaPreferences.getInstance(context).getHora();
             info = RutaPreferences.getInstance(context).getInformacion();
-            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-            nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
-            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
+
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         nombreEmpresa = nombreEmpresa.trim().toUpperCase();
 
         Log.e(TAG, "Horario: "+horario);
@@ -460,7 +458,7 @@ public class SelectRutas extends AppCompatActivity {
 
                     getDataPrint();
 
-                    if (estadoPrint == true){
+                    if (estadoPrint){
 
                         Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
@@ -473,11 +471,11 @@ public class SelectRutas extends AppCompatActivity {
                                     //goIntentMain();
                                     break;
                                 }else {
-                                    Log.e(Service.TAG  , "error no existe impresora");
+                                    Log.e(TAG  , "error no existe impresora");
                                 }
                             }
                         }else {
-                            Log.e(Service.TAG  , "error no existe impresora");
+                            Log.e(TAG  , "error no existe impresora");
                         }
 
                     }else {
@@ -498,6 +496,12 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     private void saveTicketLocal() {
+
+        String fecha = Helpers.getCurrentDate();
+        String hora = Helpers.getCurrentTime();
+        numVoucher = id_vehiculo+""+id_operador+"-"+Helpers.setString2DateVoucher(fecha)+"-"+Helpers.setString2HourVoucher(hora);
+        Log.e(TAG, "saveTicketLocal numVoucher: "+numVoucher);
+
         Ticket ticket = new Ticket();
         ticket.setIdRemoto("");
         ticket.setParadaInicio(id_paradero_inicio);
@@ -506,9 +510,10 @@ public class SelectRutas extends AppCompatActivity {
         ticket.setIdOperador(UsuarioPreferences.getInstance(context).getIdUser());
         ticket.setHoraSalida(horario);
         ticket.setTipoUsuario(id_tipo_usuario);
-        ticket.setFecha(Helpers.getCurrentDate());
-        ticket.setHora(Helpers.getCurrentTime());
+        ticket.setFecha(fecha);
+        ticket.setHora(hora);
         ticket.setCantPasajes(countPasajes);
+        ticket.setIdVehiculo(id_vehiculo);
         ticket.setTotalPagar(precio_sum_pasaje);
         ticket.setEstado(0);
         ticket.setPendiente(Constantes.ESTADO_SYNC);
@@ -589,21 +594,21 @@ public class SelectRutas extends AppCompatActivity {
 
     private void registerTicket(final int id_paradero_inicio, final int id_paradero_final, final int id_ruta_disponible, final int id_operador, final int id_tipo_usuario, final int valor_pagar, final int countPasajes) {
 
-        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE, new Response.Listener<String>() {
+        stringRequest = new StringRequest(Request.Method.POST, Service.SET_TICKET_PIE_TEST, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.e(Service.TAG, "response: " + response);
+                Log.e(TAG, "response: " + response);
                 try {
                     JSONObject jsonObject = new JSONObject(response);
 
                     String respuesta = jsonObject.getString("message");
-                    countConsecutivo = jsonObject.getInt("count");
-                    Log.e(TAG, "Consecutivo: "+countConsecutivo);
+                    numVoucher = jsonObject.getString("num_voucher");
+                    Log.e(TAG, "NumVoucher: "+numVoucher);
+
                     if (respuesta.equals("success")) {
                         btnFinalizar.setEnabled(true);
                         btnFinalizar.setVisibility(View.VISIBLE);
                         showProgress(false);
-
 
                         final SweetAlertDialog alertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
 
@@ -625,10 +630,10 @@ public class SelectRutas extends AppCompatActivity {
 
                                     getDataPrint();
 
-                                    if (estadoPrint == true){
-                                        Log.e(Service.TAG, "entro estado") ;
+                                    if (estadoPrint){
+                                        Log.e(TAG, "entro estado") ;
                                         Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
-                                        Log.e(Service.TAG, "parired: "+pairedDevice.size()) ;
+                                        Log.e(TAG, "parired: "+pairedDevice.size()) ;
 
                                         if (pairedDevice.size() > 0) {
                                             for (BluetoothDevice pairedDev : pairedDevice) {
@@ -638,12 +643,12 @@ public class SelectRutas extends AppCompatActivity {
                                                     //goIntentMain();
                                                    break;
                                                 }else {
-                                                    Log.e(Service.TAG  , "error no existe impresora");
+                                                    Log.e(TAG  , "error no existe impresora");
                                                     //Toast.makeText(SelectRutas.this, "No se puede imprimir", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
                                         }else {
-                                            Log.e(Service.TAG  , "error no existe impresora");
+                                            Log.e(TAG  , "error no existe impresora");
                                             //Toast.makeText(SelectRutas.this, "No existe impresora", Toast.LENGTH_SHORT).show();
                                         }
 
@@ -673,7 +678,7 @@ public class SelectRutas extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                Log.e(Service.TAG, "error: " + volleyError.getMessage());
+                Log.e(TAG, "error: " + volleyError.getMessage());
                 if (volleyError instanceof TimeoutError){
                     DialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
                     return;
@@ -702,6 +707,7 @@ public class SelectRutas extends AppCompatActivity {
                 params.put("total_pagar", String.valueOf(valor_pagar));
                 params.put("cantidad", String.valueOf(countPasajes));
                 params.put("id_empresa", String.valueOf(id_empresa));
+                params.put("id_vehiculo", String.valueOf(id_vehiculo));
 
                 return params;
             }
@@ -808,7 +814,7 @@ public class SelectRutas extends AppCompatActivity {
 
                 editor.putString(RutaPreferences.NAME_PRINT, name_impresora);
                 editor.putBoolean(RutaPreferences.ESTADO_PRINT, true);
-                editor.commit() ;
+                editor.apply() ;
 
                 Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
@@ -855,18 +861,18 @@ public class SelectRutas extends AppCompatActivity {
                    // Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
                 }
             }else {
-                Log.d(Service.TAG, "no hay lista de bluetooth");
+                Log.d(TAG, "no hay lista de bluetooth");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            Log.i(Service.TAG, "otro Error" + ex.getMessage());
+            Log.i(TAG, "otro Error" + ex.getMessage());
         }
 
     }
 
     public void abrirImpresoraBlue() {
         try {
-            Log.i(Service.TAG, "Entro a print");
+            Log.i(TAG, "Entro a print");
             //Standard uuid from string //
             UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
@@ -885,7 +891,7 @@ public class SelectRutas extends AppCompatActivity {
             goIntentMain();
 
         } catch (Exception ex) {
-            Log.i(Service.TAG, "Error P: " +ex.getMessage());
+            Log.i(TAG, "Error P: " +ex.getMessage());
         }
     }
 
@@ -901,7 +907,7 @@ public class SelectRutas extends AppCompatActivity {
             thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(Service.TAG , "method run") ;
+                    Log.d(TAG , "method run") ;
                     while (!Thread.currentThread().isInterrupted() && !stopWorker) {
                         try {
                             int byteAvailable = inputStream.available();
@@ -948,7 +954,7 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     void printData() {
-        Log.d(Service.TAG, "entro a printdata") ;
+        Log.d(TAG, "entro a printdata") ;
 
         String[] split = info.split(",");
 
@@ -986,9 +992,18 @@ public class SelectRutas extends AppCompatActivity {
             outputStream.write(format);
 
             outputStream.write(izq);
+
+            /**
+             * Estructura del voucher
+             * D del bus "4",
+             * id del vendedor "4",
+             * la fecha (ddmmaa) 250121,
+             * = 44-250121-163822
+             */
+
             String msg = "";
             msg += "\n";
-            msg += "Ticket N:   " + countConsecutivo;
+            msg += "Ticket N:   " + numVoucher;
             msg += "\n";
             msg += "Tarifa:   " + nameUsuario;
             msg += "\n";
@@ -1061,7 +1076,7 @@ public class SelectRutas extends AppCompatActivity {
     }
 
     void printDataOffLine() {
-        Log.d(Service.TAG, "entro a printDataOffLine") ;
+        Log.d(TAG, "entro a printDataOffLine") ;
 
         String[] split = info.split(",");
 
@@ -1099,6 +1114,8 @@ public class SelectRutas extends AppCompatActivity {
 
             outputStream.write(izq);
             String msg = "";
+            msg += "\n";
+            msg += "Ticket N:   " + numVoucher;
             msg += "\n";
             msg += "Tarifa:   " + nameUsuario;
             msg += "\n";

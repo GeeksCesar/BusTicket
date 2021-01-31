@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Objcect;
+package com.smartgeeks.busticket.Objects;
 
 public class RutaPojo {
 

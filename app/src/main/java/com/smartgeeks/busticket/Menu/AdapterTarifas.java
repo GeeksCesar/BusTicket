@@ -9,17 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.smartgeeks.busticket.Objcect.Tarifa;
+import com.smartgeeks.busticket.Modelo.TipoUsuario;
+import com.smartgeeks.busticket.Objects.Tarifa;
 import com.smartgeeks.busticket.R;
 
 import java.util.List;
 
 public class AdapterTarifas extends  RecyclerView.Adapter<AdapterTarifas.viewHolder>{
 
-    private List<Tarifa> tarifaList;
+    private List<TipoUsuario> tarifaList;
     private Context context;
 
-    public AdapterTarifas(Context context, List<Tarifa> tarifaList) {
+    public AdapterTarifas(Context context, List<TipoUsuario> tarifaList) {
         this.tarifaList = tarifaList;
         this.context = context;
     }
@@ -33,15 +34,15 @@ public class AdapterTarifas extends  RecyclerView.Adapter<AdapterTarifas.viewHol
 
     @Override
     public void onBindViewHolder(viewHolder holder, int position) {
-        Tarifa tarifa = tarifaList.get(position);
+        TipoUsuario tarifa = tarifaList.get(position);
 
-        holder.tvNameTarifa.setText(tarifa.getNombreTarifa());
+        holder.tvNameTarifa.setText(tarifa.getNombre());
 
-        if (tarifa.getModule() == 0){
+        if (position % 3 == 0){
             holder.tvNameTarifa.setBackground(ContextCompat.getDrawable(context, R.drawable.bg_tarifa_blue));
-        }else if (tarifa.getModule() == 1){
+        }else if (position % 3 == 1){
             holder.tvNameTarifa.setBackground(ContextCompat.getDrawable(context, R.drawable.bg_tarifa_cyan));
-        }else if (tarifa.getModule() == 2){
+        }else if (position % 3 == 2){
             holder.tvNameTarifa.setBackground(ContextCompat.getDrawable(context, R.drawable.bg_tarifa_green));
         }
     }

@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Objcect;
+package com.smartgeeks.busticket.Objects;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

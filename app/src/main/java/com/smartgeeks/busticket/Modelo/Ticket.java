@@ -17,13 +17,14 @@ public class Ticket extends SugarRecord {
     String hora;
     int cantPasajes;
     double totalPagar;
+    int idVehiculo = 0;
     int estado;
     int pendiente;
 
     public Ticket() {
     }
 
-    public Ticket(String remoto, int paradaInicio, int paradaDestino, int idRutaDisponible, int idOperador, String horaSalida, int tipoUsuario, String fecha, String hora, int cantPasajes, double totalPagar, int estado, int pendiente) {
+    public Ticket(String remoto, int paradaInicio, int paradaDestino, int idRutaDisponible, int idOperador, String horaSalida, int tipoUsuario, String fecha, String hora, int cantPasajes, double totalPagar, int idVehiculo, int estado, int pendiente) {
         this.remoto = remoto;
         this.paradaInicio = paradaInicio;
         this.paradaDestino = paradaDestino;
@@ -35,6 +36,7 @@ public class Ticket extends SugarRecord {
         this.hora = hora;
         this.cantPasajes = cantPasajes;
         this.totalPagar = totalPagar;
+        this.idVehiculo = idVehiculo;
         this.estado = estado;
         this.pendiente = pendiente;
     }
@@ -141,6 +143,14 @@ public class Ticket extends SugarRecord {
 
     public void setEstado(int estado) {
         this.estado = estado;
+    }
+
+    public int getIdVehiculo() {
+        return idVehiculo;
+    }
+
+    public void setIdVehiculo(int idVehiculo) {
+        this.idVehiculo = idVehiculo;
     }
 
     public int getPendiente() {

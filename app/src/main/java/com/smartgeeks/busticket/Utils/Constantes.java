@@ -26,7 +26,7 @@ public class Constantes {
     public static final String GET_HORARIOS = IP + PROYECT + "getHorarios/";
     public static final String GET_SILLAS_OCUPADAS = IP + PROYECT + "getSillasOcupadas/";
 
-    public static final String INSERT_TICKET = IP + PROYECT + "saveTicket/";
+    public static final String INSERT_TICKET = IP + PROYECT + "saveTicketNew/";
 
     public static final String GET_SUBRUTAS = "horarios";
 

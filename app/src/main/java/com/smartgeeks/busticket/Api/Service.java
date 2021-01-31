@@ -18,9 +18,16 @@ public class Service {
     public static final String GET_HORARIO = URL + "api/getHorario?id=";
     public static final String GET_PARADEROS = URL + "api/getParadero?id=";
     public static final String GET_PARADEROS_FIN = URL + "api/getParaderoFinal/";
-    public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsiento";
+
+    // Registra el ticket con seleccion de asiento
+    public static final String SET_TICKET_ASIENTO = URL + "api/setTicketAsientoNew";
+
+    // Obtiene el consecutivo del ticket
     public static final String SET_TICKET_PIE = URL + "api/setTicketPie";
+
+    // Obtiene el consecutivo del ticket 66-888888-765652
     public static final String SET_TICKET_PIE_TEST = URL + "api/setTicketPieTest";
+
     public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/";
     public static final String SET_LIBERAR_SILLA= URL + "api/getLiberarSillasDia/";
 

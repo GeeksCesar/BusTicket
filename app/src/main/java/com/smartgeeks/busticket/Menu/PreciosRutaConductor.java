@@ -100,13 +100,13 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     Context context;
 
-    int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible, id_empresa;
-    int countConsecutivo = 0;
+    int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible, id_empresa;
+    private String numVoucher = "";
 
-    SharedPreferences preferences ;
-    SharedPreferences.Editor editor ;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
 
-    boolean estadoRuta , estadoPrint;
+    boolean estadoRuta, estadoPrint;
     private boolean state_sync = false;
     String namePrint;
 
@@ -179,9 +179,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
             ruta = bundle.getString(INFO).split(",")[1];
-            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-            nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
-            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         } else {
             id_ruta = RutaPreferences.getInstance(context).getIdRuta();
             id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
@@ -190,21 +187,21 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             horario = RutaPreferences.getInstance(context).getHora();
             info = RutaPreferences.getInstance(context).getInformacion();
             ruta = RutaPreferences.getInstance(context).getInformacion().split(",")[1];
-            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
-            nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
-            desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         }
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
+        desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();
         nombreEmpresa = nombreEmpresa.trim().toUpperCase();
 
-        Log.e(TAG, "Horario: "+horario);
-        Log.e(TAG, "Ruta: "+id_ruta);
-        Log.e(TAG, "Tipo usuario: "+get_id_tipo_usuario);
-        Log.e(TAG, "ID_Ruta: "+id_ruta_disponible);
-        Log.e(TAG, "Nombre Empresa: "+nombreEmpresa);
+        Log.e(TAG, "Horario: " + horario);
+        Log.e(TAG, "Ruta: " + id_ruta);
+        Log.e(TAG, "Tipo usuario: " + get_id_tipo_usuario);
+        Log.e(TAG, "ID_Ruta: " + id_ruta_disponible);
+        Log.e(TAG, "Nombre Empresa: " + nombreEmpresa);
 
         // Listado de Precios para la ruta (Entre paraderos)
         List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
-                "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, ""+get_id_tipo_usuario}, "monto", "monto DESC", null);
+                "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + get_id_tipo_usuario}, "monto", "monto DESC", null);
 
         Log.e(TAG, "count-> " + tarifaParaderos.size());
 
@@ -267,10 +264,10 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
         Button button = sweetdialog.findViewById(R.id.confirm_button);
         button.setTextSize(25);
-        button.setBackgroundColor(ContextCompat.getColor(this,R.color.colorBlue));
+        button.setBackgroundColor(ContextCompat.getColor(this, R.color.colorBlue));
 
         float density = context.getResources().getDisplayMetrics().density;
-        int paddingPixel = (int)(30 * density);
+        int paddingPixel = (int) (30 * density);
         button.setPadding(paddingPixel, 5, paddingPixel, 5);
     }
 
@@ -292,7 +289,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         }).execute();
     }
 
-    private void printOffLine(){
+    private void printOffLine() {
         // Guarda los datos en la BD Local
         saveTicketLocal();
 
@@ -300,7 +297,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             showProgress(false);
             getDataPrint();
 
-            if (estadoPrint == true) {
+            if (estadoPrint) {
 
                 Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
@@ -311,11 +308,11 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                             abrirImpresoraBlue();
                             break;
                         } else {
-                            Log.e(Service.TAG, "error no existe impresora");
+                            Log.e(TAG, "error no existe impresora");
                         }
                     }
                 } else {
-                    Log.e(Service.TAG, "error no existe impresora");
+                    Log.e(TAG, "error no existe impresora");
                 }
 
             } else {
@@ -338,7 +335,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.e(Service.TAG, "response: " + response);
+                        Log.e(TAG, "response: " + response);
                         try {
 
                             JSONObject jsonObject = new JSONObject(response);
@@ -347,17 +344,17 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                             if (respuesta.equals("success")) {
 
                                 showProgress(false);
-                            //    countConsecutivo = jsonObject.getInt("count");
-                            //    Log.e(TAG, "Consecutivo: " + countConsecutivo);
+                                numVoucher = jsonObject.getString("num_voucher");
+                                Log.e(TAG, "Num Voucher: " + numVoucher);
 
                                 try {
 
                                     getDataPrint();
 
-                                    if (estadoPrint == true) {
-                                        Log.e(Service.TAG, "entro estado");
+                                    if (estadoPrint) {
+                                        Log.e(TAG, "entro estado");
                                         Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
-                                        Log.e(Service.TAG, "parired: " + pairedDevice.size());
+                                        Log.e(TAG, "parired: " + pairedDevice.size());
 
                                         if (pairedDevice.size() > 0) {
                                             for (BluetoothDevice pairedDev : pairedDevice) {
@@ -366,11 +363,11 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                                                     abrirImpresoraBlue();
                                                     break;
                                                 } else {
-                                                    Log.e(Service.TAG, "error no existe impresora");
+                                                    Log.e(TAG, "error no existe impresora");
                                                 }
                                             }
                                         } else {
-                                            Log.e(Service.TAG, "error no existe impresora");
+                                            Log.e(TAG, "error no existe impresora");
                                         }
 
                                     } else {
@@ -378,6 +375,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                                     }
 
                                 } catch (Exception ex) {
+                                    Log.e(TAG, "onResponse: " + ex.getMessage());
                                     ex.printStackTrace();
                                 }
 
@@ -397,7 +395,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 showProgress(false);
                 DialogAlert.showDialogFailed(context, "Error", "Ha ocurrido un error \n al registrar el ticket",
                         SweetAlertDialog.ERROR_TYPE);
-                Log.e(Service.TAG, "error: " + volleyError.getMessage());
+                Log.e(TAG, "error: " + volleyError.getMessage());
 
                 if (volleyError instanceof TimeoutError) {
                     DialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
@@ -427,6 +425,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 params.put("total_pagar", String.valueOf(precio_sum_pasaje));
                 params.put("cantidad", String.valueOf(countPasajes));
                 params.put("id_empresa", String.valueOf(id_empresa));
+                params.put("id_vehiculo", String.valueOf(id_vehiculo));
 
                 return params;
             }
@@ -503,11 +502,11 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 String name_impresora = parent.getItemAtPosition(position).toString();
 
                 preferences = context.getSharedPreferences(RutaPreferences.PREFERENCES_PRINT, Context.MODE_PRIVATE);
-                editor = preferences.edit() ;
+                editor = preferences.edit();
 
                 editor.putString(RutaPreferences.NAME_PRINT, name_impresora);
                 editor.putBoolean(RutaPreferences.ESTADO_PRINT, true);
-                editor.commit() ;
+                editor.apply();
 
                 Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
@@ -521,18 +520,22 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
                     }
                 }
-                dialogPrint.hide();
+                dialogPrint.dismiss();
             }
         });
 
         btnCancelar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialogPrint.hide();
+                dialogPrint.dismiss();
             }
         });
 
-        dialogPrint.show();
+        try {
+            dialogPrint.show();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void encontrarDispositivoBlue() {
@@ -551,21 +554,21 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             if (pairedDevice.size() > 0) {
                 for (BluetoothDevice pairedDev : pairedDevice) {
                     lisPrintBluetooth.add(pairedDev.getName());
-                   // Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
+                    // Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
                 }
-            }else {
-                Log.d(Service.TAG, "no hay lista de bluetooth");
+            } else {
+                Log.d(TAG, "no hay lista de bluetooth");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            Log.i(Service.TAG, "otro Error" + ex.getMessage());
+            Log.i(TAG, "otro Error" + ex.getMessage());
         }
 
     }
 
     public void abrirImpresoraBlue() {
         try {
-            Log.i(Service.TAG, "Entro a print");
+            Log.i(TAG, "Entro a print");
             //Standard uuid from string //
             UUID uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting);
@@ -577,9 +580,10 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             comenzarAEscucharDatos();
 
             printData();
+            goIntentTarifas();
 
         } catch (Exception ex) {
-            Log.i(Service.TAG, "Error P: " +ex.getMessage());
+            Log.i(TAG, "Error P: " + ex.getMessage());
         }
     }
 
@@ -595,7 +599,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(Service.TAG , "method run") ;
+                    Log.d(TAG, "method run");
                     while (!Thread.currentThread().isInterrupted() && !stopWorker) {
                         try {
                             int byteAvailable = inputStream.available();
@@ -642,16 +646,15 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     }
 
     void printData() {
-        Log.d(Service.TAG, "entro a printdata") ;
+        Log.d(TAG, "entro a printdata");
 
         String[] split = info.split(",");
 
-        byte[] command=null;
-        try{
+        byte[] command = null;
+        try {
 
-            byte[] arrayOfByte1 = { 27, 33, 0 };
-            byte[] format = { 27, 33, 0 };
-
+            byte[] arrayOfByte1 = {27, 33, 0};
+            byte[] format = {27, 33, 0};
 
 
             byte[] centrado = {0x1B, 'a', 0x01};
@@ -659,23 +662,23 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             byte[] izq = {0x1B, 'a', 0x00};
 
             // Espacio superior
-            outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+            outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
 
             // Width
             format[2] = ((byte) (0x20 | arrayOfByte1[2]));
             outputStream.write(centrado);
             outputStream.write(format);
-            outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
+            outputStream.write((nombreEmpresa + "\n").getBytes(), 0, (nombreEmpresa + "\n").getBytes().length);
 
-            if (!desc_empresa.isEmpty()){
+            if (!desc_empresa.isEmpty()) {
                 // Mensaje de la empresa, text small
-                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+                format[2] = ((byte) (0x1 | arrayOfByte1[2]));
                 outputStream.write(format);
-                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
+                outputStream.write((desc_empresa + "\n").getBytes(), 0, (desc_empresa + "\n").getBytes().length);
                 // end - mensaje empresa
             }
 
-            format =new byte[]{ 27, 33, 0 };
+            format = new byte[]{27, 33, 0};
 
             outputStream.write(format);
 
@@ -683,24 +686,25 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             String msg = "";
             msg += "\n";
 
-            msg += "Ticket N:   " +id_ruta_disponible+"_"+ Helpers.getDateTicket() + "_"+Helpers.getTimeTicket() +"\n";
-
+            // Id bus + id operador + fecha + hora
+            msg += "Ticket N:   " + numVoucher;
+            msg += "\n";
             msg += "Fecha:   " + Helpers.getDate();
             msg += "\n";
             outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
-            String msg0 = "" ;
+            String msg0 = "";
             msg0 += "Horario:   " + horario;
             msg0 += "\n";
             msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
             msg0 += "\n";
             outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
-            String ruta = "" ;
+            String ruta = "";
             ruta += "Ruta:  " + split[1] + "\n";
             // Small
-            format[2] = ((byte)(0x1 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x1 | arrayOfByte1[2]));
             outputStream.write(format);
-            outputStream.write(ruta.getBytes(),0,ruta.getBytes().length);
-            format =new byte[]{ 27, 33, 0 };
+            outputStream.write(ruta.getBytes(), 0, ruta.getBytes().length);
+            format = new byte[]{27, 33, 0};
 
             outputStream.write(format);
             String msg1 = "";
@@ -722,8 +726,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             String precio = "";
             precio += "Precio: " + formatPrecio(precio_sum_pasaje) + "\n";
             outputStream.write(format);
-            outputStream.write(precio.getBytes(),0,precio.getBytes().length);
-            format =new byte[]{ 27, 33, 0 };
+            outputStream.write(precio.getBytes(), 0, precio.getBytes().length);
+            format = new byte[]{27, 33, 0};
 
             outputStream.write(format);
 
@@ -734,27 +738,26 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                 outputStream.write(data);
 
                 // Espacio Inferior
-                outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+                outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(Service.TAG, "PrintTools: the file isn't exists");
+                Log.e(TAG, "PrintTools: the file isn't exists");
             }
 
-            outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
+            outputStream.write(("\n\n\n\n").getBytes(), 0, ("\n\n\n\n").getBytes().length);
 
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
-            Log.e(Service.TAG , "error in printdata");
+            Log.e(TAG, "error in printdata");
         }
 
-        goIntentTarifas();
     }
 
     private void goIntentMain() {
-        try{
+        try {
             disconnectBT();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
@@ -765,15 +768,15 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     }
 
     private void goIntentTarifas() {
-        try{
+        try {
             disconnectBT();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        Intent intent = new Intent(context, SelectTarifa.class);
-        startActivity(intent);
-        finish();
+        /*Intent intent = new Intent(context, SelectTarifa.class);
+        startActivity(intent);*/
+        this.finish();
     }
 
     // Disconnect Printer //
@@ -792,7 +795,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
      * Ejecutar el servicio de Sincronización Remota
      */
     private void remoteSync() {
-        if (!state_sync){
+        if (!state_sync) {
             Intent sync = new Intent(context, SyncServiceRemote.class);
             sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
             getApplicationContext().startService(sync);

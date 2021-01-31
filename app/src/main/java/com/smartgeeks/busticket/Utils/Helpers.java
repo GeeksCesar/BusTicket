@@ -10,8 +10,10 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class Helpers {
 
@@ -135,6 +137,16 @@ public class Helpers {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         return cm.getActiveNetworkInfo() != null;
+    }
+
+    public static String setString2DateVoucher(String str_date) {
+        String[] valuesDate = str_date.split("-");
+        return valuesDate[2]+valuesDate[1]+valuesDate[0].substring(2);
+    }
+
+    public static String setString2HourVoucher(String str_hour) {
+        String[] valuesHour = str_hour.split(":");
+        return valuesHour[0]+valuesHour[1]+valuesHour[2];
     }
 
 }
