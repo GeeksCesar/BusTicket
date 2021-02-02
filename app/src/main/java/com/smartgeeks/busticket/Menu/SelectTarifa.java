@@ -24,6 +24,7 @@ import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Objects.Tarifa;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.RecyclerItemClickListener;
+import com.smartgeeks.busticket.Utils.RutaPreferences;
 import com.smartgeeks.busticket.Utils.UsuarioPreferences;
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
 
@@ -113,8 +114,17 @@ public class SelectTarifa extends AppCompatActivity {
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
             ruta = bundle.getString(INFO).split(",")[1];
-            id_operador = UsuarioPreferences.getInstance(context).getIdUser();
+        } else {
+            // Cargar las preferencias de la ruta guardada
+            id_ruta = RutaPreferences.getInstance(context).getIdRuta();
+            id_ruta_disponible = RutaPreferences.getInstance(context).getIdRutaDisponible();
+            id_vehiculo = RutaPreferences.getInstance(context).getIdVehiculo();
+            id_horario = RutaPreferences.getInstance(context).getIdHorario();
+            horario = RutaPreferences.getInstance(context).getHora();
+            info = RutaPreferences.getInstance(context).getInformacion();
+            ruta = RutaPreferences.getInstance(context).getInformacion().split(",")[1];
         }
+        id_operador = UsuarioPreferences.getInstance(context).getIdUser();
 
         binding.rvTarifas.addOnItemTouchListener(new RecyclerItemClickListener(context, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
@@ -126,6 +136,7 @@ public class SelectTarifa extends AppCompatActivity {
                 intent = new Intent(context, PreciosRutaConductor.class);
                 intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
                 intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId_remoto());
+                intent.putExtra(PreciosRutaConductor.NAME_TIPO_USUARIO, tarifa.getNombre());
                 intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
                 intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                 intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);

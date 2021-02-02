@@ -353,7 +353,7 @@ public class SelectRutas extends AppCompatActivity {
         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio);
         intent.putExtra(SelectSillas.ID_PARADERO_FIN, id_paradero_fin);
         intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario);
-        intent.putExtra(SelectSillas.NAME_USUARIO, nameUsuario);
+        intent.putExtra(SelectSillas.NAME_TIPO_PASAJERO, nameUsuario);
         intent.putExtra(INFO, info + "," + ruta_inicio + "," + ruta_fin);
 
         startActivity(intent);

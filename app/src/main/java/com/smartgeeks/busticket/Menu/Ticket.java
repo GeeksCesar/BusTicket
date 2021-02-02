@@ -43,6 +43,13 @@ import java.util.List;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
+/**
+ * Archivos donde se imprime el Ticket
+ * - PreciosRutaConductor
+ * - SelectRutas
+ * - Select sillas
+ */
+
 public class Ticket extends Fragment {
 
     private static String TAG = Ticket.class.getSimpleName();
@@ -194,7 +201,7 @@ public class Ticket extends Fragment {
                         RutaPreferences.getInstance(context).rutaPreferences(ruta);
 
                         if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
-                            Intent intent = new Intent(context, PreciosRutaConductor.class);
+                            Intent intent = new Intent(context, SelectTarifa.class);
                             startActivity(intent);
                         } else {
                             Intent intent = new Intent(context, SelectRutas.class);
@@ -271,18 +278,18 @@ public class Ticket extends Fragment {
         contentButton.setVisibility(View.GONE);
         btnSiguiente.setVisibility(View.GONE);
 
+        // Obtain pref from remember Ruta, for show view
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
-
 
         if (getStatusRuta){
             if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
-                Intent intent = new Intent(context, PreciosRutaConductor.class);
+                Intent intent = new Intent(context, SelectTarifa.class);
                 startActivity(intent);
-                getActivity().finish();
+//                getActivity().finish();
             } else {
                 Intent intent = new Intent(context, SelectRutas.class);
                 startActivity(intent);
-                getActivity().finish();
+//                getActivity().finish();
             }
         }
 

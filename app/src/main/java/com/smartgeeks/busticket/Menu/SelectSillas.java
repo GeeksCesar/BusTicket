@@ -89,7 +89,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String ID_PARADERO_FIN = "PARADERO_FINAL";
     public static final String HORARIO = "HORARIO";
     public static final String TIPO_USUARIO = "TIPO_USUARIO";
-    public static final String NAME_USUARIO = "NAME_USUARIO" ;
+    public static final String NAME_TIPO_PASAJERO = "NAME_USUARIO";
 
     private static final String TAG = SelectSillas.class.getSimpleName();
 
@@ -213,7 +213,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         id_paradero_final = bundle.getInt(ID_PARADERO_FIN);
         id_tipo_usuario = bundle.getInt(TIPO_USUARIO);
         horario = bundle.getString(HORARIO);
-        nombreUsuario = bundle.getString(NAME_USUARIO);
+        nombreUsuario = bundle.getString(NAME_TIPO_PASAJERO);
         id_operador = UsuarioPreferences.getInstance(context).getIdUser();
         nombreEmpresa = UsuarioPreferences.getInstance(context).getNombreEmpresa();
         desc_empresa = UsuarioPreferences.getInstance(context).getDescEmpresa();

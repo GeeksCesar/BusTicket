@@ -82,9 +82,6 @@ public class Inicio extends Fragment {
             public void onClick(View view) {
                 activity = (MainActivity) getActivity();
                 activity.setFragment(2);
-
-                // Realizar sincronización remota de datos locales
-                remoteSync();
             }
         });
 
@@ -166,6 +163,12 @@ public class Inicio extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Realizar sincronización remota de datos locales
+        remoteSync();
+    }
 
     /**
      * Ejecutar el servicio de Sincronización Remota

@@ -47,7 +47,6 @@ import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.Ticket;
-import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.Utils.Constantes;
 import com.smartgeeks.busticket.Utils.DialogAlert;
@@ -82,6 +81,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     public static final String ID_VEHICULO = "ID_VEHICULO";
     public static final String ID_HORARIO = "ID_HORARIO";
     public static final String HORARIO = "HORARIO";
+    public static final String NAME_TIPO_USUARIO = "NAME_TIPO_USUARIO";
 
     public static final String INFO = "INFO";
     public static final String TAG = PreciosRutaConductor.class.getSimpleName();
@@ -96,7 +96,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     int countPasajes = 1, precio_sum_pasaje = 0, id_tipo_usuario = 0,
             id_paradero_inicio = 0, id_paradero_fin = 0;
-    String horario, info, nombreEmpresa, desc_empresa, ruta = "", get_id_tipo_usuario = "";
+    String horario, info, nombreEmpresa, desc_empresa, ruta = "", getNameTipoPasajero = "";
 
     Context context;
 
@@ -153,7 +153,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             @Override
             public void onClick(View view) {
                 preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-                preferences.edit().clear().commit();
+                preferences.edit().clear().apply();
 
                 goIntentMain();
             }
@@ -174,7 +174,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             id_ruta = bundle.getInt(ID_RUTA);
             id_ruta_disponible = bundle.getInt(ID_RUTA_DISPONIBLE);
             id_vehiculo = bundle.getInt(ID_VEHICULO);
-            get_id_tipo_usuario = bundle.getString(ID_TIPO_USUARIO);
+            id_tipo_usuario = Integer.parseInt(bundle.getString(ID_TIPO_USUARIO));
+            getNameTipoPasajero = bundle.getString(NAME_TIPO_USUARIO);
             id_horario = bundle.getInt(ID_HORARIO);
             horario = bundle.getString(HORARIO);
             info = bundle.getString(INFO);
@@ -195,13 +196,14 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
         Log.e(TAG, "Horario: " + horario);
         Log.e(TAG, "Ruta: " + id_ruta);
-        Log.e(TAG, "Tipo usuario: " + get_id_tipo_usuario);
+        Log.e(TAG, "Tipo usuario: " + id_tipo_usuario);
+        Log.e(TAG, "Nombre usuario: " + getNameTipoPasajero);
         Log.e(TAG, "ID_Ruta: " + id_ruta_disponible);
         Log.e(TAG, "Nombre Empresa: " + nombreEmpresa);
 
         // Listado de Precios para la ruta (Entre paraderos)
         List<TarifaParadero> tarifaParaderos = TarifaParadero.find(TarifaParadero.class,
-                "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + get_id_tipo_usuario}, "monto", "monto DESC", null);
+                "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + id_tipo_usuario}, "monto", "monto DESC", null);
 
         Log.e(TAG, "count-> " + tarifaParaderos.size());
 
@@ -229,8 +231,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
      */
     private void setDataDefault() {
         // Datos para mantener la integridad en la BD Remota, porque no acepta 0 como dato
-        id_tipo_usuario = Integer.parseInt(
-                TipoUsuario.listAll(TipoUsuario.class, "remoto").get(1).getId_remoto());
+
         Log.e(TAG, "Tipo de usuario: " + id_tipo_usuario);
         List<Paradero> paraderosList = Paradero.find(Paradero.class, "ruta = ?",
                 new String[]{"" + id_ruta}, "remoto", "remoto", null);
@@ -688,6 +689,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
             // Id bus + id operador + fecha + hora
             msg += "Ticket N:   " + numVoucher;
+            msg += "\n";
+            msg += "Tarifa:   " + getNameTipoPasajero;
             msg += "\n";
             msg += "Fecha:   " + Helpers.getDate();
             msg += "\n";
