@@ -437,7 +437,11 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     }
 
     private void saveTicketLocal() {
-        Log.e(TAG, "Ticket Guardado Localmente");
+        String fecha = Helpers.getCurrentDate();
+        String hora = Helpers.getCurrentTime();
+        numVoucher = id_vehiculo+""+id_operador+"-"+Helpers.setString2DateVoucher(fecha)+"-"+Helpers.setString2HourVoucher(hora);
+
+        Log.e(TAG, "Ticket Guardado Localmente "+numVoucher);
         Ticket ticket = new Ticket();
         ticket.setIdRemoto("");
         ticket.setParadaInicio(id_paradero_inicio);
@@ -446,8 +450,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         ticket.setIdOperador(UsuarioPreferences.getInstance(context).getIdUser());
         ticket.setHoraSalida(horario);
         ticket.setTipoUsuario(id_tipo_usuario);
-        ticket.setFecha(Helpers.getCurrentDate());
-        ticket.setHora(Helpers.getCurrentTime());
+        ticket.setFecha(fecha);
+        ticket.setHora(hora);
         ticket.setCantPasajes(countPasajes);
         ticket.setTotalPagar(precio_sum_pasaje);
         ticket.setEstado(0);

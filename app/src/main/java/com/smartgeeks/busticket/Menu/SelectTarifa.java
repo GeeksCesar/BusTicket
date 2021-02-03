@@ -150,7 +150,7 @@ public class SelectTarifa extends AppCompatActivity {
     }
 
     private void getTarifasLocal() {
-        List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class, "remoto");
+        List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);
         for (TipoUsuario tipoUsuario: tipoUsuarios) {
             if (Integer.parseInt( tipoUsuario.getId_remoto() ) != 0)
                 tarifaLists.add(tipoUsuario);
