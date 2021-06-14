@@ -3,7 +3,7 @@ package com.smartgeeks.busticket.Utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.widget.Button;
 
 import com.smartgeeks.busticket.R;
