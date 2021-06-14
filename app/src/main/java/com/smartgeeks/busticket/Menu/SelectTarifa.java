@@ -16,6 +16,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.orm.query.Select;
 import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
@@ -150,11 +151,14 @@ public class SelectTarifa extends AppCompatActivity {
     }
 
     private void getTarifasLocal() {
-        List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);
+        // List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);
+        List<TipoUsuario> tipoUsuarios = Select.from(TipoUsuario.class).orderBy("nombre").list();
+
         for (TipoUsuario tipoUsuario: tipoUsuarios) {
             if (Integer.parseInt( tipoUsuario.getId_remoto() ) != 0)
                 tarifaLists.add(tipoUsuario);
         }
+
 
         adapterListTarifas = new AdapterTarifas(context, tarifaLists);
         binding.rvTarifas.setAdapter(adapterListTarifas);

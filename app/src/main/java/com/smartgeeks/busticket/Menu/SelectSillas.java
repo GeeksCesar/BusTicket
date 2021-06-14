@@ -15,11 +15,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Transition;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -33,6 +37,7 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.android.volley.NetworkError;
@@ -45,6 +50,8 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.MainActivity;
@@ -65,6 +72,7 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -90,6 +98,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     public static final String HORARIO = "HORARIO";
     public static final String TIPO_USUARIO = "TIPO_USUARIO";
     public static final String NAME_TIPO_PASAJERO = "NAME_USUARIO";
+    public static final String RUTA_LOGO_TICKET = "https://mi.appbusticket.com/public/common/img/";
+
+    private static final int LEFT_LENGTH = 16;
+    private static final int RIGHT_LENGTH = 16;
+    private static final int LEFT_TEXT_MAX_LENGTH = 8;
 
     private static final String TAG = SelectSillas.class.getSimpleName();
 
@@ -137,11 +150,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     ListView lstPrint;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    SharedPreferences preferences ;
-    SharedPreferences.Editor editor ;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
 
-    boolean estadoRuta , estadoPrint;
-    String namePrint ;
+    boolean estadoRuta, estadoPrint;
+    String namePrint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,7 +233,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
         nombreEmpresa = nombreEmpresa.trim().toUpperCase();
-        getPrecioPasaje =  "$ "+formatPrecio(precio_pasaje);
+        getPrecioPasaje = "$ " + formatPrecio(precio_pasaje);
 
 
         //Input
@@ -242,12 +255,12 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         getDataPrint();
     }
 
-    public void getDataPrint(){
-        namePrint = RutaPreferences.getInstance(context).getNamePrint() ;
+    public void getDataPrint() {
+        namePrint = RutaPreferences.getInstance(context).getNamePrint();
         estadoPrint = RutaPreferences.getInstance(context).getEstadoPrint();
 
-        Log.d(Service.TAG , "name print: "+namePrint);
-        Log.d(Service.TAG , "boolen print: "+estadoPrint);
+        Log.d(Service.TAG, "name print: " + namePrint);
+        Log.d(Service.TAG, "boolen print: " + estadoPrint);
     }
 
     private void showDataTextView() {
@@ -263,7 +276,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         int silla = 1;
 
         int filas = (int) Math.ceil(cant_sillas / 4);
-        Log.e(TAG, "Paradero Inicio: "+id_paradero_incio);
+        Log.e(TAG, "Paradero Inicio: " + id_paradero_incio);
 
         // Parámetros del LinearLayout
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -389,7 +402,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     private void drawSillaOcupada(int silla, ToggleButton puesto) {
         // Verificar si la silla está ocupada
         for (Silla ocupada : listSillasOcupadas) {
-            if (ocupada.getNumeroSilla() == silla && ocupada.getDestino() > id_paradero_incio ) {
+            if (ocupada.getNumeroSilla() == silla && ocupada.getDestino() > id_paradero_incio) {
                 puesto.setEnabled(false);
                 puesto.setClickable(false);
                 puesto.setBackground(ContextCompat.getDrawable(this, R.drawable.silla_ocupada));
@@ -484,7 +497,7 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
      */
     private void getSillasOcupadasEnParadas() {
 
-        Log.e(TAG, "Request horario: "+horario);
+        Log.e(TAG, "Request horario: " + horario);
         Log.e(TAG, "Request id_ruta_disponible: " + id_ruta_disponible);
 
         String URL = Constantes.GET_SILLAS_OCUPADAS + id_ruta_disponible + "/" + horario;
@@ -621,16 +634,16 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
             public void onErrorResponse(VolleyError volleyError) {
                 Log.e(Service.TAG, "error: " + volleyError.getMessage());
                 showProgress(false);
-                if (volleyError instanceof TimeoutError){
+                if (volleyError instanceof TimeoutError) {
                     DialogAlert.showDialogFailed(context, "Error", "Ha pasado el tiempo Limitado", SweetAlertDialog.WARNING_TYPE);
                     return;
-                }else if (volleyError instanceof ServerError){
+                } else if (volleyError instanceof ServerError) {
                     DialogAlert.showDialogFailed(context, "Error", "Ops.. Error en el servidor", SweetAlertDialog.WARNING_TYPE);
                     return;
-                }else if (volleyError instanceof NoConnectionError){
+                } else if (volleyError instanceof NoConnectionError) {
                     DialogAlert.showDialogFailed(context, "Error", "Ops.. No hay conexion a internet", SweetAlertDialog.WARNING_TYPE);
                     return;
-                }else if (volleyError instanceof NetworkError){
+                } else if (volleyError instanceof NetworkError) {
                     DialogAlert.showDialogFailed(context, "Error", "Ops.. Hay error en la red", SweetAlertDialog.WARNING_TYPE);
                     return;
                 }
@@ -769,109 +782,168 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
 
     }
 
+    public static String printThreeData(String leftText, String middleText, String rightText, String tipo) {
+        StringBuilder sb = new StringBuilder();
+        // At most LEFT_TEXT_MAX_LENGTH Chinese characters + two dots are displayed on the left
+        if (leftText.length() > LEFT_TEXT_MAX_LENGTH) {
+            leftText = leftText.substring(0, LEFT_TEXT_MAX_LENGTH) + "..";
+        }
+        int leftTextLength = getBytesLength(leftText);
+        int middleTextLength = getBytesLength(middleText);
+        int rightTextLength = getBytesLength(rightText);
+
+        sb.append(leftText);
+        // Calculate the length of the space between the left text and the middle text
+        int marginBetweenLeftAndMiddle = 0;
+        if (tipo.equals("One")) {
+            marginBetweenLeftAndMiddle = LEFT_LENGTH - leftTextLength - middleTextLength / 2;
+        } else {
+            marginBetweenLeftAndMiddle = 13 - leftTextLength - middleTextLength / 2;
+        }
+
+        for (int i = 0; i < marginBetweenLeftAndMiddle; i++) {
+            sb.append(" ");
+        }
+        sb.append(middleText);
+
+        // Calculate the length of the space between the right text and the middle text
+        int marginBetweenMiddleAndRight = 0;
+        if (tipo.equals("One")) {
+            marginBetweenMiddleAndRight = RIGHT_LENGTH - middleTextLength / 2 - rightTextLength;
+        } else {
+            marginBetweenMiddleAndRight = 13 - middleTextLength / 2 - rightTextLength;
+        }
+
+        for (int i = 0; i < marginBetweenMiddleAndRight; i++) {
+            sb.append(" ");
+        }
+
+        // When printing, I found that the rightmost text is always one character to the right, so a space needs to be deleted
+        sb.delete(sb.length() - 1, sb.length()).append(rightText);
+        return sb.toString();
+    }
+
+    private static int getBytesLength(String msg) {
+        return msg.getBytes(Charset.forName("GB2312")).length;
+    }
+
     void printData() {
-        byte[] command=null;
-        try{
+        byte[] command = null;
+        try {
             String[] split = info_ruta.split(",");
-
-            byte[] arrayOfByte1 = { 27, 33, 0 };
-            byte[] format = { 27, 33, 0 };
-
-
-
+            byte[] arrayOfByte1 = {27, 33, 0};
+            byte[] format = {27, 33, 0};
             byte[] centrado = {0x1B, 'a', 0x01};
             byte[] der = {0x1B, 'a', 0x02};
             byte[] izq = {0x1B, 'a', 0x00};
 
             // Espacio superior
-            outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
-
-            // Width
-            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            outputStream.write(centrado);
-            outputStream.write(format);
-            outputStream.write((nombreEmpresa+ "\n").getBytes(),0,(nombreEmpresa+ "\n").getBytes().length);
-
-            if (!desc_empresa.isEmpty()){
-                // Mensaje de la empresa, text small
-                format[2] = ((byte)(0x1 | arrayOfByte1[2]));
-                outputStream.write(format);
-                outputStream.write((desc_empresa+"\n").getBytes(),0,(desc_empresa+"\n").getBytes().length);
-                // end - mensaje empresa
-            }
-
-            format =new byte[]{ 27, 33, 0 };
-
-            outputStream.write(format);
-
-            outputStream.write(izq);
-            String msg = "";
-            msg += "\n";
-            msg += "Ticket N:   " + numVoucher;
-            msg += "\n";
-            msg += "Tarifa:   " + nombreUsuario;
-            msg += "\n";
-            msg += "Fecha:   " + Helpers.getDate();
-            msg += "\n";
-            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
-            String msg0 = "" ;
-            msg0 += "Horario:   " + split[2];
-            msg0 += "\n";
-            msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
-            msg0 += "\n";
-            outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
-            String ruta = "" ;
-            ruta += "Ruta:  " + split[1] + "\n";
-            // Small
-            format[2] = ((byte)(0x1 | arrayOfByte1[2]));
-            outputStream.write(format);
-            outputStream.write(ruta.getBytes(),0,ruta.getBytes().length);
-            format =new byte[]{ 27, 33, 0 };
-
-            outputStream.write(format);
-            String msg1 = "";
-            msg1 += "";
-            msg1 += "Inicio: " + split[3];
-            msg1 += "\n";
-            msg1 += "Termino: " + split[4];
-            msg1 += "\n";
-            msg1 += "Vehiculo: " + split[0];
-            outputStream.write(msg1.getBytes(), 0, msg1.getBytes().length);
-            String msg2 = "";
-            msg2 += "\n";
-            msg2 += "Asientos: " + listSillas;
-            msg2 += "\n";
-            msg2 += "Hora: " + Helpers.getTime();
-            msg2 += "\n";
-            msg2 += "\n";
-            outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
-
-            // Width
-            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            String precio = "Precio: "+getPrecioPasaje+"\n";
-            outputStream.write(format);
-            outputStream.write(precio.getBytes(),0,precio.getBytes().length);
-            format =new byte[]{ 27, 33, 0 };
-
-            outputStream.write(format);
-
-            try {
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            /*try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
                 outputStream.write(data);
-
                 // Espacio inferior
-                outputStream.write(("\n\n").getBytes(),0,("\n\n").getBytes().length);
+                outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e("PrintTools", "the file isn't exists");
-            }
+            }*/
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x21 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String nom_empre = UsuarioPreferences.getInstance(context).getNombreEmpresa().toUpperCase() + "\n";
+            outputStream.write(nom_empre.getBytes(), 0, nom_empre.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("================================").getBytes(), 0, ("================================").getBytes().length);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_ruta = split[3].trim().toUpperCase() + " a\n" + split[4].trim().toUpperCase() + "\n\n";
+            str_ruta = str_ruta.replace("(", "");
+            outputStream.write(str_ruta.getBytes(), 0, str_ruta.getBytes().length);
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_pago = "Usted pago:\n";
+            str_pago = str_pago.replace("(", "");
+            outputStream.write(str_pago.getBytes(), 0, str_pago.getBytes().length);
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x21 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_precio = getPrecioPasaje + "\n";
+            outputStream.write(str_precio.getBytes(), 0, str_precio.getBytes().length);
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_tipo_pasajero = nombreUsuario + "\n";
+            str_tipo_pasajero = str_tipo_pasajero.replace("(", "");
+            outputStream.write(str_tipo_pasajero.getBytes(), 0, str_tipo_pasajero.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("--------------------------------" + "\n").getBytes(), 0, ("--------------------------------" + "\n").getBytes().length);
+            format[2] = (byte) (0x8);
+            outputStream.write(format);
+            outputStream.write(printThreeData("Fecha", "Salida", "Asiento", "One").getBytes(), 0, printThreeData("Fecha", "Salida", "Asiento", "One").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x10 | arrayOfByte1[2]));
+            outputStream.write(format);
+            String fecha_codi = Helpers.getDate();
+            String[] array_fecha = fecha_codi.split("-");
+            fecha_codi = array_fecha[2] + "-" + array_fecha[1] + "-" + array_fecha[0].substring(array_fecha[0].length() - 2);
+            String[] hora_salida_s = split[2].trim().split(":");
+            String hora_salida_str = hora_salida_s[0] + ":" + hora_salida_s[1];
+            outputStream.write(printThreeData(fecha_codi, hora_salida_str, listSillas, "Two").getBytes(), 0, printThreeData(fecha_codi, hora_salida_str, listSillas, "Two").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("--------------------------------" + "\n").getBytes(), 0, ("--------------------------------" + "\n").getBytes().length);
+            outputStream.write(format);
+            outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write((desc_empresa + "\n\n").getBytes(), 0, (desc_empresa + "\n\n").getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            outputStream.write(izq);
+            outputStream.write(format);
+            String str = "";
+            str += numVoucher + "\n";
+            outputStream.write(str.getBytes(), 0, str.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(izq);
+            outputStream.write(format);
+            String str_emision = "Emision: " + fecha_codi + "\n";
+            str_emision += Helpers.getTime() + " " + split[0] + " " + UsuarioPreferences.getInstance(context).getNombre() + "\n";
+            outputStream.write(str_emision.getBytes(), 0, str_emision.getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_two = "";
+            str_two += "www.busticket.cl\n";
+            str_two += "Copia Cliente";
+            outputStream.write(str_two.getBytes(), 0, str_two.getBytes().length);
+            //no serive desde abajo
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
+            outputStream.write(("\n\n\n\n").getBytes(), 0, ("\n\n\n\n").getBytes().length);
 
-            outputStream.write(("\n\n\n\n").getBytes(),0,("\n\n\n\n").getBytes().length);
-
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -908,11 +980,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
                 String name_impresora = parent.getItemAtPosition(position).toString();
 
                 preferences = context.getSharedPreferences(RutaPreferences.PREFERENCES_PRINT, Context.MODE_PRIVATE);
-                editor = preferences.edit() ;
+                editor = preferences.edit();
 
                 editor.putString(RutaPreferences.NAME_PRINT, name_impresora);
                 editor.putBoolean(RutaPreferences.ESTADO_PRINT, true);
-                editor.commit() ;
+                editor.commit();
 
                 Set<BluetoothDevice> pairedDevice = bluetoothAdapter.getBondedDevices();
 
@@ -962,26 +1034,26 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
         String formatPrecio = formatea.format(precio);
         formatPrecio = formatPrecio.replace(',', '.');
 
-        return  formatPrecio ;
+        return formatPrecio;
 
     }
 
     private void goIntentMain() {
-        try{
+        try {
             disconnectBT();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         Log.d(Service.TAG, "entro a goIntentMain");
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(MainActivity.BACK , true) ;
+        intent.putExtra(MainActivity.BACK, true);
         startActivity(intent);
         finish();
     }
 
     private void remoteSync() {
-        if (!state_sync){
+        if (!state_sync) {
             Intent sync = new Intent(context, SyncServiceRemote.class);
             sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
             getApplicationContext().startService(sync);
@@ -991,11 +1063,11 @@ public class SelectSillas extends AppCompatActivity implements CompoundButton.On
     // Disconnect Printer //
     void disconnectBT() {
         try {
-            stopWorker=true;
+            stopWorker = true;
             outputStream.close();
             inputStream.close();
             bluetoothSocket.close();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

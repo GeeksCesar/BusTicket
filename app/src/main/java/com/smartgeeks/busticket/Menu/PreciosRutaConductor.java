@@ -4,13 +4,7 @@ import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.*;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,22 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
+import android.widget.*;
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.android.volley.*;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.smartgeeks.busticket.Api.Service;
@@ -48,30 +29,17 @@ import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.Ticket;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.Helpers;
-import com.smartgeeks.busticket.Utils.InternetCheck;
-import com.smartgeeks.busticket.Utils.PrintPicture;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.Utils.*;
 import com.smartgeeks.busticket.sync.SyncServiceRemote;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
+import java.util.*;
 
 public class PreciosRutaConductor extends AppCompatActivity implements AdapterPrecios.ItemClickListener {
 
@@ -85,6 +53,10 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     public static final String INFO = "INFO";
     public static final String TAG = PreciosRutaConductor.class.getSimpleName();
+
+    private static final int LEFT_LENGTH = 16;
+    private static final int RIGHT_LENGTH = 16;
+    private static final int LEFT_TEXT_MAX_LENGTH = 8;
 
 
     Bundle bundle;
@@ -439,9 +411,9 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     private void saveTicketLocal() {
         String fecha = Helpers.getCurrentDate();
         String hora = Helpers.getCurrentTime();
-        numVoucher = id_vehiculo+""+id_operador+"-"+Helpers.setString2DateVoucher(fecha)+"-"+Helpers.setString2HourVoucher(hora);
+        numVoucher = id_vehiculo + "" + id_operador + "-" + Helpers.setString2DateVoucher(fecha) + "-" + Helpers.setString2HourVoucher(hora);
 
-        Log.e(TAG, "Ticket Guardado Localmente "+numVoucher);
+        Log.e(TAG, "Ticket Guardado Localmente " + numVoucher);
         Ticket ticket = new Ticket();
         ticket.setIdRemoto("");
         ticket.setParadaInicio(id_paradero_inicio);
@@ -538,7 +510,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
         try {
             dialogPrint.show();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -650,110 +622,161 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
     }
 
+    public static String printThreeData(String leftText, String middleText, String rightText, String tipo) {
+        StringBuilder sb = new StringBuilder();
+        // At most LEFT_TEXT_MAX_LENGTH Chinese characters + two dots are displayed on the left
+        if (leftText.length() > LEFT_TEXT_MAX_LENGTH) {
+            leftText = leftText.substring(0, LEFT_TEXT_MAX_LENGTH) + "..";
+        }
+        int leftTextLength = getBytesLength(leftText);
+        int middleTextLength = getBytesLength(middleText);
+        int rightTextLength = getBytesLength(rightText);
+
+        sb.append(leftText);
+        // Calculate the length of the space between the left text and the middle text
+        int marginBetweenLeftAndMiddle = 0;
+        if (tipo.equals("One")) {
+            marginBetweenLeftAndMiddle = LEFT_LENGTH - leftTextLength - middleTextLength / 2;
+        } else {
+            marginBetweenLeftAndMiddle = 13 - leftTextLength - middleTextLength / 2;
+        }
+
+        for (int i = 0; i < marginBetweenLeftAndMiddle; i++) {
+            sb.append(" ");
+        }
+        sb.append(middleText);
+
+        // Calculate the length of the space between the right text and the middle text
+        int marginBetweenMiddleAndRight = 0;
+        if (tipo.equals("One")) {
+            marginBetweenMiddleAndRight = RIGHT_LENGTH - middleTextLength / 2 - rightTextLength;
+        } else {
+            marginBetweenMiddleAndRight = 13 - middleTextLength / 2 - rightTextLength;
+        }
+
+        for (int i = 0; i < marginBetweenMiddleAndRight; i++) {
+            sb.append(" ");
+        }
+
+        // When printing, I found that the rightmost text is always one character to the right, so a space needs to be deleted
+        sb.delete(sb.length() - 1, sb.length()).append(rightText);
+        return sb.toString();
+    }
+
+    private static int getBytesLength(String msg) {
+        return msg.getBytes(Charset.forName("GB2312")).length;
+    }
+
     void printData() {
         Log.d(TAG, "entro a printdata");
-
         String[] split = info.split(",");
-
         byte[] command = null;
         try {
-
             byte[] arrayOfByte1 = {27, 33, 0};
             byte[] format = {27, 33, 0};
-
-
             byte[] centrado = {0x1B, 'a', 0x01};
             byte[] der = {0x1B, 'a', 0x02};
             byte[] izq = {0x1B, 'a', 0x00};
 
             // Espacio superior
-            outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
-
-            // Width
-            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            outputStream.write(centrado);
-            outputStream.write(format);
-            outputStream.write((nombreEmpresa + "\n").getBytes(), 0, (nombreEmpresa + "\n").getBytes().length);
-
-            if (!desc_empresa.isEmpty()) {
-                // Mensaje de la empresa, text small
-                format[2] = ((byte) (0x1 | arrayOfByte1[2]));
-                outputStream.write(format);
-                outputStream.write((desc_empresa + "\n").getBytes(), 0, (desc_empresa + "\n").getBytes().length);
-                // end - mensaje empresa
-            }
-
-            format = new byte[]{27, 33, 0};
-
-            outputStream.write(format);
-
-            outputStream.write(izq);
-            String msg = "";
-            msg += "\n";
-
-            // Id bus + id operador + fecha + hora
-            msg += "Ticket N:   " + numVoucher;
-            msg += "\n";
-            msg += "Tarifa:   " + getNameTipoPasajero;
-            msg += "\n";
-            msg += "Fecha:   " + Helpers.getDate();
-            msg += "\n";
-            outputStream.write(msg.getBytes(), 0, msg.getBytes().length);
-            String msg0 = "";
-            msg0 += "Horario:   " + horario;
-            msg0 += "\n";
-            msg0 += "Operador:   " + UsuarioPreferences.getInstance(context).getNombre();
-            msg0 += "\n";
-            outputStream.write(msg0.getBytes(), 0, msg0.getBytes().length);
-            String ruta = "";
-            ruta += "Ruta:  " + split[1] + "\n";
-            // Small
-            format[2] = ((byte) (0x1 | arrayOfByte1[2]));
-            outputStream.write(format);
-            outputStream.write(ruta.getBytes(), 0, ruta.getBytes().length);
-            format = new byte[]{27, 33, 0};
-
-            outputStream.write(format);
-            String msg1 = "";
-            msg1 += "";
-            msg1 += "\n";
-            msg1 += "Vehiculo: " + split[0];
-            outputStream.write(msg1.getBytes(), 0, msg1.getBytes().length);
-            String msg2 = "";
-            msg2 += "\n";
-            msg2 += "Hora: " + Helpers.getTime();
-            msg2 += "\n";
-            msg2 += "Cantidad: " + countPasajes;
-            msg2 += "\n";
-            msg2 += "\n";
-            outputStream.write(msg2.getBytes(), 0, msg2.getBytes().length);
-
-            // Width
-            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
-            String precio = "";
-            precio += "Precio: " + formatPrecio(precio_sum_pasaje) + "\n";
-            outputStream.write(format);
-            outputStream.write(precio.getBytes(), 0, precio.getBytes().length);
-            format = new byte[]{27, 33, 0};
-
-            outputStream.write(format);
-
-            try {
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            /*try {
                 Bitmap bmp = BitmapFactory.decodeResource(getResources(),
                         R.mipmap.img_logo_pdf);
                 byte[] data = PrintPicture.POS_PrintBMP(bmp, 384, 0);
                 outputStream.write(data);
-
-                // Espacio Inferior
-                outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
+                // Espacio inferior
+                outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(TAG, "PrintTools: the file isn't exists");
-            }
-
+                Log.e("PrintTools", "the file isn't exists");
+            }*/
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x21 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String nom_empre = UsuarioPreferences.getInstance(context).getNombreEmpresa().toUpperCase() + "\n";
+            outputStream.write(nom_empre.getBytes(), 0, nom_empre.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("================================").getBytes(), 0, ("================================").getBytes().length);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            // Width
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_pago = "Usted pago:\n";
+            str_pago = str_pago.replace("(", "");
+            outputStream.write(str_pago.getBytes(), 0, str_pago.getBytes().length);
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x21 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_precio = formatPrecio(precio_sum_pasaje) + "\n";
+            outputStream.write(str_precio.getBytes(), 0, str_precio.getBytes().length);
+            format[2] = ((byte) (0x20 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_tipo_pasajero = getNameTipoPasajero + "\n";
+            str_tipo_pasajero = str_tipo_pasajero.replace("(", "");
+            outputStream.write(str_tipo_pasajero.getBytes(), 0, str_tipo_pasajero.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("--------------------------------" + "\n").getBytes(), 0, ("--------------------------------" + "\n").getBytes().length);
+            format[2] = (byte) (0x8);
+            outputStream.write(format);
+            outputStream.write(printThreeData("Fecha", "Salida", "Cantidad", "One").getBytes(), 0, printThreeData("Fecha", "Salida", "Cantidad", "One").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            format[2] = ((byte) (0x10 | arrayOfByte1[2]));
+            outputStream.write(format);
+            String fecha_codi = Helpers.getDate();
+            String[] array_fecha = fecha_codi.split("-");
+            fecha_codi = array_fecha[2] + "-" + array_fecha[1] + "-" + array_fecha[0].substring(array_fecha[0].length() - 2);
+            String[] hora_salida_s = horario.trim().split(":");
+            String hora_salida_str = hora_salida_s[0] + ":" + hora_salida_s[1];
+            outputStream.write(printThreeData(fecha_codi, hora_salida_str, String.valueOf(countPasajes), "Two").getBytes(), 0, printThreeData(fecha_codi, hora_salida_str, String.valueOf(countPasajes), "Two").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
+            outputStream.write(("\n").getBytes(), 0, ("\n").getBytes().length);
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write(("--------------------------------" + "\n").getBytes(), 0, ("--------------------------------" + "\n").getBytes().length);
+            outputStream.write(format);
+            outputStream.write(("\n\n").getBytes(), 0, ("\n\n").getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(centrado);
+            outputStream.write(format);
+            outputStream.write((desc_empresa + "\n\n").getBytes(), 0, (desc_empresa + "\n\n").getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            outputStream.write(izq);
+            outputStream.write(format);
+            String str = "";
+            str += numVoucher + "\n";
+            outputStream.write(str.getBytes(), 0, str.getBytes().length);
+            format = new byte[]{27, 33, 0};
+            outputStream.write(izq);
+            outputStream.write(format);
+            String str_emision = "Emision: " + fecha_codi + "\n";
+            str_emision += Helpers.getTime() + " " + split[0] + " " + UsuarioPreferences.getInstance(context).getNombre() + "\n";
+            outputStream.write(str_emision.getBytes(), 0, str_emision.getBytes().length);
+            format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+            outputStream.write(centrado);
+            outputStream.write(format);
+            String str_two = "";
+            str_two += "www.busticket.cl\n";
+            str_two += "Copia Cliente";
+            outputStream.write(str_two.getBytes(), 0, str_two.getBytes().length);
+            //no serive desde abajo
+            format = new byte[]{27, 33, 0};
+            outputStream.write(format);
             outputStream.write(("\n\n\n\n").getBytes(), 0, ("\n\n\n\n").getBytes().length);
-
         } catch (Exception ex) {
             ex.printStackTrace();
             Log.e(TAG, "error in printdata");

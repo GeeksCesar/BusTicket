@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.R;
 
@@ -15,12 +14,10 @@ import java.util.List;
 class AdapterPrecios extends RecyclerView.Adapter<AdapterPrecios.ViewHolder> {
 
     private List<TarifaParadero> tarifaParaderos;
-    private Context context;
     private ItemClickListener mClickListener;
 
     public AdapterPrecios(Context context, List<TarifaParadero> tarifaParaderos) {
         this.tarifaParaderos = tarifaParaderos;
-        this.context = context;
     }
 
     @Override
