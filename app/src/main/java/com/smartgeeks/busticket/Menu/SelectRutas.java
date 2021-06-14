@@ -36,6 +36,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.orm.query.Select;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Paradero;
@@ -762,7 +763,10 @@ public class SelectRutas extends AppCompatActivity {
     private void getUsuariosSQLite() {
         lisUsuarios.clear();
 
-        tipoUsuariosList = TipoUsuario.listAll(TipoUsuario.class, "remoto");
+        // tipoUsuariosList = TipoUsuario.listAll(TipoUsuario.class, "remoto");
+        tipoUsuariosList = Select.from(TipoUsuario.class).orderBy("nombre").list();
+        TipoUsuario firstElement = tipoUsuariosList.remove(tipoUsuariosList.size()  - 1 );
+        tipoUsuariosList.add(0, firstElement);
 
         for (TipoUsuario tipoUsuario : tipoUsuariosList) {
             lisUsuarios.add(tipoUsuario.getNombre());
