@@ -4,35 +4,34 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.orm.query.Select;
 import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.TarifaUsuario;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
-import com.smartgeeks.busticket.Utils.RecyclerItemClickListener;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.RecyclerItemClickListener;
+import com.smartgeeks.busticket.utils.RutaPreferences;
+import com.smartgeeks.busticket.utils.UsuarioPreferences;
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class SelectTarifa extends AppCompatActivity {
 
@@ -50,14 +49,14 @@ public class SelectTarifa extends AppCompatActivity {
     Bundle bundle;
     DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    int id_horario, id_vehiculo , id_operador, id_ruta, id_ruta_disponible, id_empresa;
+    int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible, id_empresa;
     String horario, info, nombreEmpresa, desc_empresa, ruta = "";
 
     ApiService apiService;
-    Call<TarifaUsuario> call ;
+    Call<TarifaUsuario> call;
     List<TipoUsuario> tarifaLists = new ArrayList<TipoUsuario>();
     RecyclerView.LayoutManager layoutManager;
-    AdapterTarifas adapterListTarifas ;
+    AdapterTarifas adapterListTarifas;
 
     private ActivitySelectTarifaBinding binding;
 
@@ -72,7 +71,7 @@ public class SelectTarifa extends AppCompatActivity {
 
         Thread myThread = null;
         Runnable runnable = new CountDownRunner();
-        myThread= new Thread(runnable);
+        myThread = new Thread(runnable);
         myThread.start();
         initWidgets();
         setupOnBackButton();
@@ -127,19 +126,29 @@ public class SelectTarifa extends AppCompatActivity {
             @Override
             public void OnItemClick(View view, int position) {
 
-                Intent intent;
                 TipoUsuario tarifa = tarifaLists.get(position);
-                Log.e(TAG, "ID_TIPO_USU: "+tarifa.getId());
-                intent = new Intent(context, PreciosRutaConductor.class);
-                intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
-                intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId_remoto());
-                intent.putExtra(PreciosRutaConductor.NAME_TIPO_USUARIO, tarifa.getNombre());
-                intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
-                intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
-                intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
-                intent.putExtra(PreciosRutaConductor.HORARIO, horario);
-                intent.putExtra(PreciosRutaConductor.INFO, info);
-                startActivity(intent);
+                Log.e(TAG, "ID_TIPO_USUARIO: " + tarifa.getId());
+
+                long faresQuantity = TarifaParadero.count(TarifaParadero.class,
+                        "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + tarifa.getId_remoto()}, "monto", "monto DESC", null);
+
+                Log.e(TAG, "OnItemClick: " + faresQuantity);
+
+                if (faresQuantity > 1) {
+                    Intent intent = new Intent(context, PreciosRutaConductor.class);
+                    intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
+                    intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId_remoto());
+                    intent.putExtra(PreciosRutaConductor.NAME_TIPO_USUARIO, tarifa.getNombre());
+                    intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
+                    intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
+                    intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
+                    intent.putExtra(PreciosRutaConductor.HORARIO, horario);
+                    intent.putExtra(PreciosRutaConductor.INFO, info);
+                    startActivity(intent);
+                } else {
+                    // TODO: Print Ticket
+                }
+
             }
         }));
 
@@ -150,8 +159,8 @@ public class SelectTarifa extends AppCompatActivity {
         // List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);
         List<TipoUsuario> tipoUsuarios = Select.from(TipoUsuario.class).orderBy("nombre").list();
 
-        for (TipoUsuario tipoUsuario: tipoUsuarios) {
-            if (Integer.parseInt( tipoUsuario.getId_remoto() ) != 0)
+        for (TipoUsuario tipoUsuario : tipoUsuarios) {
+            if (Integer.parseInt(tipoUsuario.getId_remoto()) != 0)
                 tarifaLists.add(tipoUsuario);
         }
 
@@ -165,9 +174,9 @@ public class SelectTarifa extends AppCompatActivity {
             @Override
             @TargetApi(Build.VERSION_CODES.N)
             public void run() {
-                try{
+                try {
                     getDate();
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
@@ -185,11 +194,11 @@ public class SelectTarifa extends AppCompatActivity {
         } else {
             sb.append("PM");
         }
-        String formato_fecha =  String.format("%1$td-%1$tm-%1$tY", fecha);
-        String formato_hora =  String.format("%1$tH:%1$tM", fecha);
+        String formato_fecha = String.format("%1$td-%1$tm-%1$tY", fecha);
+        String formato_hora = String.format("%1$tH:%1$tM", fecha);
 
         binding.tvTxtDate.setText(formato_fecha);
-        binding.tvTxtHora.setText(formato_hora +" "+sb);
+        binding.tvTxtHora.setText(formato_hora + " " + sb);
     }
 
     /**
@@ -201,9 +210,9 @@ public class SelectTarifa extends AppCompatActivity {
         call.enqueue(new Callback<TarifaUsuario>() {
             @Override
             public void onResponse(Call<TarifaUsuario> call, Response<TarifaUsuario> response) {
-                Log.e(TAG, "onResponse: "+response.body().toString());
+                Log.e(TAG, "onResponse: " + response.body().toString());
 //                tarifaLists = response.body().getTarifas();
-                adapterListTarifas = new AdapterTarifas(context,tarifaLists );
+                adapterListTarifas = new AdapterTarifas(context, tarifaLists);
                 binding.rvTarifas.setAdapter(adapterListTarifas);
             }
 
@@ -215,16 +224,16 @@ public class SelectTarifa extends AppCompatActivity {
 
     }
 
-    class CountDownRunner implements Runnable{
+    class CountDownRunner implements Runnable {
         // @Override
         public void run() {
-            while(!Thread.currentThread().isInterrupted()){
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     doWork();
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                }catch(Exception e){
+                } catch (Exception e) {
                 }
             }
         }

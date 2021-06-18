@@ -10,8 +10,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Modelo.Horario;
-import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.Constantes;
+import com.smartgeeks.busticket.utils.UsuarioPreferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;

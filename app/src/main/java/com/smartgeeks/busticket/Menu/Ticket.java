@@ -30,10 +30,10 @@ import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Objects.RutaPojo;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.Helpers;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.DialogAlert;
+import com.smartgeeks.busticket.utils.Helpers;
+import com.smartgeeks.busticket.utils.RutaPreferences;
+import com.smartgeeks.busticket.utils.UsuarioPreferences;
 
 import org.json.JSONException;
 import org.json.JSONObject;

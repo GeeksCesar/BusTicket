@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Utils;
+package com.smartgeeks.busticket.utils;
 
 public class Constantes {
 

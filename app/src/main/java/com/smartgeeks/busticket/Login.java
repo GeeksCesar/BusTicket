@@ -21,10 +21,10 @@ import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.Signin;
 import com.smartgeeks.busticket.Objects.User;
-import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.Constantes;
+import com.smartgeeks.busticket.utils.DialogAlert;
+import com.smartgeeks.busticket.utils.RutaPreferences;
+import com.smartgeeks.busticket.utils.UsuarioPreferences;
 import com.smartgeeks.busticket.sync.SyncServiceLocal;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;

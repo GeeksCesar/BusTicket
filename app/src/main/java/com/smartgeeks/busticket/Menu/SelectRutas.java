@@ -44,12 +44,7 @@ import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.Ticket;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.Helpers;
-import com.smartgeeks.busticket.Utils.InternetCheck;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.*;
 
 import org.json.JSONArray;
 import org.json.JSONException;

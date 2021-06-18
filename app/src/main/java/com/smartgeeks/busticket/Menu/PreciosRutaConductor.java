@@ -8,17 +8,17 @@ import android.content.*;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.android.volley.*;
 import com.android.volley.toolbox.StringRequest;
@@ -29,8 +29,8 @@ import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.Ticket;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.*;
 import com.smartgeeks.busticket.sync.SyncServiceRemote;
+import com.smartgeeks.busticket.utils.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class PreciosRutaConductor extends AppCompatActivity implements AdapterPrecios.ItemClickListener {
+public class PreciosRutaConductor extends AppCompatActivity implements AdapterPrecios.ItemClickListener, PrintTicket.PrintState {
 
     public static final String ID_RUTA = "ID";
     public static final String ID_TIPO_USUARIO = "ID_TIPO_USUARIO";
@@ -83,7 +83,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     String namePrint;
 
     //Configuracion Impresora
-    private ArrayList<String> lisPrintBluetooth = new ArrayList<>();
+    private final ArrayList<String> lisPrintBluetooth = new ArrayList<>();
     BluetoothAdapter bluetoothAdapter;
     BluetoothSocket bluetoothSocket;
     BluetoothDevice bluetoothDevice;
@@ -97,11 +97,9 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     volatile boolean stopWorker;
 
     Dialog dialogPrint;
-    Button btnCancelar;
+    Button btnCancel;
     ListView lstPrint;
-    private RecyclerView rv_precios;
     private AdapterPrecios adapter;
-    private TextView tv_ruta;
     private ProgressBar progress_save;
 
     @Override
@@ -180,12 +178,12 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         Log.e(TAG, "count-> " + tarifaParaderos.size());
 
         progress_save = findViewById(R.id.progress_save);
-        tv_ruta = findViewById(R.id.tv_ruta);
+        TextView tv_ruta = findViewById(R.id.tv_ruta);
         tv_ruta.setText(ruta);
         id_empresa = UsuarioPreferences.getInstance(context).getIdEmpresa();
 
         // RecyclerView
-        rv_precios = findViewById(R.id.rv_precios);
+        RecyclerView rv_precios = findViewById(R.id.rv_precios);
         rv_precios.setLayoutManager(new GridLayoutManager(this, 2));
         adapter = new AdapterPrecios(this, tarifaParaderos);
         adapter.setClickListener(this);
@@ -230,7 +228,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
 
                         showProgress(true);
                         swAlert.dismiss();
-                        checkInternetConection();
+                        checkInternetConnection();
+                        //printTicket();
                     }
                 })
                 .show();
@@ -244,7 +243,23 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         button.setPadding(paddingPixel, 5, paddingPixel, 5);
     }
 
-    private void checkInternetConection() {
+    private void printTicket() {
+        PrintTicket printTicket = new PrintTicket(context, this);
+        printTicket.setData(
+                id_paradero_inicio,
+                id_paradero_fin,
+                id_ruta_disponible,
+                horario,
+                id_tipo_usuario,
+                precio_sum_pasaje,
+                id_vehiculo,
+                getNameTipoPasajero,
+                info
+        );
+        printTicket.print();
+    }
+
+    private void checkInternetConnection() {
         new InternetCheck(new InternetCheck.Consumer() {
             @Override
             public void accept(Boolean internet) {
@@ -254,8 +269,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
                     remoteSync(); // Enviar Tickets locales
                 } else {
                     // Guardar Ticket en Bd Local para sincronización
-                    Log.e("TAG", "No hay conexión a Internet");
-                    //doSomethingOnNoInternet
                     printOffLine();
                 }
             }
@@ -460,7 +473,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         dialogPrint.setCancelable(false);
 
 
-        btnCancelar = dialogPrint.findViewById(R.id.btnCancelar);
+        btnCancel = dialogPrint.findViewById(R.id.btnCancelar);
         lstPrint = dialogPrint.findViewById(R.id.listViewPrint);
 
         lstPrint.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, lisPrintBluetooth) {
@@ -501,7 +514,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             }
         });
 
-        btnCancelar.setOnClickListener(new View.OnClickListener() {
+        btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dialogPrint.dismiss();
@@ -830,6 +843,16 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
             sync.setAction(Constantes.ACTION_RUN_REMOTE_SYNC);
             getApplicationContext().startService(sync);
         }
+    }
+
+    @Override
+    public void isLoading(boolean state) {
+        showProgress(state);
+    }
+
+    @Override
+    public void onFinishPrint() {
+        this.finish();
     }
 
     // Broadcast receiver que recibe las emisiones desde los servicios

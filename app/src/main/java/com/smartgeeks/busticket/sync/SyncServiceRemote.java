@@ -6,7 +6,7 @@ import android.content.Intent;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.utils.Constantes;
 
 
 public class SyncServiceRemote extends IntentService {

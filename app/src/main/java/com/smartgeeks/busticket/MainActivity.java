@@ -30,8 +30,8 @@ import com.smartgeeks.busticket.Modelo.SubRuta;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
-import com.smartgeeks.busticket.Utils.RutaPreferences;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.RutaPreferences;
+import com.smartgeeks.busticket.utils.UsuarioPreferences;
 
 public class MainActivity extends AppCompatActivity {
 

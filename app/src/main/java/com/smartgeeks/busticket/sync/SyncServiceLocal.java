@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.utils.Constantes;
 
 
 public class SyncServiceLocal extends IntentService {

@@ -23,11 +23,7 @@ import android.widget.Toast;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Ticket;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.Utils.Constantes;
-import com.smartgeeks.busticket.Utils.DialogAlert;
-import com.smartgeeks.busticket.Utils.Helpers;
-import com.smartgeeks.busticket.Utils.InternetCheck;
-import com.smartgeeks.busticket.Utils.UsuarioPreferences;
+import com.smartgeeks.busticket.utils.*;
 import com.smartgeeks.busticket.sync.SyncServiceRemote;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;

@@ -11,7 +11,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
 import com.smartgeeks.busticket.Modelo.Ticket;
-import com.smartgeeks.busticket.Utils.Constantes;
+import com.smartgeeks.busticket.utils.Constantes;
 
 import org.json.JSONException;
 import org.json.JSONObject;
