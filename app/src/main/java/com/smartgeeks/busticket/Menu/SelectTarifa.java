@@ -9,31 +9,35 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.orm.query.Select;
 import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.TarifaUsuario;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
+import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
+import com.smartgeeks.busticket.utils.PrintTicket;
 import com.smartgeeks.busticket.utils.RecyclerItemClickListener;
 import com.smartgeeks.busticket.utils.RutaPreferences;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
-import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class SelectTarifa extends AppCompatActivity {
+public class SelectTarifa extends AppCompatActivity implements PrintTicket.PrintState {
 
     Context context;
 
@@ -68,6 +72,7 @@ public class SelectTarifa extends AppCompatActivity {
 
         binding = ActivitySelectTarifaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        context = SelectTarifa.this;
 
         Thread myThread = null;
         Runnable runnable = new CountDownRunner();
@@ -87,7 +92,6 @@ public class SelectTarifa extends AppCompatActivity {
     }
 
     private void initWidgets() {
-        context = SelectTarifa.this;
         apiService = Service.getApiService();
 
         binding.rvTarifas.setHasFixedSize(true);
@@ -97,7 +101,6 @@ public class SelectTarifa extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(binding.rvTarifas.getContext(), LinearLayoutManager.VERTICAL);
         binding.rvTarifas.addItemDecoration(dividerItemDecoration);
 
-//        getTarifas();
         getTarifasLocal();
 
         bundle = getIntent().getExtras();
@@ -126,27 +129,36 @@ public class SelectTarifa extends AppCompatActivity {
             @Override
             public void OnItemClick(View view, int position) {
 
-                TipoUsuario tarifa = tarifaLists.get(position);
-                Log.e(TAG, "ID_TIPO_USUARIO: " + tarifa.getId());
+                TipoUsuario tipoUsuario = tarifaLists.get(position);
+                Log.e(TAG, "ID_TIPO_USUARIO: " + tipoUsuario.getId());
 
-                long faresQuantity = TarifaParadero.count(TarifaParadero.class,
-                        "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + tarifa.getId_remoto()}, "monto", "monto DESC", null);
+                // Listado de Precios para la ruta (Entre paraderos)
+                List<TarifaParadero> listPrices = TarifaParadero.find(TarifaParadero.class,
+                        "id_ruta = ? and tipo_usuario = ?", new String[]{"" + id_ruta, "" + tipoUsuario.getId_remoto()}, "monto", "monto DESC", null);
 
-                Log.e(TAG, "OnItemClick: " + faresQuantity);
+                Log.e(TAG, "ListPrices: " + listPrices.size());
 
-                if (faresQuantity > 1) {
+                if (listPrices.size() > 1) {
                     Intent intent = new Intent(context, PreciosRutaConductor.class);
                     intent.putExtra(PreciosRutaConductor.ID_RUTA, id_ruta);
-                    intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tarifa.getId_remoto());
-                    intent.putExtra(PreciosRutaConductor.NAME_TIPO_USUARIO, tarifa.getNombre());
+                    intent.putExtra(PreciosRutaConductor.ID_TIPO_USUARIO, tipoUsuario.getId_remoto());
+                    intent.putExtra(PreciosRutaConductor.NAME_TIPO_USUARIO, tipoUsuario.getNombre());
                     intent.putExtra(PreciosRutaConductor.ID_VEHICULO, id_vehiculo);
                     intent.putExtra(PreciosRutaConductor.ID_RUTA_DISPONIBLE, id_ruta_disponible);
                     intent.putExtra(PreciosRutaConductor.ID_HORARIO, id_horario);
                     intent.putExtra(PreciosRutaConductor.HORARIO, horario);
                     intent.putExtra(PreciosRutaConductor.INFO, info);
                     startActivity(intent);
-                } else {
-                    // TODO: Print Ticket
+                } else if (listPrices.size() == 1) {
+
+                    // Destination List
+                    List<Paradero> destinationsList = Paradero.find(Paradero.class, "ruta = ?",
+                            new String[]{"" + id_ruta}, "remoto", "remoto", null);
+                    int departureId = destinationsList.get(0).getIdRemoto();
+                    int arrivalId = destinationsList.get((destinationsList.size() - 1)).getIdRemoto();
+                    int ticketPrice = listPrices.get(0).getMonto();
+
+                    showDialogPrintTicket(departureId, arrivalId, ticketPrice, tipoUsuario);
                 }
 
             }
@@ -154,6 +166,73 @@ public class SelectTarifa extends AppCompatActivity {
 
 
     }
+
+    private void showDialogPrintTicket(final int departureId, final int arrivalId, final int ticketPrice, final TipoUsuario tipoUsuario) {
+        SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE);
+        sweetAlertDialog.setTitleText("Vender Ticket")
+                .setContentText("Se imprimirá el Ticket con el precio $" + ticketPrice)
+                .setConfirmText("Imprimir Ticket")
+                .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog swAlert) {
+                        swAlert.dismiss();
+
+                        printTicket(
+                                departureId,
+                                arrivalId,
+                                id_ruta_disponible,
+                                horario,
+                                Integer.parseInt(tipoUsuario.getId_remoto()),
+                                Double.parseDouble(String.valueOf(ticketPrice)),
+                                id_vehiculo,
+                                tipoUsuario.getNombre(),
+                                info
+                        );
+
+                    }
+                })
+                .show();
+
+        Button button = sweetAlertDialog.findViewById(R.id.confirm_button);
+        button.setTextSize(25);
+        button.setBackgroundColor(ContextCompat.getColor(this, R.color.colorBlue));
+
+        float density = context.getResources().getDisplayMetrics().density;
+        int paddingPixel = (int) (30 * density);
+        button.setPadding(paddingPixel, 5, paddingPixel, 5);
+    }
+
+    /**
+     * This method printTicket.
+     *
+     * @param departureId
+     * @param arrivalId
+     * @param routeAvailableId
+     * @param schedule
+     * @param passengerTypeId
+     * @param ticketPrice
+     * @param vehicleId
+     * @param passengerTypeName
+     * @param companyInfo
+     */
+    private void printTicket(int departureId, int arrivalId, int routeAvailableId, String schedule,
+                             int passengerTypeId, Double ticketPrice, int vehicleId, String passengerTypeName,
+                             String companyInfo) {
+        PrintTicket printTicket = new PrintTicket(context, this);
+        printTicket.setData(
+                departureId,
+                arrivalId,
+                routeAvailableId,
+                schedule,
+                passengerTypeId,
+                ticketPrice,
+                vehicleId,
+                passengerTypeName,
+                companyInfo
+        );
+        printTicket.print();
+    }
+
 
     private void getTarifasLocal() {
         // List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);
@@ -201,26 +280,13 @@ public class SelectTarifa extends AppCompatActivity {
         binding.tvTxtHora.setText(formato_hora + " " + sb);
     }
 
-    /**
-     * Consultar tarifas
-     */
-    private void getTarifas() {
-        call = apiService.allTarifas(UsuarioPreferences.getInstance(context).getIdEmpresa());
+    @Override
+    public void isLoading(boolean state) {
 
-        call.enqueue(new Callback<TarifaUsuario>() {
-            @Override
-            public void onResponse(Call<TarifaUsuario> call, Response<TarifaUsuario> response) {
-                Log.e(TAG, "onResponse: " + response.body().toString());
-//                tarifaLists = response.body().getTarifas();
-                adapterListTarifas = new AdapterTarifas(context, tarifaLists);
-                binding.rvTarifas.setAdapter(adapterListTarifas);
-            }
+    }
 
-            @Override
-            public void onFailure(Call<TarifaUsuario> call, Throwable t) {
-
-            }
-        });
+    @Override
+    public void onFinishPrint() {
 
     }
 

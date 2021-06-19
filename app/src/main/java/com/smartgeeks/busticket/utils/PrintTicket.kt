@@ -36,10 +36,15 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.charset.Charset
 import java.text.DecimalFormat
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.UUID
+
+private const val LEFT_LENGTH = 16
+private const val RIGHT_LENGTH = 16
+private const val LEFT_TEXT_MAX_LENGTH = 8
 
 class PrintTicket(private val context: Context, var stateListener: PrintState) {
 
@@ -510,12 +515,12 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
-            var str_tipo_pasajero: String = namePassengerType + "\n"
-            str_tipo_pasajero = str_tipo_pasajero.replace("(", "")
+            var strTipoPasajero: String = namePassengerType + "\n"
+            strTipoPasajero = strTipoPasajero.replace("(", "")
             outputStream!!.write(
-                str_tipo_pasajero.toByteArray(),
+                strTipoPasajero.toByteArray(),
                 0,
-                str_tipo_pasajero.toByteArray().size
+                strTipoPasajero.toByteArray().size
             )
             format = byteArrayOf(27, 33, 0)
             outputStream!!.write(centrado)
@@ -527,14 +532,14 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             format[2] = 0x8.toByte()
             outputStream!!.write(format)
             outputStream!!.write(
-                PreciosRutaConductor.printThreeData(
+                printThreeData(
                     "Fecha",
                     "Salida",
                     "Cantidad",
                     "One"
                 ).toByteArray(),
                 0,
-                PreciosRutaConductor.printThreeData("Fecha", "Salida", "Cantidad", "One")
+                printThreeData("Fecha", "Salida", "Cantidad", "One")
                     .toByteArray().size
             )
             format = byteArrayOf(27, 33, 0)
@@ -543,24 +548,24 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
             format[2] = (0x10 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(format)
-            var fecha_codi = Helpers.getDate()
-            val array_fecha = fecha_codi.split("-").toTypedArray()
-            fecha_codi = array_fecha[2] + "-" + array_fecha[1] + "-" + array_fecha[0].substring(
-                array_fecha[0].length - 2
+            var fechaCodi = Helpers.getDate()
+            val arrayFecha = fechaCodi.split("-").toTypedArray()
+            fechaCodi = arrayFecha[2] + "-" + arrayFecha[1] + "-" + arrayFecha[0].substring(
+                arrayFecha[0].length - 2
             )
-            val hora_salida_s: Array<String> = horario.trim { it <= ' ' }.split(":").toTypedArray()
-            val hora_salida_str = hora_salida_s[0] + ":" + hora_salida_s[1]
+            val horaSalidaS: Array<String> = horario.trim { it <= ' ' }.split(":").toTypedArray()
+            val horaSalidaStr = horaSalidaS[0] + ":" + horaSalidaS[1]
             outputStream!!.write(
-                PreciosRutaConductor.printThreeData(
-                    fecha_codi,
-                    hora_salida_str,
+                printThreeData(
+                    fechaCodi,
+                    horaSalidaStr,
                     countPasajes.toString(),
                     "Two"
                 ).toByteArray(),
                 0,
-                PreciosRutaConductor.printThreeData(
-                    fecha_codi,
-                    hora_salida_str,
+                printThreeData(
+                    fechaCodi,
+                    horaSalidaStr,
                     countPasajes.toString(),
                     "Two"
                 ).toByteArray().size
@@ -593,13 +598,13 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             format = byteArrayOf(27, 33, 0)
             outputStream!!.write(izq)
             outputStream!!.write(format)
-            var str_emision = "Emision: $fecha_codi\n"
-            str_emision += """${Helpers.getTime()} ${split[0]} ${
+            var strEmision = "Emision: $fechaCodi\n"
+            strEmision += """${Helpers.getTime()} ${split[0]} ${
                 UsuarioPreferences.getInstance(
                     context
                 ).nombre
             }"""
-            outputStream!!.write(str_emision.toByteArray(), 0, str_emision.toByteArray().size)
+            outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
             format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
@@ -615,5 +620,53 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             ex.printStackTrace()
             Log.e(PreciosRutaConductor.TAG, "error in printdata")
         }
+    }
+
+    fun printThreeData(
+        _leftText: String,
+        middleText: String,
+        rightText: String,
+        tipo: String
+    ): String {
+        var leftText = _leftText
+        val sb = StringBuilder()
+        // At most LEFT_TEXT_MAX_LENGTH Chinese characters + two dots are displayed on the left
+        if (leftText.length > LEFT_TEXT_MAX_LENGTH) {
+            leftText = leftText.substring(0, LEFT_TEXT_MAX_LENGTH) + ".."
+        }
+        val leftTextLength: Int = getBytesLength(leftText)
+        val middleTextLength: Int = getBytesLength(middleText)
+        val rightTextLength: Int = getBytesLength(rightText)
+        sb.append(leftText)
+        // Calculate the length of the space between the left text and the middle text
+        var marginBetweenLeftAndMiddle = 0
+        marginBetweenLeftAndMiddle = if (tipo == "One") {
+            LEFT_LENGTH - leftTextLength - middleTextLength / 2
+        } else {
+            13 - leftTextLength - middleTextLength / 2
+        }
+        for (i in 0 until marginBetweenLeftAndMiddle) {
+            sb.append(" ")
+        }
+        sb.append(middleText)
+
+        // Calculate the length of the space between the right text and the middle text
+        var marginBetweenMiddleAndRight = 0
+        marginBetweenMiddleAndRight = if (tipo == "One") {
+            RIGHT_LENGTH - middleTextLength / 2 - rightTextLength
+        } else {
+            13 - middleTextLength / 2 - rightTextLength
+        }
+        for (i in 0 until marginBetweenMiddleAndRight) {
+            sb.append(" ")
+        }
+
+        // When printing, I found that the rightmost text is always one character to the right, so a space needs to be deleted
+        sb.delete(sb.length - 1, sb.length).append(rightText)
+        return sb.toString()
+    }
+
+    private fun getBytesLength(msg: String): Int {
+        return msg.toByteArray(Charset.forName("GB2312")).size
     }
 }
