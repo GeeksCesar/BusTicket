@@ -22,7 +22,6 @@ import com.smartgeeks.busticket.Api.ApiService;
 import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
-import com.smartgeeks.busticket.Modelo.TarifaUsuario;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding;
@@ -30,9 +29,7 @@ import com.smartgeeks.busticket.utils.PrintTicket;
 import com.smartgeeks.busticket.utils.RecyclerItemClickListener;
 import com.smartgeeks.busticket.utils.RutaPreferences;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
-import retrofit2.Call;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -51,13 +48,11 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
     private static final String TAG = "SELECTTARIFA";
 
     Bundle bundle;
-    DecimalFormat formatea = new DecimalFormat("###,###.##");
 
-    int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible, id_empresa;
-    String horario, info, nombreEmpresa, desc_empresa, ruta = "";
+    int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible;
+    String horario, info, ruta = "";
 
     ApiService apiService;
-    Call<TarifaUsuario> call;
     List<TipoUsuario> tarifaLists = new ArrayList<TipoUsuario>();
     RecyclerView.LayoutManager layoutManager;
     AdapterTarifas adapterListTarifas;
@@ -204,16 +199,6 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
 
     /**
      * This method printTicket.
-     *
-     * @param departureId
-     * @param arrivalId
-     * @param routeAvailableId
-     * @param schedule
-     * @param passengerTypeId
-     * @param ticketPrice
-     * @param vehicleId
-     * @param passengerTypeName
-     * @param companyInfo
      */
     private void printTicket(int departureId, int arrivalId, int routeAvailableId, String schedule,
                              int passengerTypeId, Double ticketPrice, int vehicleId, String passengerTypeName,
@@ -300,6 +285,7 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
