@@ -59,6 +59,8 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
 
     private ActivitySelectTarifaBinding binding;
 
+    private PrintTicket printTicket;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +77,8 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
         myThread.start();
         initWidgets();
         setupOnBackButton();
+
+        printTicket = new PrintTicket(SelectTarifa.this, this);
     }
 
     private void setupOnBackButton() {
@@ -203,7 +207,6 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
     private void printTicket(int departureId, int arrivalId, int routeAvailableId, String schedule,
                              int passengerTypeId, Double ticketPrice, int vehicleId, String passengerTypeName,
                              String companyInfo) {
-        PrintTicket printTicket = new PrintTicket(context, this);
         printTicket.setData(
                 departureId,
                 arrivalId,

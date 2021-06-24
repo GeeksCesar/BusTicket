@@ -63,6 +63,8 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     private AdapterPrecios adapter;
     private ProgressBar progress_save;
 
+    private PrintTicket printTicket;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +73,7 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
         setContentView(R.layout.activity_precio_rutas_conductor);
 
         initWidget();
+        printTicket = new PrintTicket(PreciosRutaConductor.this, this);
 
         // Filtro de acciones que serán alertadas
         IntentFilter filter = new IntentFilter(Constantes.ACTION_RUN_REMOTE_SYNC);
@@ -194,7 +197,6 @@ public class PreciosRutaConductor extends AppCompatActivity implements AdapterPr
     }
 
     private void printTicket() {
-        PrintTicket printTicket = new PrintTicket(context, this);
         printTicket.setData(
                 id_paradero_inicio,
                 id_paradero_fin,

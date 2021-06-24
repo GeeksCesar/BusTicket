@@ -1,10 +1,12 @@
 package com.smartgeeks.busticket.utils
 
+import android.app.Activity
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.util.Log
@@ -16,6 +18,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.android.volley.NetworkError
 import com.android.volley.NoConnectionError
@@ -46,7 +49,9 @@ private const val LEFT_LENGTH = 16
 private const val RIGHT_LENGTH = 16
 private const val LEFT_TEXT_MAX_LENGTH = 8
 
-class PrintTicket(private val context: Context, var stateListener: PrintState) {
+private const val TAG: String = "PrintTicket"
+
+class PrintTicket(private val context: Activity, var stateListener: PrintState) {
 
     interface PrintState {
         fun isLoading(state: Boolean)
@@ -108,6 +113,7 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
         companyDesc = UsuarioPreferences.getInstance(context).descEmpresa
         idEmpresa = UsuarioPreferences.getInstance(context).idEmpresa
 
+        encontrarDispositivoBlue()
         requestQueue = Volley.newRequestQueue(context)
     }
 
@@ -376,6 +382,32 @@ class PrintTicket(private val context: Context, var stateListener: PrintState) {
             printDialog.show()
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
+        }
+    }
+
+    fun encontrarDispositivoBlue() {
+        try {
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+            if (bluetoothAdapter == null) {
+                Toast.makeText(context, "No tiene Acitivado el bluetooth", Toast.LENGTH_SHORT)
+                    .show()
+            }
+            if (bluetoothAdapter.isEnabled) {
+                val enableBT = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                context.startActivityForResult(enableBT, 0)
+            }
+            val pairedDevice = bluetoothAdapter.bondedDevices
+            if (pairedDevice.size > 0) {
+                for (pairedDev in pairedDevice) {
+                    lisPrintBluetooth.add(pairedDev.name)
+                    // Log.d(Service.TAG, "se agrego las lista de bluetooth: "+pairedDev.getName());
+                }
+            } else {
+                Log.d(TAG, "no hay lista de bluetooth")
+            }
+        } catch (ex: java.lang.Exception) {
+            ex.printStackTrace()
+            Log.i(TAG, "otro Error" + ex.message)
         }
     }
 
