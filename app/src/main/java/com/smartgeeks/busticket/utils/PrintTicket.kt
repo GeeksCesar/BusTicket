@@ -33,8 +33,6 @@ import com.smartgeeks.busticket.Api.Service
 import com.smartgeeks.busticket.Menu.PreciosRutaConductor
 import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.InputStream
@@ -134,15 +132,15 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     fun print() {
-        GlobalScope.launch {
-            if (InternetChecker.isInternetAvailable()) {
+        InternetCheck { internet ->
+            if (internet) {
                 // Enviar Ticket al servidor
                 registerTicket()
             } else {
                 // Guardar Ticket en Bd Local para sincronización
                 printOffLine()
             }
-        }
+        }.execute()
     }
 
     private fun printOffLine() {

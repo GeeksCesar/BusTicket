@@ -47,7 +47,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
  * Archivos donde se imprime el Ticket
  * - PreciosRutaConductor
  * - SelectRutas
- * - Select sillas
+ * - SelectSillas
  */
 
 public class Ticket extends Fragment {
