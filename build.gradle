@@ -5,10 +5,10 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
 
@@ -21,7 +21,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -33,5 +33,5 @@ ext {
     supportLibraryVersion = '28.0.0'
     firebaseVersion = '11.8.0'
     retrofitVersion = '2.2.0'
-    volleyVersion = '1.1.0'
+    volleyVersion = '1.2.1'
 }
