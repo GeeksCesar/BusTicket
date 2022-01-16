@@ -4,13 +4,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
@@ -37,11 +37,6 @@ class Login : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     var dialogAlert = DialogAlert()
-
-    //Prefrences
-    var preferences: SharedPreferences? = null
-    var editor: SharedPreferences.Editor? = null
-
     private lateinit var authViewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,7 +94,7 @@ class Login : AppCompatActivity() {
                         if (error) {
                             if (user.idRol == 2 || user.idRol == 3) {
                                 UsuarioPreferences.getInstance(this@Login).userPreferences(user)
-                                setDataPrefrences()
+                                setDataPreferences()
                                 dialogSelectRoleUser()
                             } else {
                                 DialogAlert.showDialogFailed(
@@ -181,11 +176,11 @@ class Login : AppCompatActivity() {
         binding.loginProgress.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-    private fun setDataPrefrences() {
-        preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, MODE_PRIVATE)
-        editor?.apply {
+    private fun setDataPreferences() {
+        val sharPref = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, MODE_PRIVATE)
+        sharPref.edit {
             putString(UsuarioPreferences.KEY_SESSION, "SessionSuccess")
-            commit()
+            apply()
         }
     }
 
