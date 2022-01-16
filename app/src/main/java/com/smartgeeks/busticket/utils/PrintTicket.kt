@@ -29,7 +29,7 @@ import com.android.volley.TimeoutError
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.smartgeeks.busticket.Api.Service
+import com.smartgeeks.busticket.api.Service
 import com.smartgeeks.busticket.Menu.PreciosRutaConductor
 import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R

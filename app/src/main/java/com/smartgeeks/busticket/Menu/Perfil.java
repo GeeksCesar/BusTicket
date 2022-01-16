@@ -16,8 +16,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.smartgeeks.busticket.Api.Service;
 import com.smartgeeks.busticket.Login;
+import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.R;
 import com.smartgeeks.busticket.utils.RutaPreferences;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;

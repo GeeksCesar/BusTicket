@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Api;
+package com.smartgeeks.busticket.api;
 
 import java.util.concurrent.TimeUnit;
 

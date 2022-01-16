@@ -82,10 +82,12 @@ public class SplashScreen extends AppCompatActivity {
     }
 
     private void getDataUser() {
+        String url = Constantes.GET_MESSAGE_COMPANY + UsuarioPreferences.getInstance(context).getIdEmpresa();
+        Log.e("TAG", "getDataUser: " + url);
         VolleySingleton.getInstance(context).addToRequestQueue(
                 new StringRequest(
                         Request.Method.GET,
-                        Constantes.GET_MESSAGE_COMPANY + UsuarioPreferences.getInstance(context).getIdEmpresa(),
+                        url,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {

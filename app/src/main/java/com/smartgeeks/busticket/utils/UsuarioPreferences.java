@@ -2,8 +2,7 @@ package com.smartgeeks.busticket.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import com.smartgeeks.busticket.Objects.User;
+import com.smartgeeks.busticket.data.auth.User;
 
 public class UsuarioPreferences {
 
@@ -34,6 +33,23 @@ public class UsuarioPreferences {
     }
 
     public boolean userPreferences(User user) {
+        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.putInt(KEY_ROL, user.getIdRol());
+        editor.putInt(KEY_ID_USER, user.getIdUsuario());
+        editor.putString(KEY_NAME, user.getNombre());
+        editor.putInt(KEY_ID_EMPRESA, user.getIdEmpresa());
+        editor.putString(KEY_RUT, user.getRut());
+        editor.putString(KEY_NAME_EMPRESA, user.getNombreEmpresa());
+        editor.putString(KEY_DESC_EMPRESA, user.getDescEmpresa());
+
+        editor.apply();
+
+        return true;
+    }
+
+    public boolean userPreferences(com.smartgeeks.busticket.Objects.User user) {
         SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 

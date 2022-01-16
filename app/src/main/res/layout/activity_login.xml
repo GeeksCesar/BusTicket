@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/background_gris"
-    tools:context=".Login">
+    tools:context=".LoginBk">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -55,12 +55,13 @@
             <EditText
                 android:id="@+id/edPassword"
                 style="@style/Editext"
-                android:drawableLeft="@mipmap/icon_pass"
-                android:layout_marginTop="15dp"
                 android:layout_below="@+id/edUsuario"
+                android:layout_marginTop="15dp"
+                android:drawableLeft="@mipmap/icon_pass"
                 android:drawablePadding="20dp"
-                android:inputType="textPassword"
-                android:hint="Contraseña"/>
+                android:hint="Contraseña"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword" />
 
 
             <Button

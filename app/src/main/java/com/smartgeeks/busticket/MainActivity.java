@@ -5,31 +5,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.drawerlayout.widget.DrawerLayout;
+import android.view.*;
+import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
-
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import com.smartgeeks.busticket.Menu.Inicio;
 import com.smartgeeks.busticket.Menu.Perfil;
 import com.smartgeeks.busticket.Menu.Ticket;
-import com.smartgeeks.busticket.Modelo.Horario;
-import com.smartgeeks.busticket.Modelo.Paradero;
-import com.smartgeeks.busticket.Modelo.Ruta;
-import com.smartgeeks.busticket.Modelo.SubRuta;
-import com.smartgeeks.busticket.Modelo.TarifaParadero;
-import com.smartgeeks.busticket.Modelo.TipoUsuario;
-import com.smartgeeks.busticket.Modelo.Vehiculo;
+import com.smartgeeks.busticket.Modelo.*;
 import com.smartgeeks.busticket.utils.RutaPreferences;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
 
@@ -39,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences preferences;
     Bundle bundle;
 
-    boolean goBack ;
+    boolean goBack;
 
     public static final String BACK = "BACK_INTENT";
 
@@ -108,16 +92,16 @@ public class MainActivity extends AppCompatActivity {
 
         bundle = getIntent().getExtras();
 
-        if (bundle != null){
+        if (bundle != null) {
             goBack = bundle.getBoolean(BACK, false);
 
-            if (goBack == true){
+            if (goBack == true) {
                 setFragment(2);
-            }else {
+            } else {
 
             }
 
-        }else {
+        } else {
             setFragment(1);
         }
 

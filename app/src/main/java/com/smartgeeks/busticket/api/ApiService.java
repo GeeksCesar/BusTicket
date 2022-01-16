@@ -1,9 +1,7 @@
-package com.smartgeeks.busticket.Api;
+package com.smartgeeks.busticket.api;
 
 import com.smartgeeks.busticket.Modelo.Signin;
 import com.smartgeeks.busticket.Modelo.TarifaUsuario;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Field;

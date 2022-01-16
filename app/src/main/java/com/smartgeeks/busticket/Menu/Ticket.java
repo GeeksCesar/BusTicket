@@ -24,7 +24,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;

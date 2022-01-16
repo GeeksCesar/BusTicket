@@ -44,7 +44,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.smartgeeks.busticket.Api.Service;
+import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.MainActivity;
 import com.smartgeeks.busticket.Modelo.Silla;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
