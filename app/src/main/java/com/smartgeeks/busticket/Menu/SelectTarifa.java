@@ -18,8 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.orm.query.Select;
-import com.smartgeeks.busticket.api.ApiService;
-import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.Modelo.Paradero;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.Modelo.TipoUsuario;
@@ -52,7 +50,6 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
     int id_horario, id_vehiculo, id_operador, id_ruta, id_ruta_disponible;
     String horario, info, ruta = "";
 
-    ApiService apiService;
     List<TipoUsuario> tarifaLists = new ArrayList<TipoUsuario>();
     RecyclerView.LayoutManager layoutManager;
     AdapterTarifas adapterListTarifas;
@@ -91,8 +88,6 @@ public class SelectTarifa extends AppCompatActivity implements PrintTicket.Print
     }
 
     private void initWidgets() {
-        apiService = Service.getApiService();
-
         binding.rvTarifas.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(context);
         binding.rvTarifas.setLayoutManager(layoutManager);

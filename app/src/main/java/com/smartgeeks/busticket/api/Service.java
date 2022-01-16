@@ -6,10 +6,6 @@ public class Service {
 
     public static final String URL = "https://mi.appbusticket.com/";
 
-    public static ApiService getApiService() {
-        return RetrofitClient.getClient(URL).create(ApiService.class);
-    }
-
     public static final String GET_VEHICULOS = URL + "api/getVehiculos?id=";
     public static final String GET_RUTAS = URL + "api/getRutas?id=";
     public static final String GET_USUARIOS = URL + "api/getTipoUsuarios";
@@ -29,6 +25,6 @@ public class Service {
     public static final String SET_TICKET_PIE_TEST = URL + "api/setTicketPieTest";
 
     public static final String GET_PRECIO_TIQUETE = URL + "api/getPrecio/";
-    public static final String SET_LIBERAR_SILLA= URL + "api/getLiberarSillasDia/";
+    public static final String SET_LIBERAR_SILLA = URL + "api/getLiberarSillasDia/";
 
 }
