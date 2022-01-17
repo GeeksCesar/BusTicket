@@ -32,7 +32,7 @@
 
 
                 <ImageButton
-                    android:id="@+id/imgAbrirMenu"
+                    android:id="@+id/btnAbrirMenu"
                     android:layout_width="0dp"
                     android:layout_height="50dp"
                     android:layout_marginTop="5dp"
@@ -64,7 +64,7 @@
             android:layout_marginTop="80dp"/>
 
         <ListView
-            android:id="@+id/drawer"
+            android:id="@+id/lvNavItems"
             android:layout_width="200dp"
             android:layout_height="match_parent"
             android:layout_gravity="start"

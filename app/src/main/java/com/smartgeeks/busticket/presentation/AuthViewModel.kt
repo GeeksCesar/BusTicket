@@ -67,4 +67,16 @@ class AuthViewModel @Inject constructor(
             emit(Resource.Failure(e))
         }
     }
+
+    fun setUserStatus(userID: Int, deviceID: String, status : Int) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+
+        try {
+            emit(Resource.Success(authRepository.setUserStatus(
+                userID, deviceID, status
+            )))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
 }

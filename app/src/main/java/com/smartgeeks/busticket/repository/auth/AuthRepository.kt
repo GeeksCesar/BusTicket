@@ -11,4 +11,5 @@ interface AuthRepository {
     suspend fun setLoginLogs(requestSessionLogs: RequestSessionLogs): BasicResponse
     suspend fun checkLockedDevice(userId: Int, deviceID: String): Boolean
     suspend fun getMessageCompany(companyId: Int): CompanyMessage
+    suspend fun setUserStatus(userId: Int, deviceID: String, status: Int): BasicResponse
 }

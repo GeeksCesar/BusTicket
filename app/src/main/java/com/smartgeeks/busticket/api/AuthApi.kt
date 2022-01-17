@@ -37,4 +37,13 @@ interface AuthApi {
         @Field("userId") userId: Int,
         @Field("deviceId") deviceID: String
     ): Boolean
+
+    @FormUrlEncoded
+    @POST("api/setUserStatus/")
+    suspend fun setUserStatus(
+        @Field("userId") userId: Int,
+        @Field("deviceID") deviceID: String,
+        @Field("status") status: Int,
+    ) : BasicResponse
+
 }
