@@ -4,8 +4,6 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="dialogMessage">Desea recordar la ruta !</string>
     <string name="dialogMessageFinalizar">Desea finalizar la ruta !</string>
     <string name="dialogMessagePrint">Esta seguro de quitar la impresora !</string>

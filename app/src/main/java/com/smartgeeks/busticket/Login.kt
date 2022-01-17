@@ -1,10 +1,18 @@
 package com.smartgeeks.busticket
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.IntentSender
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -12,9 +20,19 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.smartgeeks.busticket.api.Service
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.core.Resource.Loading
@@ -33,6 +51,7 @@ import dagger.hilt.android.AndroidEntryPoint
  * password: prueba321
  */
 private var TAG: String = Login::class.java.simpleName
+private const val REQUEST_CODE_LOCATION = 0
 
 @AndroidEntryPoint
 class Login : AppCompatActivity() {
@@ -41,6 +60,13 @@ class Login : AppCompatActivity() {
     var dialogAlert = DialogAlert()
     private val authViewModel: AuthViewModel by viewModels()
     private var isLockedDevice: Boolean = false
+
+    // Permission variable
+    private var googleApiClient: GoogleApiClient? = null
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private val REQUESTLOCATION = 199
+
+    private var userLocation: Location? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +77,10 @@ class Login : AppCompatActivity() {
         )
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this)
+        getLastLocation()
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
@@ -72,14 +102,20 @@ class Login : AppCompatActivity() {
                         SweetAlertDialog.WARNING_TYPE
                     )
                 } else {
+
                     if (isLockedDevice) {
                         showDialogLockedDevice()
                         return@setOnClickListener
                     }
 
-                    showProgress(true)
-                    binding.btnIniciarSession.visibility = View.GONE
-                    signIn(email, password)
+                    if (userLocation == null) {
+                        showDialogLocation()
+                        return@setOnClickListener
+                    } else {
+                        showProgress(true)
+                        binding.btnIniciarSession.visibility = View.GONE
+                        signIn(email, password)
+                    }
                 }
             }
         }
@@ -147,9 +183,9 @@ class Login : AppCompatActivity() {
     }
 
     private fun sendLoginLogs(userID: Int) {
-        // TODO Registrar inicio de sesion Lat y Long
         val deviceID = Utilities.getDeviceId(this)
-        authViewModel.setLoginLogs(userID, deviceID, "").observe(this, { result ->
+        val location = "${userLocation?.latitude},${userLocation?.longitude}"
+        authViewModel.setLoginLogs(userID, deviceID, location).observe(this, { result ->
             when (result) {
                 is Resource.Failure -> {
                     Toast.makeText(this, result.exception.message, Toast.LENGTH_SHORT).show()
@@ -188,6 +224,17 @@ class Login : AppCompatActivity() {
         SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Dispositivo Deshabilitado")
             .setContentText("Contacte con el administrador para habilitar el equipo.")
+            .show()
+    }
+
+    private fun showDialogLocation() {
+        SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            .setTitleText("Permiso de ubicación")
+            .setContentText("Debes habilitar el permiso de ubicación.")
+            .setConfirmClickListener {
+                getLastLocation()
+                it.dismiss()
+            }
             .show()
     }
 
@@ -248,6 +295,156 @@ class Login : AppCompatActivity() {
                 Constantes.ACTION_FINISH_LOCAL_SYNC -> {
                     Log.e("Login", "Finalizado guardado de datos")
                     goMainActivity()
+                }
+            }
+        }
+    }
+
+    // Location
+    fun checkPermission(): Boolean = (ActivityCompat.checkSelfPermission(
+        this,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED ||
+        ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED)
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+            REQUEST_CODE_LOCATION
+        )
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager =
+            this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    private fun getLastLocation() {
+        if (checkPermission()) {
+            if (isLocationEnabled()) {
+                fusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
+                    val location: Location? = try {
+                        task.result
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this,
+                            "LocationServices.API is not available on this device.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e(TAG, "getLastLocation: ${e.localizedMessage}")
+                        null
+                    }
+
+                    if (location == null) {
+                        newLocationData()
+                    } else {
+                        Log.e(
+                            "Debug",
+                            "You Current Location is : Long: " + location.longitude + " , Lat: " + location.latitude + "\n"
+                        )
+                        userLocation = location
+                    }
+                }
+            } else {
+                enableLoc()
+                Toast.makeText(
+                    this,
+                    "Please Turn on Your device Location",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            requestPermission()
+        }
+    }
+
+    private fun enableLoc() {
+
+        googleApiClient = GoogleApiClient.Builder(this)
+            .addApi(LocationServices.API)
+            .addConnectionCallbacks(object : GoogleApiClient.ConnectionCallbacks {
+                override fun onConnected(bundle: Bundle?) {}
+                override fun onConnectionSuspended(i: Int) {
+                    googleApiClient?.connect()
+                }
+            })
+            .addOnConnectionFailedListener {
+            }.build()
+
+        googleApiClient?.connect()
+        val locationRequest = LocationRequest.create()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 30 * 1000.toLong()
+        locationRequest.fastestInterval = 5 * 1000.toLong()
+
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        builder.setAlwaysShow(true)
+
+        val result =
+            LocationServices.SettingsApi.checkLocationSettings(googleApiClient!!, builder.build())
+
+        result.setResultCallback { result ->
+            val status: Status = result.status
+
+            Log.e(TAG, "enableLoc: $status")
+            when (status.statusCode) {
+                LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> try {
+                    status.startResolutionForResult(
+                        this,
+                        REQUESTLOCATION
+                    )
+                } catch (e: IntentSender.SendIntentException) {
+                    Log.e(TAG, "enableLoc: ${e.message}")
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun newLocationData() {
+        val locationRequest = LocationRequest()
+        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest.interval = 0
+        locationRequest.fastestInterval = 0
+        locationRequest.numUpdates = 1
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(this)
+        Looper.myLooper()?.let {
+            fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest, locationCallback, it
+            )
+        }
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        @SuppressLint("SetTextI18n")
+        override fun onLocationResult(locationResult: LocationResult) {
+            val lastLocation: Location = locationResult.lastLocation
+            Log.e(
+                TAG,
+                "You Last Location is : Long: " + lastLocation.longitude + " , Lat: " + lastLocation.latitude + "\n"
+            )
+            userLocation = lastLocation
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.e(TAG, "onActivityResult: $resultCode - $requestCode")
+        when (requestCode) {
+            REQUESTLOCATION -> when (resultCode) {
+                Activity.RESULT_OK -> Log.e(TAG, "OK Granted")
+                Activity.RESULT_CANCELED -> Log.e(TAG, "CANCEL")
+                else -> {
+                    Log.e(TAG, "onActivityResult: $resultCode")
                 }
             }
         }
