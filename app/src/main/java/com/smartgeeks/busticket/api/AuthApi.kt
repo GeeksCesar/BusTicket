@@ -2,6 +2,8 @@ package com.smartgeeks.busticket.api
 
 import com.smartgeeks.busticket.data.BasicResponse
 import com.smartgeeks.busticket.data.auth.AuthResponse
+import com.smartgeeks.busticket.data.auth.CompanyMessage
+import com.smartgeeks.busticket.data.auth.LockedDevices
 import com.smartgeeks.busticket.data.auth.RequestSessionLogs
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -12,10 +14,10 @@ import retrofit2.http.Path
 
 interface AuthApi {
 
-    @GET("getMsgEmpresa/{companyId}")
+    @GET("apisync/getMsgEmpresa/{companyId}")
     suspend fun getMessageCompany(
         @Path("companyId") companyId: Int
-    )
+    ) : CompanyMessage
 
     @FormUrlEncoded
     @POST("api/getLogin")
@@ -27,5 +29,11 @@ interface AuthApi {
     @POST("api/setLoginLogs")
     suspend fun setLoginLogs(
         @Body requestSessionLogs: RequestSessionLogs
-    ) : BasicResponse
+    ): BasicResponse
+
+    @FormUrlEncoded
+    @POST("api/getLockedDevices")
+    suspend fun getLockedDevices(
+        @Field("userId") userId: Int
+    ): LockedDevices
 }

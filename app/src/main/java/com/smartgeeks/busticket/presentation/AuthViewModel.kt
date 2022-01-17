@@ -47,4 +47,24 @@ class AuthViewModel @Inject constructor(
         }
 
     }
+
+    fun getLockedDevices(userID: Int) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+
+        try {
+            emit(Resource.Success(authRepository.getLockedDevices(userID)))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
+
+    fun getMessageCompany(companyId: Int) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+
+        try {
+            emit(Resource.Success(authRepository.getMessageCompany(companyId)))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
 }

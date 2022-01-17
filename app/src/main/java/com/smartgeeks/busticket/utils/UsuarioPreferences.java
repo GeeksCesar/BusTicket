@@ -49,23 +49,6 @@ public class UsuarioPreferences {
         return true;
     }
 
-    public boolean userPreferences(com.smartgeeks.busticket.Objects.User user) {
-        SharedPreferences preferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-
-        editor.putInt(KEY_ROL, user.getIdRol());
-        editor.putInt(KEY_ID_USER, user.getIdUsuario());
-        editor.putString(KEY_NAME, user.getNombre());
-        editor.putInt(KEY_ID_EMPRESA, user.getId_empresa());
-        editor.putString(KEY_RUT, user.getRut());
-        editor.putString(KEY_NAME_EMPRESA, user.getNombreEmpresa());
-        editor.putString(KEY_DESC_EMPRESA, user.getDescEmpresa());
-
-        editor.apply();
-
-        return true;
-    }
-
     public String getSessionUser() {
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_SESSION, "SessionFailed");
