@@ -10,9 +10,9 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
-import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.api.Service
@@ -23,9 +23,9 @@ import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.sync.SyncServiceLocal
 import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.DialogAlert
-import com.smartgeeks.busticket.utils.Utilities
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -39,7 +39,8 @@ class Login : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     var dialogAlert = DialogAlert()
-    private lateinit var authViewModel: AuthViewModel
+    private val authViewModel: AuthViewModel by viewModels()
+    private var isLockedDevice: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +51,16 @@ class Login : AppCompatActivity() {
         )
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        authViewModel = ViewModelProvider(this)[AuthViewModel::class.java]
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
         val receiver = ResponseReceiver()
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)
+
         binding.btnIniciarSession.setOnClickListener {
             val email = binding.edUsuario.text.toString().trim { it <= ' ' }
             val password = binding.edPassword.text.toString().trim { it <= ' ' }
+
             if (!DialogAlert.verificaConexion(this)) {
                 dialogAlert.showDialogErrorConexion(this)
             } else {
@@ -70,16 +72,22 @@ class Login : AppCompatActivity() {
                         SweetAlertDialog.WARNING_TYPE
                     )
                 } else {
+                    if (isLockedDevice) {
+                        showDialogLockedDevice()
+                        return@setOnClickListener
+                    }
+
                     showProgress(true)
                     binding.btnIniciarSession.visibility = View.GONE
                     signIn(email, password)
                 }
             }
         }
+
+        checkLockedDevice()
     }
 
     private fun signIn(email: String, password: String) {
-        // TODO Registrar inicio de sesion con DEVICE_ID, Lat y Long, fecha, hora y usuario (IP)
         authViewModel.userLogin(email, password).observe(this, { result ->
             when (result) {
                 is Loading -> {
@@ -139,6 +147,7 @@ class Login : AppCompatActivity() {
     }
 
     private fun sendLoginLogs(userID: Int) {
+        // TODO Registrar inicio de sesion Lat y Long
         val deviceID = Utilities.getDeviceId(this)
         authViewModel.setLoginLogs(userID, deviceID, "").observe(this, { result ->
             when (result) {
@@ -153,6 +162,33 @@ class Login : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun checkLockedDevice() {
+        authViewModel.checkLockedDevice(
+            UsuarioPreferences.getInstance(this).idUser,
+            Utilities.getDeviceId(this)
+        ).observe(this, { result ->
+            when (result) {
+                is Resource.Failure -> {
+                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    isLockedDevice = result.data
+                    if (result.data) {
+                        showDialogLockedDevice()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun showDialogLockedDevice() {
+        SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            .setTitleText("Dispositivo Deshabilitado")
+            .setContentText("Contacte con el administrador para habilitar el equipo.")
+            .show()
     }
 
     private fun dialogSelectRoleUser() {

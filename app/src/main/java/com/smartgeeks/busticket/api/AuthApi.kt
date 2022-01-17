@@ -32,8 +32,9 @@ interface AuthApi {
     ): BasicResponse
 
     @FormUrlEncoded
-    @POST("api/getLockedDevices")
-    suspend fun getLockedDevices(
-        @Field("userId") userId: Int
-    ): LockedDevices
+    @POST("api/checkLockedDevice")
+    suspend fun checkLockedDevice(
+        @Field("userId") userId: Int,
+        @Field("deviceId") deviceID: String
+    ): Boolean
 }

@@ -18,8 +18,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun setLoginLogs(requestSessionLogs: RequestSessionLogs): BasicResponse =
         authApi.setLoginLogs(requestSessionLogs)
 
-    override suspend fun getLockedDevices(userId: Int): LockedDevices =
-        authApi.getLockedDevices(userId)
+    override suspend fun checkLockedDevice(userId: Int, deviceID: String): Boolean =
+        authApi.checkLockedDevice(userId, deviceID)
 
     override suspend fun getMessageCompany(companyId: Int): CompanyMessage =
         authApi.getMessageCompany(companyId)

@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -19,6 +20,7 @@ import com.smartgeeks.busticket.sync.SyncServiceLocal
 import com.smartgeeks.busticket.sync.SyncServiceRemote
 import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 
 private val TAG: String = SplashScreen::class.java.simpleName
@@ -32,6 +34,7 @@ class SplashScreen : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
+    private var isLockedDevice : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +55,7 @@ class SplashScreen : AppCompatActivity() {
         session = UsuarioPreferences.getInstance(this).sessionUser
 
         // Get Message company - (DON'T include on the Thread)
+        checkLockedDevice()
         getMessageCompany()
 
         splash = object : Thread() {
@@ -68,12 +72,29 @@ class SplashScreen : AppCompatActivity() {
         (splash as Thread).start()
     }
 
+    private fun checkLockedDevice() {
+        authViewModel.checkLockedDevice(
+            UsuarioPreferences.getInstance(this).idUser,
+            Utilities.getDeviceId(this)
+        ).observe(this, { result ->
+            when (result) {
+                is Resource.Failure -> {
+                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    isLockedDevice = result.data
+                    Log.e(TAG, "checkLockedDevice: ${result.data}")
+                }
+            }
+        })
+    }
+
     private fun goNextScreen() {
-        Log.e(TAG, "goNextScreen: $session")
-        if (session == "SessionSuccess") {
+        if (session == "SessionSuccess" && !isLockedDevice) {
             localSync()
             remoteSync()
-        } else if (session == "SessionFailed") {
+        } else if (session == "SessionFailed" || isLockedDevice) {
             intent = Intent(this, Login::class.java)
             intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             finish()
