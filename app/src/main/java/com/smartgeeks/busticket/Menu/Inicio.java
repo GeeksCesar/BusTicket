@@ -114,7 +114,7 @@ public class Inicio extends Fragment {
         tvTicketToSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e(TAG, "onClick: "+Helpers.getCurrentDate() );
+                Log.e(TAG, "onClick: "+ Helpers.getCurrentDate() );
             }
         });
 

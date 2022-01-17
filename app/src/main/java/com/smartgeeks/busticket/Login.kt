@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModelProvider
@@ -22,6 +23,7 @@ import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.sync.SyncServiceLocal
 import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.DialogAlert
+import com.smartgeeks.busticket.utils.Utilities
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import dagger.hilt.android.AndroidEntryPoint
@@ -77,6 +79,7 @@ class Login : AppCompatActivity() {
     }
 
     private fun signIn(email: String, password: String) {
+        // TODO Registrar inicio de sesion con DEVICE_ID, Lat y Long, fecha, hora y usuario (IP)
         authViewModel.userLogin(email, password).observe(this, { result ->
             when (result) {
                 is Loading -> {
@@ -94,6 +97,7 @@ class Login : AppCompatActivity() {
                         if (error) {
                             if (user.idRol == 2 || user.idRol == 3) {
                                 UsuarioPreferences.getInstance(this@Login).userPreferences(user)
+                                sendLoginLogs(user.idUsuario)
                                 setDataPreferences()
                                 dialogSelectRoleUser()
                             } else {
@@ -129,6 +133,23 @@ class Login : AppCompatActivity() {
                         }
 
                     }
+                }
+            }
+        })
+    }
+
+    private fun sendLoginLogs(userID: Int) {
+        val deviceID = Utilities.getDeviceId(this)
+        authViewModel.setLoginLogs(userID, deviceID, "").observe(this, { result ->
+            when (result) {
+                is Resource.Failure -> {
+                    Toast.makeText(this, result.exception.message, Toast.LENGTH_SHORT).show()
+                }
+                is Loading -> {
+                    Log.d(TAG, "sendingLoginLogs")
+                }
+                is Resource.Success -> {
+                    Log.d(TAG, "Logs have been sent")
                 }
             }
         })

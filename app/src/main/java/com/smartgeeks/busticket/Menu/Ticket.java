@@ -6,42 +6,35 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-
+import android.widget.*;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.Modelo.Horario;
 import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Objects.RutaPojo;
 import com.smartgeeks.busticket.R;
+import com.smartgeeks.busticket.api.Service;
 import com.smartgeeks.busticket.utils.DialogAlert;
 import com.smartgeeks.busticket.utils.Helpers;
 import com.smartgeeks.busticket.utils.RutaPreferences;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * Archivos donde se imprime el Ticket
@@ -77,7 +70,7 @@ public class Ticket extends Fragment {
     String placa, ruta_info, horario, hora;
     boolean getStatusRuta;
 
-    AlertDialog.Builder builder ;
+    AlertDialog.Builder builder;
 
     public Ticket() {
         // Required empty public constructor
@@ -152,7 +145,7 @@ public class Ticket extends Fragment {
                         if (!DialogAlert.verificaConexion(context)) {
                             DialogAlert.showDialogFailed(context, "Alerta", "Para finalizar ruta, requiere conexión \n a internet", SweetAlertDialog.ERROR_TYPE);
                             dialog.cancel();
-                        }else {
+                        } else {
                             dialog.cancel();
                             btnFinalizarRuta.setEnabled(false);
                             showProgress(true);
@@ -171,7 +164,6 @@ public class Ticket extends Fragment {
                 builder.create().show();
 
 
-
             }
         });
 
@@ -185,8 +177,8 @@ public class Ticket extends Fragment {
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.e(TAG, "Horario pref: "+horario);
-                        Log.e(TAG, "Ruta pref: "+id_ruta_disponible);
+                        Log.e(TAG, "Horario pref: " + horario);
+                        Log.e(TAG, "Ruta pref: " + id_ruta_disponible);
 
                         RutaPojo ruta = new RutaPojo();
 
@@ -200,7 +192,7 @@ public class Ticket extends Fragment {
 
                         RutaPreferences.getInstance(context).rutaPreferences(ruta);
 
-                        if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
+                        if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
                             Intent intent = new Intent(context, SelectTarifa.class);
                             startActivity(intent);
                         } else {
@@ -224,11 +216,11 @@ public class Ticket extends Fragment {
         btnSiguiente.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e(TAG, "Horario: "+hora);
-                Log.e(TAG, "Ruta: "+id_ruta_disponible);
+                Log.e(TAG, "Horario: " + hora);
+                Log.e(TAG, "Ruta: " + id_ruta_disponible);
 
                 Intent intent;
-                if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")){
+                if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
                     Log.e(TAG, "ENTRO CONDUCTOR");
                     intent = new Intent(context, SelectTarifa.class);
                     intent.putExtra(SelectTarifa.ID_RUTA, id_ruta);
@@ -281,7 +273,7 @@ public class Ticket extends Fragment {
         // Obtain pref from remember Ruta, for show view
         getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
 
-        if (getStatusRuta){
+        if (getStatusRuta) {
             if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
                 Intent intent = new Intent(context, SelectTarifa.class);
                 startActivity(intent);
@@ -318,9 +310,9 @@ public class Ticket extends Fragment {
     private void getRutasSQLite(int id_vehiculo) {
         listRuta.clear();
         listHora.clear();
-        listRutas = Ruta.find(Ruta.class, "vehiculo = ?", ""+id_vehiculo);
+        listRutas = Ruta.find(Ruta.class, "vehiculo = ?", "" + id_vehiculo);
 
-        if (listRutas.size() == 0){
+        if (listRutas.size() == 0) {
             DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido rutas para este Vehiculo", SweetAlertDialog.WARNING_TYPE);
         }
 
@@ -351,8 +343,8 @@ public class Ticket extends Fragment {
 
     private void setFinalizarRuta(final int id_ruta_disponible, final String horario) {
 
-        String URL = Service.SET_LIBERAR_SILLA+id_ruta_disponible+"/"+horario ;
-        Log.d(Service.TAG, "Url: "+URL);
+        String URL = Service.SET_LIBERAR_SILLA + id_ruta_disponible + "/" + horario;
+        Log.d(Service.TAG, "Url: " + URL);
 
         stringRequest = new StringRequest(Request.Method.GET, URL, new Response.Listener<String>() {
             @Override
@@ -367,7 +359,7 @@ public class Ticket extends Fragment {
                         showProgress(false);
                         btnFinalizarRuta.setEnabled(false);
                         DialogAlert.showDialogFailed(context, "Exito", "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE);
-                    }else {
+                    } else {
                         showProgress(false);
                         btnFinalizarRuta.setEnabled(true);
                         DialogAlert.showDialogFailed(context, "Alerta", "Ha ocurrdio algun problema al finalizar la ruta", SweetAlertDialog.ERROR_TYPE);

@@ -1,6 +1,9 @@
 package com.smartgeeks.busticket.api
 
+import com.smartgeeks.busticket.data.BasicResponse
 import com.smartgeeks.busticket.data.auth.AuthResponse
+import com.smartgeeks.busticket.data.auth.RequestSessionLogs
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -20,4 +23,9 @@ interface AuthApi {
         @Field("email") email: String,
         @Field("pass") password: String
     ): AuthResponse
+
+    @POST("api/setLoginLogs")
+    suspend fun setLoginLogs(
+        @Body requestSessionLogs: RequestSessionLogs
+    ) : BasicResponse
 }
