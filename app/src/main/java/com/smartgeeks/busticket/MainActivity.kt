@@ -237,7 +237,7 @@ class MainActivity : AppCompatActivity() {
         Log.e(TAG, "onBackPressed: ")
         Handler(Looper.getMainLooper()).postDelayed({
             super.onBackPressed()
-        }, 2000)
+        }, 1000)
     }
 
     override fun onDestroy() {

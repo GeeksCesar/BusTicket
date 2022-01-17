@@ -5,14 +5,22 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.Window
 import android.view.WindowManager
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.ViewSwitcher
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.itextpdf.text.SpecialSymbol.index
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivitySplashScreenBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
@@ -22,6 +30,10 @@ import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 private val TAG: String = SplashScreen::class.java.simpleName
 
@@ -34,7 +46,10 @@ class SplashScreen : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
-    private var isLockedDevice : Boolean = false
+    private var isLockedDevice: Boolean = false
+    private lateinit var timer: CountDownTimer
+    private lateinit var textView: TextView
+    private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +60,8 @@ class SplashScreen : AppCompatActivity() {
         )
         binding = ActivitySplashScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        initViews()
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
@@ -72,6 +89,17 @@ class SplashScreen : AppCompatActivity() {
         (splash as Thread).start()
     }
 
+    private fun initViews() = with(binding) {
+        tvInformation.setFactory(ViewSwitcher.ViewFactory {
+            textView = TextView(this@SplashScreen)
+            textView.setTextColor(Color.WHITE)
+            textView.textSize = 20F
+            textView.gravity = Gravity.CENTER_HORIZONTAL
+            textView
+        })
+        tvInformation.setText("Cargando Datos...")
+    }
+
     private fun checkLockedDevice() {
         authViewModel.checkLockedDevice(
             UsuarioPreferences.getInstance(this).idUser,
@@ -92,14 +120,52 @@ class SplashScreen : AppCompatActivity() {
 
     private fun goNextScreen() {
         if (session == "SessionSuccess" && !isLockedDevice) {
-            localSync()
-            remoteSync()
+
+            // Execute JOB on coroutines
+            scope.launch(Dispatchers.Main) {
+                setInformationLoading()
+            }
+
+            scope.launch {
+                localSync()
+                remoteSync()
+                Log.e(TAG, "Carga FINALIAZADDA")
+            }
+
         } else if (session == "SessionFailed" || isLockedDevice) {
             intent = Intent(this, Login::class.java)
             intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             finish()
             startActivity(intent)
         }
+    }
+
+    private fun setInformationLoading() {
+        val messages = listOf(
+            "Validando usuario...",
+            "Cargando rutas...",
+            "Cargando paraderos...",
+            "Cargando Precios..."
+        )
+        showCountDownTimer(30, messages)
+    }
+
+    private fun showCountDownTimer(timeOut : Long, messages : List<String>) {
+        var index = 0
+        timer = object: CountDownTimer(timeOut*1000, 2000) {
+            override fun onTick(millisUntilFinished: Long) {
+                if (index >= messages.size - 1)
+                    index = 0
+                binding.tvInformation.setText(messages[index])
+                index++
+            }
+
+            override fun onFinish() {
+                binding.tvInformation.setText("Show the button")
+                // TODO: Show button to cancel load
+            }
+        }
+        timer.start()
     }
 
     private fun getMessageCompany() {
@@ -133,6 +199,15 @@ class SplashScreen : AppCompatActivity() {
         startService(sync)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            timer.cancel()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     // Broadcast receiver que recibe las emisiones desde los servicios
     private inner class ResponseReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -140,7 +215,10 @@ class SplashScreen : AppCompatActivity() {
                 Constantes.ACTION_FINISH_LOCAL_SYNC -> {
                     val next = Intent(context, MainActivity::class.java)
                     next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(next)
+                    Handler(Looper.myLooper()!!).postDelayed({
+                        startActivity(next)
+                    }, 1500)
+
                     Log.e("Splash", "Finalizado guardado de datos")
                 }
             }
