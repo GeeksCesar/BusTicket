@@ -90,9 +90,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
-}
 
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
+    // Easy Permissions - For developers using AndroidX in their applications
+    implementation 'pub.devrel:easypermissions:3.0.0'
 }

@@ -12,6 +12,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.Gravity
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.TextView
@@ -40,14 +41,14 @@ private val TAG: String = SplashScreen::class.java.simpleName
 @AndroidEntryPoint
 class SplashScreen : AppCompatActivity() {
 
-    var splash: Thread? = null
     var preferences: SharedPreferences? = null
     var session: String? = null
 
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
+
     private var isLockedDevice: Boolean = false
-    private lateinit var timer: CountDownTimer
+    private var timer: CountDownTimer? = null
     private lateinit var textView: TextView
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
@@ -75,18 +76,10 @@ class SplashScreen : AppCompatActivity() {
         checkLockedDevice()
         getMessageCompany()
 
-        splash = object : Thread() {
-            override fun run() {
-                try {
-                    //Duracion
-                    sleep(3000)
-                    goNextScreen()
-                } catch (e: Exception) {
-                    e.message
-                }
-            }
-        }
-        (splash as Thread).start()
+        Handler(Looper.myLooper()!!).postDelayed({
+            goNextScreen()
+        }, 1000)
+
     }
 
     private fun initViews() = with(binding) {
@@ -141,6 +134,7 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun setInformationLoading() {
+        binding.progresBar.visibility = View.VISIBLE
         val messages = listOf(
             "Validando usuario...",
             "Cargando rutas...",
@@ -165,7 +159,7 @@ class SplashScreen : AppCompatActivity() {
                 // TODO: Show button to cancel load
             }
         }
-        timer.start()
+        timer?.start()
     }
 
     private fun getMessageCompany() {
@@ -201,11 +195,7 @@ class SplashScreen : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        try {
-            timer.cancel()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        timer?.cancel()
     }
 
     // Broadcast receiver que recibe las emisiones desde los servicios

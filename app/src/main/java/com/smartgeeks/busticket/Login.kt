@@ -45,6 +45,8 @@ import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
+import pub.devrel.easypermissions.AppSettingsDialog
+import pub.devrel.easypermissions.EasyPermissions
 
 /**
  * user: PRUEBA
@@ -54,7 +56,7 @@ private var TAG: String = Login::class.java.simpleName
 private const val REQUEST_CODE_LOCATION = 0
 
 @AndroidEntryPoint
-class Login : AppCompatActivity() {
+class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private lateinit var binding: ActivityLoginBinding
     var dialogAlert = DialogAlert()
@@ -65,6 +67,7 @@ class Login : AppCompatActivity() {
     private var googleApiClient: GoogleApiClient? = null
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val REQUESTLOCATION = 199
+    private val REQUEST_CODE_LOCATION_PERMISSION = 0
 
     private var userLocation: Location? = null
 
@@ -78,9 +81,10 @@ class Login : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Location Permissions
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this)
-        getLastLocation()
+        requestPermissionEasy()
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
@@ -88,6 +92,9 @@ class Login : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)
 
         binding.btnIniciarSession.setOnClickListener {
+
+            getLastLocation()
+
             val email = binding.edUsuario.text.toString().trim { it <= ' ' }
             val password = binding.edPassword.text.toString().trim { it <= ' ' }
 
@@ -121,6 +128,22 @@ class Login : AppCompatActivity() {
         }
 
         checkLockedDevice()
+    }
+
+    private fun requestPermissionEasy() {
+        if (Utilities.hasLocationPermission(this)){
+            getLastLocation()
+            return
+        }
+
+        EasyPermissions.requestPermissions(
+            this,
+            "Necesita aceptar los permisos de ubicación para usar esta app.",
+            REQUEST_CODE_LOCATION_PERMISSION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
     }
 
     private fun signIn(email: String, password: String) {
@@ -232,7 +255,7 @@ class Login : AppCompatActivity() {
             .setTitleText("Permiso de ubicación")
             .setContentText("Debes habilitar el permiso de ubicación.")
             .setConfirmClickListener {
-                getLastLocation()
+                requestPermissionEasy()
                 it.dismiss()
             }
             .show()
@@ -300,24 +323,6 @@ class Login : AppCompatActivity() {
         }
     }
 
-    // Location
-    fun checkPermission(): Boolean = (ActivityCompat.checkSelfPermission(
-        this,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED ||
-        ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED)
-
-    private fun requestPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            REQUEST_CODE_LOCATION
-        )
-    }
-
     private fun isLocationEnabled(): Boolean {
         val locationManager =
             this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -327,7 +332,7 @@ class Login : AppCompatActivity() {
     }
 
     private fun getLastLocation() {
-        if (checkPermission()) {
+        if (Utilities.checkLocationPermission(this)) {
             if (isLocationEnabled()) {
                 fusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
                     val location: Location? = try {
@@ -361,7 +366,7 @@ class Login : AppCompatActivity() {
                 ).show()
             }
         } else {
-            requestPermission()
+            showDialogLocation()
         }
     }
 
@@ -436,17 +441,27 @@ class Login : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.e(TAG, "onActivityResult: $resultCode - $requestCode")
-        when (requestCode) {
-            REQUESTLOCATION -> when (resultCode) {
-                Activity.RESULT_OK -> Log.e(TAG, "OK Granted")
-                Activity.RESULT_CANCELED -> Log.e(TAG, "CANCEL")
-                else -> {
-                    Log.e(TAG, "onActivityResult: $resultCode")
-                }
-            }
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        Log.e(TAG, "onPermissionsGranted: $perms")
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            Log.e(TAG, "---- onPermissionsDenied: -----")
+            AppSettingsDialog.Builder(this).build().show()
+        } else {
+            requestPermissionEasy()
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
+    }
+
 }
