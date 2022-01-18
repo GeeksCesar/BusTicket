@@ -22,7 +22,7 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
 
 
-    <style name="Editext" parent="Theme.AppCompat.Light">
+    <style name="Editext" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/size_editext</item>
         <item name="android:background">@drawable/bg_editext_main</item>
@@ -40,7 +40,7 @@
         <item name="android:gravity">left</item>
     </style>
 
-    <style name="ButtonCustom" parent="Theme.AppCompat.Light">
+    <style name="ButtonCustom" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button</item>
         <item name="android:background">@drawable/bg_button_main</item>
@@ -52,7 +52,7 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="ButtonCustomEnable" parent="Theme.AppCompat.Light">
+    <style name="ButtonCustomEnable" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button_enable</item>
         <item name="android:background">@drawable/bg_button_main_enable</item>
@@ -64,7 +64,7 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="ButtonCustomPrimary" parent="Theme.AppCompat.Light">
+    <style name="ButtonCustomPrimary" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button</item>
         <item name="android:background">@drawable/bg_blue</item>
@@ -76,14 +76,14 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="SpnnerCustom" parent="Theme.AppCompat.Light">
+    <style name="SpnnerCustom" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/bg_spinner_main</item>
         <item name="android:popupBackground">@drawable/bg_spinner_dropdow_main</item>
     </style>
 
-    <style name="TextInfoPerfil" parent="Theme.AppCompat.Light">
+    <style name="TextInfoPerfil" parent="Theme.AppCompat.DayNight">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/colorGray</item>

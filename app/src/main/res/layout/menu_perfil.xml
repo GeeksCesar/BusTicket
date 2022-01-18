@@ -31,9 +31,9 @@
     <Button
         android:id="@+id/btnChangePrint"
         style="@style/ButtonCustomEnable"
-        android:text="Cambiar Impresora"
         android:layout_above="@+id/btnCerrarSession"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="10dp"
+        android:text="Cambiar Impresora" />
 
     <Button
         android:id="@+id/btnCerrarSession"

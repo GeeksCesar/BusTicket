@@ -21,7 +21,6 @@ import android.widget.ViewSwitcher
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.itextpdf.text.SpecialSymbol.index
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivitySplashScreenBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
@@ -41,6 +40,7 @@ private val TAG: String = SplashScreen::class.java.simpleName
 @AndroidEntryPoint
 class SplashScreen : AppCompatActivity() {
 
+    private var syncedData: Boolean = false
     var preferences: SharedPreferences? = null
     var session: String? = null
 
@@ -51,6 +51,8 @@ class SplashScreen : AppCompatActivity() {
     private var timer: CountDownTimer? = null
     private lateinit var textView: TextView
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
+    private var syncJob: Job? = null
+    private val receiver = ResponseReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +68,6 @@ class SplashScreen : AppCompatActivity() {
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
-        val receiver = ResponseReceiver()
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)
 
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, MODE_PRIVATE)
@@ -79,7 +80,6 @@ class SplashScreen : AppCompatActivity() {
         Handler(Looper.myLooper()!!).postDelayed({
             goNextScreen()
         }, 1000)
-
     }
 
     private fun initViews() = with(binding) {
@@ -115,16 +115,14 @@ class SplashScreen : AppCompatActivity() {
         if (session == "SessionSuccess" && !isLockedDevice) {
 
             // Execute JOB on coroutines
-            scope.launch(Dispatchers.Main) {
+            syncJob = scope.launch(Dispatchers.Main) {
                 setInformationLoading()
             }
 
             scope.launch {
                 localSync()
                 remoteSync()
-                Log.e(TAG, "Carga FINALIAZADDA")
             }
-
         } else if (session == "SessionFailed" || isLockedDevice) {
             intent = Intent(this, Login::class.java)
             intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -139,14 +137,16 @@ class SplashScreen : AppCompatActivity() {
             "Validando usuario...",
             "Cargando rutas...",
             "Cargando paraderos...",
+            "Cargando Horarios...",
+            "Cargando Vehículos...",
             "Cargando Precios..."
         )
-        showCountDownTimer(30, messages)
+        showCountDownTimer(messages)
     }
 
-    private fun showCountDownTimer(timeOut : Long, messages : List<String>) {
+    private fun showCountDownTimer(messages: List<String>, timeOutSec: Long = 30) {
         var index = 0
-        timer = object: CountDownTimer(timeOut*1000, 2000) {
+        timer = object : CountDownTimer(timeOutSec * 1000, 2000) {
             override fun onTick(millisUntilFinished: Long) {
                 if (index >= messages.size - 1)
                     index = 0
@@ -155,8 +155,15 @@ class SplashScreen : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                binding.tvInformation.setText("Show the button")
-                // TODO: Show button to cancel load
+                with(binding) {
+                    tvInformation.setText("¿Deseas cancelar la sincronización?")
+                    btnCancelSync.visibility = View.VISIBLE
+
+                    btnCancelSync.setOnClickListener {
+                        syncJob?.cancel()
+                        goMainActivity()
+                    }
+                }
             }
         }
         timer?.start()
@@ -198,23 +205,34 @@ class SplashScreen : AppCompatActivity() {
         timer?.cancel()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (syncedData)
+            goMainActivity()
+    }
+
+    private fun goMainActivity() {
+        val next = Intent(this, MainActivity::class.java)
+        next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(next)
+    }
+
     // Broadcast receiver que recibe las emisiones desde los servicios
     private inner class ResponseReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Constantes.ACTION_FINISH_LOCAL_SYNC -> {
-                    val next = Intent(context, MainActivity::class.java)
-                    next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+
                     binding.tvInformation.setText("Bienvenido")
                     Handler(Looper.myLooper()!!).postDelayed({
-                        startActivity(next)
+                        goMainActivity()
                     }, 1500)
 
+                    syncedData = true
                     Log.e("Splash", "Finalizado guardado de datos")
                 }
             }
         }
-
     }
 }

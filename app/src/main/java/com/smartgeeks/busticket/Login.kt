@@ -68,8 +68,6 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     // Permission variable
     private var googleApiClient: GoogleApiClient? = null
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private val REQUESTLOCATION = 199
-    private val REQUEST_CODE_LOCATION_PERMISSION = 0
 
     private var userLocation: Location? = null
 
@@ -141,7 +139,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         EasyPermissions.requestPermissions(
             this,
             "Necesita aceptar los permisos de ubicación para usar esta app.",
-            REQUEST_CODE_LOCATION_PERMISSION,
+            REQUEST_CODE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
@@ -405,7 +403,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> try {
                     status.startResolutionForResult(
                         this,
-                        REQUESTLOCATION
+                        REQUEST_CODE_LOCATION
                     )
                 } catch (e: IntentSender.SendIntentException) {
                     Log.e(TAG, "enableLoc: ${e.message}")
