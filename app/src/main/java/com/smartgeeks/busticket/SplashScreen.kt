@@ -200,11 +200,13 @@ class SplashScreen : AppCompatActivity() {
 
     // Broadcast receiver que recibe las emisiones desde los servicios
     private inner class ResponseReceiver : BroadcastReceiver() {
+
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Constantes.ACTION_FINISH_LOCAL_SYNC -> {
                     val next = Intent(context, MainActivity::class.java)
                     next.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    binding.tvInformation.setText("Bienvenido")
                     Handler(Looper.myLooper()!!).postDelayed({
                         startActivity(next)
                     }, 1500)
@@ -213,5 +215,6 @@ class SplashScreen : AppCompatActivity() {
                 }
             }
         }
+
     }
 }

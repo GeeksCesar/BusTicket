@@ -51,7 +51,7 @@ public class OpsTarifaParadero {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e(TAG, "" + error);
+                                Log.e(TAG, " ------Tarifa Paradero---- " + error);
                                 // Emisión para avisar que se terminó el servicio
                                 Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);

@@ -2,13 +2,11 @@ package com.smartgeeks.busticket
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -20,7 +18,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
@@ -45,6 +42,10 @@ import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 
@@ -62,6 +63,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     var dialogAlert = DialogAlert()
     private val authViewModel: AuthViewModel by viewModels()
     private var isLockedDevice: Boolean = false
+    private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     // Permission variable
     private var googleApiClient: GoogleApiClient? = null
@@ -131,7 +133,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun requestPermissionEasy() {
-        if (Utilities.hasLocationPermission(this)){
+        if (Utilities.hasLocationPermission(this)) {
             getLastLocation()
             return
         }
@@ -143,7 +145,6 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-
     }
 
     private fun signIn(email: String, password: String) {
@@ -290,11 +291,11 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         overridePendingTransition(R.anim.left_in, R.anim.left_out)
     }
 
-    private fun localSync() {
-        /**
-         * Ejecutar el servicio de Sincronización Local
-         */
-        val sync = Intent(this, SyncServiceLocal::class.java)
+    /**
+     * Ejecutar el servicio de Sincronización Local
+     */
+    private fun localSync() = scope.launch(Dispatchers.Main) {
+        val sync = Intent(this@Login, SyncServiceLocal::class.java)
         sync.action = Constantes.ACTION_RUN_LOCAL_SYNC
         startService(sync)
     }
@@ -463,5 +464,4 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
     }
-
 }
