@@ -8,7 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -19,10 +19,10 @@
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Dark" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
-    <style name="Editext" parent="Theme.AppCompat.DayNight">
+    <style name="Editext" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/size_editext</item>
         <item name="android:background">@drawable/bg_editext_main</item>
@@ -40,7 +40,7 @@
         <item name="android:gravity">left</item>
     </style>
 
-    <style name="ButtonCustom" parent="Theme.AppCompat.DayNight">
+    <style name="ButtonCustom" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button</item>
         <item name="android:background">@drawable/bg_button_main</item>
@@ -52,7 +52,7 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="ButtonCustomEnable" parent="Theme.AppCompat.DayNight">
+    <style name="ButtonCustomEnable" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button_enable</item>
         <item name="android:background">@drawable/bg_button_main_enable</item>
@@ -64,7 +64,7 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="ButtonCustomPrimary" parent="Theme.AppCompat.DayNight">
+    <style name="ButtonCustomPrimary" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/height_button</item>
         <item name="android:background">@drawable/bg_blue</item>
@@ -76,14 +76,14 @@
         <item name="android:padding">5dp</item>
     </style>
 
-    <style name="SpnnerCustom" parent="Theme.AppCompat.DayNight">
+    <style name="SpnnerCustom" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/bg_spinner_main</item>
         <item name="android:popupBackground">@drawable/bg_spinner_dropdow_main</item>
     </style>
 
-    <style name="TextInfoPerfil" parent="Theme.AppCompat.DayNight">
+    <style name="TextInfoPerfil" parent="Theme.AppCompat.Light">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/colorGray</item>

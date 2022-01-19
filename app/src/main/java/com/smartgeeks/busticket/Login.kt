@@ -234,9 +234,6 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
                     isLockedDevice = result.data
-                    if (result.data) {
-                        showDialogLockedDevice()
-                    }
                 }
             }
         })
@@ -246,6 +243,10 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Dispositivo Deshabilitado")
             .setContentText("Contacte con el administrador para habilitar el equipo.")
+            .setConfirmClickListener {
+                checkLockedDevice()
+                it.dismiss()
+            }
             .show()
     }
 
