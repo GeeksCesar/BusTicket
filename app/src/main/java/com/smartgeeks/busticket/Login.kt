@@ -94,6 +94,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         binding.btnIniciarSession.setOnClickListener {
 
             getLastLocation()
+            checkLockedDevice()
 
             val email = binding.edUsuario.text.toString().trim { it <= ' ' }
             val password = binding.edPassword.text.toString().trim { it <= ' ' }
@@ -110,10 +111,9 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     )
                 } else {
 
-                    if (isLockedDevice) {
-                        showDialogLockedDevice()
+                    if (isLockedDevice)
                         return@setOnClickListener
-                    }
+
 
                     if (userLocation == null) {
                         showDialogLocation()
@@ -234,6 +234,9 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
                     isLockedDevice = result.data
+
+                    if (isLockedDevice)
+                        showDialogLockedDevice()
                 }
             }
         })
@@ -243,10 +246,6 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Dispositivo Deshabilitado")
             .setContentText("Contacte con el administrador para habilitar el equipo.")
-            .setConfirmClickListener {
-                checkLockedDevice()
-                it.dismiss()
-            }
             .show()
     }
 

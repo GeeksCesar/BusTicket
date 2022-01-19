@@ -76,10 +76,6 @@ class SplashScreen : AppCompatActivity() {
         // Get Message company - (DON'T include on the Thread)
         checkLockedDevice()
         getMessageCompany()
-
-        Handler(Looper.myLooper()!!).postDelayed({
-            goNextScreen()
-        }, 1000)
     }
 
     private fun initViews() = with(binding) {
@@ -105,6 +101,9 @@ class SplashScreen : AppCompatActivity() {
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
                     isLockedDevice = result.data
+
+                    goNextScreen()
+
                     Log.e(TAG, "checkLockedDevice: ${result.data}")
                 }
             }
@@ -230,6 +229,7 @@ class SplashScreen : AppCompatActivity() {
                     }, 1500)
 
                     syncedData = true
+                    timer?.cancel()
                     Log.e("Splash", "Finalizado guardado de datos")
                 }
             }
