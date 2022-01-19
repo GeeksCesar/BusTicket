@@ -18,7 +18,6 @@ public class Helpers {
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//        String fecha = calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
         return df.format(calendar.getTime());
     }
 

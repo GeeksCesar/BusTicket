@@ -6,6 +6,11 @@ import android.content.pm.PackageManager
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import pub.devrel.easypermissions.EasyPermissions
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 object Utilities {
 
@@ -26,4 +31,18 @@ object Utilities {
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED)
+
+    fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
+        val formatter = SimpleDateFormat(format, locale)
+        return formatter.format(this)
+    }
+
+    fun getDate(format: String = "dd-MM-yyyy", locale: Locale = Locale.getDefault()): String {
+        val df: DateFormat = SimpleDateFormat(format, locale)
+        return df.format(Calendar.getInstance().time)
+    }
+
+    fun getCurrentDateTime(): Date {
+        return Calendar.getInstance().time
+    }
 }

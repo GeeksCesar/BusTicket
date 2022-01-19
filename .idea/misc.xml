@@ -3,9 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_contenedor.xml" value="0.290625" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_arrow_back.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_login.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_main.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_precio_rutas_conductor.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_select_tarifa.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_splash_screen.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/adapter_tarifa.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_inicio.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_perfil.xml" value="0.27447916666666666" />
       </map>

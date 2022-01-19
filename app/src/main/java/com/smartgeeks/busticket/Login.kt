@@ -114,15 +114,14 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     if (isLockedDevice)
                         return@setOnClickListener
 
-
                     if (userLocation == null) {
                         showDialogLocation()
                         return@setOnClickListener
-                    } else {
-                        showProgress(true)
-                        binding.btnIniciarSession.visibility = View.GONE
-                        signIn(email, password)
                     }
+
+                    showProgress(true)
+                    binding.btnIniciarSession.visibility = View.GONE
+                    signIn(email, password)
                 }
             }
         }
