@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_button_count.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_contenedor.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_arrow_back.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_login.xml" value="0.27447916666666666" />

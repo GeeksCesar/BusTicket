@@ -1,7 +1,9 @@
 package com.smartgeeks.busticket.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.auth.RequestSessionLogs
@@ -9,7 +11,10 @@ import com.smartgeeks.busticket.repository.auth.AuthRepository
 import com.smartgeeks.busticket.utils.InternetChecker.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private val TAG: String = AuthViewModel::class.java.simpleName
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -80,19 +85,11 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun setUserStatus(userID: Int, deviceID: String, status: Int) = liveData(Dispatchers.IO) {
-        emit(Resource.Loading())
-
+    fun setUserStatus(userID: Int, deviceID: String, status: Int) = viewModelScope.launch {
         try {
-            emit(
-                Resource.Success(
-                    authRepository.setUserStatus(
-                        userID, deviceID, status
-                    )
-                )
-            )
+            authRepository.setUserStatus(userID, deviceID, status)
         } catch (e: Exception) {
-            emit(Resource.Failure(e))
+            Log.e(TAG, "setUserStatus: ${e.message}")
         }
     }
 }

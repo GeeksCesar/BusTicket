@@ -43,7 +43,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight=".7"
+        android:layout_weight=".8"
+        android:background="@color/colorPrimaryDark"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
@@ -52,9 +53,12 @@
             android:id="@+id/btnRemove"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:background="@drawable/bg_button_count"
+            android:background="@color/md_white_1000"
             android:text="-"
-            android:textSize="@dimen/text_size_button_count" />
+            android:textColor="@color/brandColor"
+            android:textSize="@dimen/text_size_button_count"
+            android:textStyle="bold"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <TextView
             android:id="@+id/tvCountTicket"
@@ -62,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:text="1"
-            android:textColor="@color/colorGray"
+            android:textColor="@color/md_white_1000"
             android:textSize="@dimen/text_size_count"
             android:textStyle="bold" />
 
@@ -71,9 +75,11 @@
             android:id="@+id/btnAdd"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:background="@drawable/bg_button_count"
+            android:background="@color/md_white_1000"
             android:text="+"
-            android:textSize="@dimen/text_size_button_count" />
+            android:textColor="@color/brandColor"
+            android:textSize="@dimen/text_size_button_count"
+            tools:ignore="TouchTargetSizeCheck" />
 
     </LinearLayout>
 

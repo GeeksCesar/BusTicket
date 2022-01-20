@@ -31,6 +31,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.core.Resource.Loading
 import com.smartgeeks.busticket.databinding.ActivityLoginBinding
@@ -62,7 +63,6 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private lateinit var binding: ActivityLoginBinding
     var dialogAlert = DialogAlert()
     private val authViewModel: AuthViewModel by viewModels()
-    private var isLockedDevice: Boolean = false
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
 
     // Permission variable
@@ -111,7 +111,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     )
                 } else {
 
-                    if (isLockedDevice)
+                    if (AppPreferences.isLockedDevice)
                         return@setOnClickListener
 
                     if (userLocation == null) {
@@ -232,9 +232,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 }
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
-                    isLockedDevice = result.data
-
-                    if (isLockedDevice)
+                    if (AppPreferences.isLockedDevice)
                         showDialogLockedDevice()
                 }
             }

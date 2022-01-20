@@ -5,8 +5,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -30,15 +28,12 @@ import com.smartgeeks.busticket.Modelo.SubRuta
 import com.smartgeeks.busticket.Modelo.TarifaParadero
 import com.smartgeeks.busticket.Modelo.TipoUsuario
 import com.smartgeeks.busticket.Modelo.Vehiculo
-import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivityMainBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Timer
-import kotlin.concurrent.schedule
 
 private val TAG: String = MainActivity::class.java.simpleName
 
@@ -213,19 +208,7 @@ class MainActivity : AppCompatActivity() {
             UsuarioPreferences.getInstance(this).idUser,
             Utilities.getDeviceId(this),
             status
-        ).observe(this, { response ->
-
-            when (response) {
-                is Resource.Failure -> {
-                    Log.e(TAG, "setUserStatus: ${response.exception.message}")
-                }
-                is Resource.Loading -> Unit
-                is Resource.Success -> {
-                    Log.e(TAG, "setUserStatus: ${response.data}")
-                }
-            }
-
-        })
+        )
     }
 
     companion object {
