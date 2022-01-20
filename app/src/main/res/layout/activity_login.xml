@@ -21,9 +21,9 @@
             <ImageView
                 android:id="@+id/ivLogoPrincipal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:src="@mipmap/logo"/>
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/imagotipo_busticket" />
 
         </RelativeLayout>
 
