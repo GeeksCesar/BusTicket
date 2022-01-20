@@ -2,9 +2,11 @@ package com.smartgeeks.busticket.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.auth.RequestSessionLogs
 import com.smartgeeks.busticket.repository.auth.AuthRepository
+import com.smartgeeks.busticket.utils.InternetChecker.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
@@ -48,11 +50,21 @@ class AuthViewModel @Inject constructor(
 
     }
 
-    fun checkLockedDevice(userID: Int, deviceID : String) = liveData(Dispatchers.IO) {
+    fun checkLockedDevice(userID: Int, deviceID: String) = liveData(Dispatchers.IO) {
+
         emit(Resource.Loading())
 
+        if (!isInternetAvailable()) {
+            emit(Resource.Success(false))
+            return@liveData
+        }
+
         try {
-            emit(Resource.Success(authRepository.checkLockedDevice(userID, deviceID)))
+            // Save result on preferences
+            val result = authRepository.checkLockedDevice(userID, deviceID)
+            AppPreferences.isLockedDevice = result
+
+            emit(Resource.Success(result))
         } catch (e: Exception) {
             emit(Resource.Failure(e))
         }
@@ -68,13 +80,17 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun setUserStatus(userID: Int, deviceID: String, status : Int) = liveData(Dispatchers.IO) {
+    fun setUserStatus(userID: Int, deviceID: String, status: Int) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
 
         try {
-            emit(Resource.Success(authRepository.setUserStatus(
-                userID, deviceID, status
-            )))
+            emit(
+                Resource.Success(
+                    authRepository.setUserStatus(
+                        userID, deviceID, status
+                    )
+                )
+            )
         } catch (e: Exception) {
             emit(Resource.Failure(e))
         }

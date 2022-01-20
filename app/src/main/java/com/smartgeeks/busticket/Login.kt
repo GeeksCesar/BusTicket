@@ -338,7 +338,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     } catch (e: Exception) {
                         Toast.makeText(
                             this,
-                            "LocationServices.API is not available on this device.",
+                            "Los servicios de ubicación no están disposibles en este dispositivo.",
                             Toast.LENGTH_SHORT
                         ).show()
                         Log.e(TAG, "getLastLocation: ${e.localizedMessage}")

@@ -21,6 +21,7 @@ import android.widget.ViewSwitcher
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivitySplashScreenBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
@@ -47,7 +48,6 @@ class SplashScreen : AppCompatActivity() {
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
 
-    private var isLockedDevice: Boolean = false
     private var timer: CountDownTimer? = null
     private lateinit var textView: TextView
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
@@ -100,10 +100,7 @@ class SplashScreen : AppCompatActivity() {
                 }
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
-                    isLockedDevice = result.data
-
                     goNextScreen()
-
                     Log.e(TAG, "checkLockedDevice: ${result.data}")
                 }
             }
@@ -111,7 +108,7 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun goNextScreen() {
-        if (session == "SessionSuccess" && !isLockedDevice) {
+        if (session == "SessionSuccess" && !AppPreferences.isLockedDevice) {
 
             // Execute JOB on coroutines
             syncJob = scope.launch(Dispatchers.Main) {
@@ -122,7 +119,7 @@ class SplashScreen : AppCompatActivity() {
                 localSync()
                 remoteSync()
             }
-        } else if (session == "SessionFailed" || isLockedDevice) {
+        } else if (session == "SessionFailed" || AppPreferences.isLockedDevice) {
             intent = Intent(this, Login::class.java)
             intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             finish()

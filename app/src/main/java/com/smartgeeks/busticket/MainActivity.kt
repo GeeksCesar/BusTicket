@@ -37,6 +37,8 @@ import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 private val TAG: String = MainActivity::class.java.simpleName
 
@@ -69,8 +71,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         context = this@MainActivity
-
-        setUserStatus(1)
 
         //set DrawerLayout
         binding.ivNameViewPager.setBackgroundResource(R.mipmap.img_logotipo_color)
@@ -232,12 +232,15 @@ class MainActivity : AppCompatActivity() {
         const val BACK = "BACK_INTENT"
     }
 
-    override fun onBackPressed() {
+    override fun onResume() {
+        super.onResume()
+        setUserStatus(1)
+    }
+
+    override fun onPause() {
+        Log.e(TAG, "onPause: User Inactive")
         setUserStatus(0)
-        Log.e(TAG, "onBackPressed: ")
-        Handler(Looper.getMainLooper()).postDelayed({
-            super.onBackPressed()
-        }, 1000)
+        super.onPause()
     }
 
     override fun onDestroy() {
