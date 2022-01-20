@@ -118,8 +118,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     fun setData(
         idStartBusStop: Int, idEndBusStop: Int, idEnabledRoute: Int, time: String,
         idPassengerType: Int, ticketPrice: Double, idVehicle: Int, passengerType: String,
-        info: String = ""
-    ) {
+        info: String = "", ticketQuantity : Int = 1) {
         idParaderoInicio = idStartBusStop
         idParaderoFin = idEndBusStop
         idRutaDisponible = idEnabledRoute
@@ -128,6 +127,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         precioSumPasaje = ticketPrice.toInt()
         idVehiculo = idVehicle
         namePassengerType = passengerType
+        countPasajes = ticketQuantity
         this.info = info
     }
 

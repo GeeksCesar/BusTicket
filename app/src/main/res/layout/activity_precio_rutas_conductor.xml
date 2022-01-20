@@ -1,101 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/background_blanco"
+    android:orientation="vertical"
     tools:context=".Menu.SelectRutas">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/contenedorHeader"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/height_contenedor_head"
-        android:layout_weight="10"
-        android:paddingHorizontal="@dimen/activity_horizontal_margin"
-        android:background="@android:color/transparent"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:layout_height="0dp"
+        android:layout_weight="0.7"
+        android:background="@color/brandColor">
 
         <ImageButton
-            android:id="@+id/imgBack"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="5dp"
-            android:layout_weight="2"
-            android:onClick="goBack"
+            android:id="@+id/imgBtnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:background="@android:color/transparent"
-            android:src="@mipmap/icon_back" />
+            android:onClick="goBack"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_keyboard_backspace"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <ImageView
-            android:id="@+id/ivNameViewPager"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="5dp"
-            android:layout_weight="6"
-            android:src="@mipmap/header_tickets"/>
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center_horizontal"
+            android:src="@drawable/logotipo_busticket"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="2"/>
-
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
-        android:id="@+id/header_precios"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/contenedorHeader"
+        android:layout_height="0dp"
+        android:layout_weight=".7"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <Button
+            android:id="@+id/btnRemove"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_button_count"
+            android:text="-"
+            android:textSize="@dimen/text_size_button_count" />
 
         <TextView
+            android:id="@+id/tvCountTicket"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Listado de Precios"
-            android:textSize="18sp" />
+            android:layout_marginHorizontal="16dp"
+            android:text="1"
+            android:textColor="@color/colorGray"
+            android:textSize="@dimen/text_size_count"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tv_ruta"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_button_count"
+            android:text="+"
+            android:textSize="@dimen/text_size_button_count" />
 
     </LinearLayout>
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_precios"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/header_precios"
-        android:layout_above="@+id/btn_olvidar_ruta"
-        android:paddingHorizontal="@dimen/activity_horizontal_margin">
+        android:layout_height="0dp"
+        android:layout_weight="8"
+        android:orientation="vertical">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_precios"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/btn_olvidar_ruta"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-    <ProgressBar
-        android:id="@+id/progress_save"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:layout_above="@+id/btn_olvidar_ruta"/>
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="1dp"
+                    android:text="Listado de Precios"
+                    android:textSize="18sp" />
 
-    <Button
-        android:id="@+id/btn_olvidar_ruta"
-        style="@style/ButtonCustom"
-        android:text="Olvidar ruta"
-        android:visibility="visible"
-        android:layout_marginTop="25dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/activity_vertical_margin"/>
+                <TextView
+                    android:id="@+id/tv_ruta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:textSize="15sp" />
 
-</RelativeLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPrecios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/activity_horizontal_margin" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <Button
+            android:id="@+id/btn_olvidar_ruta"
+            style="@style/ButtonCustom"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="16dp"
+            android:text="Olvidar ruta"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/progress_save"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

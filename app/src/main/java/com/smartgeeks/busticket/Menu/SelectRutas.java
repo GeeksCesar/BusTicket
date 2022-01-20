@@ -222,7 +222,8 @@ public class SelectRutas extends AppCompatActivity implements PrintTicket.PrintS
                             precio_sum_pasaje,
                             id_vehiculo,
                             nameUsuario,
-                            info
+                            info,
+                            1
                     );
                     printTicket.print();
 
