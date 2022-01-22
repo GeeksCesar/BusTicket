@@ -2,6 +2,8 @@ package com.smartgeeks.busticket.di
 
 import com.smartgeeks.busticket.repository.auth.AuthRepository
 import com.smartgeeks.busticket.repository.auth.AuthRepositoryImpl
+import com.smartgeeks.busticket.repository.ticket.TicketRepository
+import com.smartgeeks.busticket.repository.ticket.TicketRepositoryImpl
 import com.smartgeeks.busticket.repository.vehicle.VehicleRepository
 import com.smartgeeks.busticket.repository.vehicle.VehicleRepositoryImpl
 import dagger.Binds
@@ -24,6 +26,12 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindVehicleRepository(
-        ticketRepositoryImpl: VehicleRepositoryImpl
+        vehicleRepositoryImpl: VehicleRepositoryImpl
     ): VehicleRepository
+
+    @Binds
+    abstract fun bindTicketRepository(
+        ticketRepositoryImpl: TicketRepositoryImpl
+    ): TicketRepository
+
 }

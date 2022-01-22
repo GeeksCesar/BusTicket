@@ -36,21 +36,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
-import com.android.volley.NetworkError
-import com.android.volley.NoConnectionError
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.ServerError
-import com.android.volley.TimeoutError
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
-import com.google.gson.Gson
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.api.Service
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
+import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
 import com.smartgeeks.busticket.sync.SyncServiceRemote
 import com.smartgeeks.busticket.utils.Constantes
@@ -60,15 +52,12 @@ import com.smartgeeks.busticket.utils.Helpers
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import dagger.hilt.android.AndroidEntryPoint
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.util.ArrayList
-import java.util.HashMap
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.ceil
@@ -101,10 +90,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private var state_sync = false
     private var numVoucher = ""
 
-    //VOLLEY
-    var requestQueue: RequestQueue? = null
-    var stringRequest: StringRequest? = null
-    var gson = Gson()
     var listSillas = ""
 
     //Configuracion Impresora
@@ -121,6 +106,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     lateinit var binding: ActivitySelectSillasBinding
     private val vehicleViewModel: VehicleViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     @Volatile
     var stopWorker = false
@@ -195,7 +181,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     private fun initWidgets() {
         context = this@SelectSillas
-        requestQueue = Volley.newRequestQueue(context)
         bundle = intent.extras
         cant_puestos = bundle!!.getInt(CANT_PUESTOS)
         precio_pasaje = bundle!!.getInt(PRECIO_PASAJE)
@@ -481,33 +466,47 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         valor_pagar: Int,
         listSillas: String
     ) {
-        Log.e(TAG, "registerTicket: ${Service.SET_TICKET_ASIENTO}")
-        stringRequest = object :
-            StringRequest(Method.POST, Service.SET_TICKET_ASIENTO, Response.Listener { response ->
-                Log.d(Service.TAG, "response: $response")
-                try {
-                    val jsonObject = JSONObject(response)
-                    val respuesta = jsonObject.getString("message")
-                    val error = jsonObject.getBoolean("error")
-                    Log.w(Service.TAG, "respuesta: $respuesta")
-                    if (!error) {
+
+        ticketViewModel.saveSeatTicket(
+            id_paradero_inicio,
+            id_paradero_final,
+            id_ruta,
+            id_operador,
+            horario,
+            id_tipo_usuario,
+            valor_pagar.toDouble(),
+            listSillas,
+            id_empresa,
+            id_vehiculo
+        ).observe(this, { result ->
+            when (result) {
+                is Resource.Failure -> showProgress(false)
+                is Resource.Loading -> showProgress(true)
+                is Resource.Success -> {
+                    val data = result.data
+                    if (!data.error) {
                         showProgress(false)
-                        numVoucher = jsonObject.getString("num_voucher")
+                        numVoucher = data.num_voucher
                         Log.e(TAG, "Num Voucher: $numVoucher")
+
                         val alertDialog = SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE)
                         alertDialog.setTitleText("Exito")
                             .setContentText("Guardo el ticket")
                             .show()
                         val button = alertDialog.findViewById<Button>(R.id.confirm_button)
-                        // button.setBackgroundColor(ContextCompat.getColor(context, R.color.colorPrimary));
+
                         button.setBackgroundResource(R.drawable.bg_button_main)
                         button.setPadding(15, 5, 15, 5)
                         button.text = "Imprimir Ticket"
+
+                        /**
+                         * Print Ticket
+                         */
                         button.setOnClickListener {
                             try {
                                 alertDialog.dismiss()
                                 getDataPrint()
-                                if (estadoPrint == true) {
+                                if (estadoPrint) {
                                     Log.e(Service.TAG, "entro estado: $estadoPrint")
                                     val pairedDevice = bluetoothAdapter!!.bondedDevices
                                     if (pairedDevice.size > 0) {
@@ -530,73 +529,19 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                             }
                         }
                     } else {
-                        val sillas = jsonObject.getString("silla")
                         DialogAlert.showDialogFailed(
                             context,
                             "OCUPADO",
-                            "$respuesta$sillas\n Seleccione otro",
+                            "${data.message} ${data.silla}\n Seleccione otro",
                             SweetAlertDialog.ERROR_TYPE
                         )
                         binding.btnConfirmarTicket.isEnabled = true
                         binding.btnConfirmarTicket.visibility = View.VISIBLE
                         showProgress(false)
                     }
-                } catch (e: JSONException) {
-                    e.printStackTrace()
                 }
-            }, Response.ErrorListener { volleyError ->
-                Log.e(Service.TAG, "error: " + volleyError.message)
-                showProgress(false)
-                if (volleyError is TimeoutError) {
-                    DialogAlert.showDialogFailed(
-                        context,
-                        "Error",
-                        "Ha pasado el tiempo Limitado",
-                        SweetAlertDialog.WARNING_TYPE
-                    )
-                    return@ErrorListener
-                } else if (volleyError is ServerError) {
-                    DialogAlert.showDialogFailed(
-                        context,
-                        "Error",
-                        "Ops.. Error en el servidor",
-                        SweetAlertDialog.WARNING_TYPE
-                    )
-                    return@ErrorListener
-                } else if (volleyError is NoConnectionError) {
-                    DialogAlert.showDialogFailed(
-                        context,
-                        "Error",
-                        "Ops.. No hay conexion a internet",
-                        SweetAlertDialog.WARNING_TYPE
-                    )
-                    return@ErrorListener
-                } else if (volleyError is NetworkError) {
-                    DialogAlert.showDialogFailed(
-                        context,
-                        "Error",
-                        "Ops.. Hay error en la red",
-                        SweetAlertDialog.WARNING_TYPE
-                    )
-                    return@ErrorListener
-                }
-            }) {
-            override fun getParams(): Map<String, String>? {
-                val params: MutableMap<String, String> = HashMap()
-                params["id_paradero_inicio"] = id_paradero_inicio.toString()
-                params["id_paradero_fin"] = id_paradero_final.toString()
-                params["id_ruta"] = id_ruta.toString()
-                params["id_operador"] = id_operador.toString()
-                params["hora"] = horario!!
-                params["id_tipo_usuario"] = id_tipo_usuario.toString()
-                params["total_pagar"] = valor_pagar.toString()
-                params["sillas"] = listSillas
-                params["id_empresa"] = id_empresa.toString()
-                params["id_vehiculo"] = id_vehiculo.toString()
-                return params
             }
-        }
-        requestQueue!!.add(stringRequest)
+        })
     }
 
     fun encontrarDispositivoBlue() {
