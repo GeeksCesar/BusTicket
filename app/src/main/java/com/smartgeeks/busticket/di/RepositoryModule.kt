@@ -2,6 +2,8 @@ package com.smartgeeks.busticket.di
 
 import com.smartgeeks.busticket.repository.auth.AuthRepository
 import com.smartgeeks.busticket.repository.auth.AuthRepositoryImpl
+import com.smartgeeks.busticket.repository.vehicle.VehicleRepository
+import com.smartgeeks.busticket.repository.vehicle.VehicleRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,4 +21,9 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    abstract fun bindVehicleRepository(
+        ticketRepositoryImpl: VehicleRepositoryImpl
+    ): VehicleRepository
 }
