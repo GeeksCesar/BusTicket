@@ -1,6 +1,7 @@
 package com.smartgeeks.busticket.utils
 
 import android.Manifest
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.Settings
@@ -32,6 +33,17 @@ object Utilities {
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED)
 
+    fun hasBluetoothPermission(context: Context) = EasyPermissions.hasPermissions(
+        context,
+        Manifest.permission.BLUETOOTH,
+        Manifest.permission.BLUETOOTH_CONNECT
+    )
+
+    fun isBluetoothEnabled(context: Context) : Boolean {
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        return bluetoothManager.adapter.isEnabled
+    }
+
     fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
         val formatter = SimpleDateFormat(format, locale)
         return formatter.format(this)
@@ -40,6 +52,11 @@ object Utilities {
     fun getDate(format: String = "dd-MM-yyyy", locale: Locale = Locale.getDefault()): String {
         val df: DateFormat = SimpleDateFormat(format, locale)
         return df.format(Calendar.getInstance().time)
+    }
+
+    fun getTime(format: String = "HH:mm:ss", locale: Locale = Locale.getDefault()): String {
+        val dateFormat: DateFormat = SimpleDateFormat(format, locale)
+        return dateFormat.format(Calendar.getInstance().time)
     }
 
     fun getCurrentDateTime(): Date {

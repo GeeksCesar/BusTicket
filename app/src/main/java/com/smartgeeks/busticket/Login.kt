@@ -114,10 +114,10 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     if (AppPreferences.isLockedDevice)
                         return@setOnClickListener
 
-                    if (userLocation == null) {
+                    /*if (userLocation == null) {
                         showDialogLocation()
                         return@setOnClickListener
-                    }
+                    }*/
 
                     showProgress(true)
                     binding.btnIniciarSession.visibility = View.GONE

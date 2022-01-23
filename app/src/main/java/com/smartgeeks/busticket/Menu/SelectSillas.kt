@@ -1,41 +1,42 @@
 package com.smartgeeks.busticket.Menu
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.ToggleButton
+import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
+import com.dantsu.escposprinter.EscPosPrinter
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
+import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.api.Service
@@ -51,7 +52,9 @@ import com.smartgeeks.busticket.utils.DialogAlert
 import com.smartgeeks.busticket.utils.Helpers
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
+import pub.devrel.easypermissions.EasyPermissions
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -108,6 +111,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private val vehicleViewModel: VehicleViewModel by viewModels()
     private val ticketViewModel: TicketViewModel by viewModels()
 
+    private val PERMISSION_BLUETOOTH = 1
+
     @Volatile
     var stopWorker = false
     lateinit var dialogPrint: Dialog
@@ -137,6 +142,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         LocalBroadcastManager.getInstance(applicationContext).registerReceiver(
             receiver, filter
         )
+
         binding.btnConfirmarTicket.setOnClickListener(View.OnClickListener {
             listSillas = ""
             if (sillasSeleccionadas.size == 0) {
@@ -177,6 +183,59 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 )
             }
         })
+    }
+
+    private fun checkBluetoothDevices() {
+        val bluetoothPrintersConnections = BluetoothPrintersConnections().list
+
+        // Si no hay conexiones bluetooth, se muestra un mensaje de error
+        if (bluetoothPrintersConnections != null) {
+            if (bluetoothPrintersConnections.isEmpty()) {
+                DialogAlert.showDialogFailed(
+                    context,
+                    "Conectar Impresora",
+                    "No hay conexiones bluetooth",
+                    SweetAlertDialog.WARNING_TYPE
+                )
+            }
+        }
+
+        bluetoothPrintersConnections?.forEach { bluetoothConnection ->
+            Log.e(TAG, "Device: ${bluetoothConnection.device}")
+        }
+    }
+
+    private fun checkBluetoothStatus() {
+        if (Utilities.isBluetoothEnabled(this)) {
+            checkBluetoothDevices()
+        } else {
+            val alertDialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            alertDialog.titleText = "Bluetooth"
+            alertDialog.contentText = "Habilita el Bluetooth"
+            alertDialog.confirmText = "Aceptar"
+            alertDialog.setConfirmClickListener {
+                alertDialog.dismissWithAnimation()
+
+                // Turn on Bluetooth
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, PERMISSION_BLUETOOTH)
+            }
+            alertDialog.show()
+        }
+    }
+
+    private fun requestBluetoothPermissions() {
+        if (Utilities.hasBluetoothPermission(this)){
+            Log.e(TAG, "requestBluetoothPermissions: Los tiene")
+            return
+        }
+
+        EasyPermissions.requestPermissions(
+            this,
+            "Debes habilitar el permiso de Bluetooth para usar esta app.",
+            PERMISSION_BLUETOOTH,
+            Manifest.permission.BLUETOOTH
+        )
     }
 
     private fun initWidgets() {
@@ -232,6 +291,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
                     }
                     fetchVehicleInfo()
+                    // requestBluetoothPermissions()
+                    checkBluetoothStatus()
                 }
             }
         })
@@ -505,7 +566,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         button.setOnClickListener {
                             try {
                                 alertDialog.dismiss()
-                                handlePrintTicket()
+                                // handlePrintTicket()
+                                doPrintTicket()
                             } catch (ex: Exception) {
                                 ex.printStackTrace()
                             }
@@ -523,6 +585,76 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
+        }
+    }
+
+    private fun doPrintTicket() {
+        try {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.e(TAG, "doPrintTicket: Permission Failed", )
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.BLUETOOTH),
+                    PERMISSION_BLUETOOTH
+                )
+            } else {
+                val split = info_ruta.split(",")
+                val bluetoothPrintersConnections = BluetoothPrintersConnections().list
+
+                bluetoothPrintersConnections?.forEach { bluetoothConnection ->
+                    Log.e(TAG, "Device: ${bluetoothConnection.device}")
+                }
+
+                Log.e(TAG, "doPrintTicket: $bluetoothPrintersConnections")
+                Log.e(TAG, "First Paired: ${BluetoothPrintersConnections.selectFirstPaired()?.device}")
+                val printer =
+                    EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32)
+
+                val textToPrint = """
+                    [C]<img>${
+                    PrinterTextParserImg.bitmapToHexadecimalString(
+                        printer,
+                        this.applicationContext.resources.getDrawableForDensity(
+                            R.drawable.imagotipo_busticket,
+                            DisplayMetrics.DENSITY_MEDIUM
+                        )
+                    )
+                }</img>
+                    [L]
+                    [C]<b>${split[3].trim { it <= ' ' }.uppercase(Locale.getDefault())} a ${
+                    split[4].trim { it <= ' ' }
+                        .uppercase(Locale.getDefault())
+                }<b>
+                    [L]
+                    [C]Usted Pagó:
+                    [L]
+                    [C]<font size='wide'>$getPrecioPasaje</font>
+                    [C]${nombreUsuario}
+                    [L]
+                    [C]--------------------------------
+                    [C]Fecha[C]Salida[C]Asiento
+                    [C]${Utilities.getDate("dd-MM-yy")}[C]${split[2]}[C]$listSillas
+                    [C]--------------------------------
+                    [L]
+                    [C]${desc_empresa}
+                    [L]
+                    [L]$numVoucher
+                    [L]Emisión: ${Utilities.getDate("dd-MM-yy")}
+                    [L]${Utilities.getTime()} ${split[0]} ${UsuarioPreferences.getInstance(context).nombre}
+                    [L]
+                    [C]www.busticket.cl
+                    [C]Copia Cliente
+                    """.trimIndent()
+
+                printer.printFormattedText(textToPrint)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "doPrintTicket Error: ${e.message}")
         }
     }
 
