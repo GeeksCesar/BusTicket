@@ -478,7 +478,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             listSillas,
             id_empresa,
             id_vehiculo
-        ).observe(this, { result ->
+        ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> showProgress(false)
                 is Resource.Loading -> showProgress(true)
@@ -505,25 +505,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         button.setOnClickListener {
                             try {
                                 alertDialog.dismiss()
-                                getDataPrint()
-                                if (estadoPrint) {
-                                    Log.e(Service.TAG, "entro estado: $estadoPrint")
-                                    val pairedDevice = bluetoothAdapter!!.bondedDevices
-                                    if (pairedDevice.size > 0) {
-                                        for (pairedDev in pairedDevice) {
-                                            if (pairedDev.name == namePrint) {
-                                                Log.e(Service.TAG, "name impresora_ $namePrint")
-                                                bluetoothDevice = pairedDev
-                                                abrirImpresoraBlue()
-                                                break
-                                            }
-                                        }
-                                    } else {
-                                        Log.e(Service.TAG, "error devices bluetooh")
-                                    }
-                                } else {
-                                    showDialogTiquete()
-                                }
+                                handlePrintTicket()
                             } catch (ex: Exception) {
                                 ex.printStackTrace()
                             }
@@ -541,7 +523,29 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
-        })
+        }
+    }
+
+    private fun handlePrintTicket() {
+        getDataPrint()
+        if (estadoPrint) {
+            Log.e(Service.TAG, "entro estado: $estadoPrint")
+            val pairedDevice = bluetoothAdapter!!.bondedDevices
+            if (pairedDevice.size > 0) {
+                for (pairedDev in pairedDevice) {
+                    if (pairedDev.name == namePrint) {
+                        Log.e(Service.TAG, "name impresora_ $namePrint")
+                        bluetoothDevice = pairedDev
+                        abrirImpresoraBlue()
+                        break
+                    }
+                }
+            } else {
+                Log.e(Service.TAG, "error devices bluetooh")
+            }
+        } else {
+            showDialogTiquete()
+        }
     }
 
     fun encontrarDispositivoBlue() {
