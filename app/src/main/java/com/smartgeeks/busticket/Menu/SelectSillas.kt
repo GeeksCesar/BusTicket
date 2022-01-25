@@ -7,13 +7,8 @@ import android.app.Dialog
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Point
@@ -35,24 +30,18 @@ import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.dantsu.escposprinter.EscPosPrinter
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
 import com.smartgeeks.busticket.sync.SyncServiceRemote
-import com.smartgeeks.busticket.utils.Constantes
-import com.smartgeeks.busticket.utils.Constants
-import com.smartgeeks.busticket.utils.DialogAlert
-import com.smartgeeks.busticket.utils.Helpers
-import com.smartgeeks.busticket.utils.RutaPreferences
-import com.smartgeeks.busticket.utils.UsuarioPreferences
-import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.EasyPermissions
 import java.io.InputStream
@@ -60,9 +49,7 @@ import java.io.OutputStream
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
-import java.util.ArrayList
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 import kotlin.math.ceil
 
 @AndroidEntryPoint
@@ -186,7 +173,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun checkBluetoothDevices() {
-        val bluetoothPrintersConnections = BluetoothPrintersConnections().list
+        val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
 
         // Si no hay conexiones bluetooth, se muestra un mensaje de error
         if (bluetoothPrintersConnections != null) {
@@ -225,7 +212,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun requestBluetoothPermissions() {
-        if (Utilities.hasBluetoothPermission(this)){
+        if (Utilities.hasBluetoothPermission(this)) {
             Log.e(TAG, "requestBluetoothPermissions: Los tiene")
             return
         }
@@ -595,7 +582,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     Manifest.permission.BLUETOOTH
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                Log.e(TAG, "doPrintTicket: Permission Failed", )
+                Log.e(TAG, "doPrintTicket: Permission Failed")
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.BLUETOOTH),
@@ -603,16 +590,19 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 )
             } else {
                 val split = info_ruta.split(",")
-                val bluetoothPrintersConnections = BluetoothPrintersConnections().list
+                val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
 
                 bluetoothPrintersConnections?.forEach { bluetoothConnection ->
                     Log.e(TAG, "Device: ${bluetoothConnection.device}")
                 }
 
                 Log.e(TAG, "doPrintTicket: $bluetoothPrintersConnections")
-                Log.e(TAG, "First Paired: ${BluetoothPrintersConnections.selectFirstPaired()?.device}")
+                Log.e(TAG, "First Paired: ${MyBluetoothPrintersConnections.selectFirstPaired()?.device}")
+
+                Toast.makeText(this, "${MyBluetoothPrintersConnections.selectFirstPaired()?.device?.name}", Toast.LENGTH_SHORT).show()
+
                 val printer =
-                    EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32)
+                    EscPosPrinter(MyBluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32)
 
                 val textToPrint = """
                     [C]<img>${

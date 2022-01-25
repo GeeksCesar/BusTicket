@@ -1,5 +1,6 @@
 package com.smartgeeks.busticket.repository.ticket
 
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSendSeatTicket
 
 interface TicketRepository {
@@ -15,4 +16,6 @@ interface TicketRepository {
         companyId: Int,
         vehicleId: Int,
     ): ResponseSendSeatTicket
+
+    suspend fun saveTicketLocally(ticketEntity: TicketEntity)
 }

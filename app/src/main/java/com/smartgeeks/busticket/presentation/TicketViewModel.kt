@@ -3,10 +3,13 @@ package com.smartgeeks.busticket.presentation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.smartgeeks.busticket.core.Resource
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.repository.ticket.TicketRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private val TAG: String = VehicleViewModel::class.java.simpleName
@@ -51,4 +54,9 @@ class TicketViewModel @Inject constructor(
             emit(Resource.Failure(e))
         }
     }
+
+    fun saveTicketLocally(ticketEntity: TicketEntity) = viewModelScope.launch {
+        ticketRepository.saveTicketLocally(ticketEntity)
+    }
+
 }

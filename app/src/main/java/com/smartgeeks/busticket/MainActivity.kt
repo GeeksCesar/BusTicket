@@ -21,13 +21,7 @@ import androidx.fragment.app.Fragment
 import com.smartgeeks.busticket.Menu.Inicio
 import com.smartgeeks.busticket.Menu.Perfil
 import com.smartgeeks.busticket.Menu.Ticket
-import com.smartgeeks.busticket.Modelo.Horario
-import com.smartgeeks.busticket.Modelo.Paradero
-import com.smartgeeks.busticket.Modelo.Ruta
-import com.smartgeeks.busticket.Modelo.SubRuta
-import com.smartgeeks.busticket.Modelo.TarifaParadero
-import com.smartgeeks.busticket.Modelo.TipoUsuario
-import com.smartgeeks.busticket.Modelo.Vehiculo
+import com.smartgeeks.busticket.Modelo.*
 import com.smartgeeks.busticket.databinding.ActivityMainBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
@@ -204,11 +198,15 @@ class MainActivity : AppCompatActivity() {
      * Handle set StatusUser
      */
     private fun setUserStatus(status: Int) {
-        authViewModel.setUserStatus(
-            UsuarioPreferences.getInstance(this).idUser,
-            Utilities.getDeviceId(this),
-            status
-        )
+        try {
+            authViewModel.setUserStatus(
+                UsuarioPreferences.getInstance(this).idUser,
+                Utilities.getDeviceId(this),
+                status
+            )
+        } catch (e : Exception) {
+            e.printStackTrace()
+        }
     }
 
     companion object {
