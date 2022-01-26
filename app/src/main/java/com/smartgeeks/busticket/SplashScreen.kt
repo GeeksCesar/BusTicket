@@ -35,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 
 private val TAG: String = SplashScreen::class.java.simpleName
 
@@ -73,8 +74,8 @@ class SplashScreen : AppCompatActivity() {
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, MODE_PRIVATE)
         session = UsuarioPreferences.getInstance(this).sessionUser
 
-        // Get Message company - (DON'T include on the Thread)
         checkLockedDevice()
+        // Get Message company - (DON'T include on the Thread)
         getMessageCompany()
     }
 
@@ -96,9 +97,16 @@ class SplashScreen : AppCompatActivity() {
         ).observe(this, { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                    goNextScreen()
+
+                    when (result.exception) {
+                        is UnknownHostException -> Toast.makeText(this, "Sin conexión al servidor", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e(TAG, "checkLockedDevice: ${result.exception}")
+                    binding.progresBar.visibility = View.GONE
+
                 }
-                is Resource.Loading -> Unit
+                is Resource.Loading -> binding.progresBar.visibility = View.VISIBLE
                 is Resource.Success -> {
                     goNextScreen()
                     Log.e(TAG, "checkLockedDevice: ${result.data}")
@@ -128,7 +136,6 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun setInformationLoading() {
-        binding.progresBar.visibility = View.VISIBLE
         val messages = listOf(
             "Validando usuario...",
             "Cargando rutas...",
@@ -172,7 +179,7 @@ class SplashScreen : AppCompatActivity() {
                     is Resource.Failure -> {
                         Log.e(TAG, "getMessageCompany: ${result.exception.message}")
                     }
-                    is Resource.Loading -> Unit
+                    is Resource.Loading -> binding.progresBar.visibility = View.VISIBLE
                     is Resource.Success -> {
                         UsuarioPreferences.getInstance(this).descEmpresa = result.data.data
                     }

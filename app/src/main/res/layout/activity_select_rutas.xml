@@ -61,7 +61,7 @@
             android:layout_below="@+id/spUsuarios"/>
 
         <Spinner
-            android:id="@+id/spFIn"
+            android:id="@+id/spFin"
             style="@style/SpnnerCustom"
             android:layout_marginTop="@dimen/activity_ontenedor_margin"
             android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="20dp"
-            android:layout_below="@+id/spFIn"
+            android:layout_below="@+id/spFin"
             android:layout_marginHorizontal="35dp">
 
             <CheckBox
@@ -177,13 +177,13 @@
         <Button
             android:id="@+id/btnOlvidarRuta"
             style="@style/ButtonCustom"
-            android:text="Olvidar ruta"
-            android:visibility="visible"
+            android:layout_below="@+id/contenedorPrecio"
             android:layout_marginTop="25dp"
-            android:layout_below="@+id/contenedorPrecio"/>
+            android:text="Olvidar ruta"
+            android:visibility="visible" />
 
         <ProgressBar
-            android:id="@+id/login_progress"
+            android:id="@+id/mProgressView"
             style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

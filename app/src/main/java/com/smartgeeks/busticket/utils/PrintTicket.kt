@@ -13,35 +13,41 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.lifecycle.ViewModelProvider
 import cn.pedant.SweetAlert.SweetAlertDialog
-import com.android.volley.NetworkError
-import com.android.volley.NoConnectionError
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.ServerError
-import com.android.volley.TimeoutError
-import com.android.volley.VolleyError
+import com.android.volley.*
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.smartgeeks.busticket.api.Service
 import com.smartgeeks.busticket.Menu.PreciosRutaConductor
 import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R
+import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.presentation.TicketViewModel
+import com.smartgeeks.busticket.repository.ticket.TicketRepository
+import com.smartgeeks.busticket.repository.ticket.TicketRepositoryImpl
+import dagger.hilt.InstallIn
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.UUID
+import java.util.*
+import javax.inject.Inject
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.Map
+import kotlin.collections.MutableMap
+import kotlin.collections.set
+import kotlin.collections.toList
+import kotlin.collections.toTypedArray
 
 private const val LEFT_LENGTH = 16
 private const val RIGHT_LENGTH = 16
@@ -118,7 +124,8 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     fun setData(
         idStartBusStop: Int, idEndBusStop: Int, idEnabledRoute: Int, time: String,
         idPassengerType: Int, ticketPrice: Double, idVehicle: Int, passengerType: String,
-        info: String = "", ticketQuantity : Int = 1) {
+        info: String = "", ticketQuantity: Int = 1
+    ) {
         idParaderoInicio = idStartBusStop
         idParaderoFin = idEndBusStop
         idRutaDisponible = idEnabledRoute
@@ -196,6 +203,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         ticket.estado = 0
         ticket.pendiente = Constantes.ESTADO_SYNC
         ticket.save()
+
         // El estado = 0 y estado_sync = 1, para cuando se inicie la sincronización remota
         // se cambie el estado = 1
     }

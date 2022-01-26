@@ -59,10 +59,10 @@ class AuthViewModel @Inject constructor(
 
         emit(Resource.Loading())
 
-        if (!isInternetAvailable()) {
+        /*if (!isInternetAvailable()) {
             emit(Resource.Success(false))
             return@liveData
-        }
+        }*/
 
         try {
             // Save result on preferences
