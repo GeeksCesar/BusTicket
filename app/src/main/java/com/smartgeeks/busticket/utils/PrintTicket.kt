@@ -14,40 +14,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.*
-import androidx.lifecycle.ViewModelProvider
-import cn.pedant.SweetAlert.SweetAlertDialog
-import com.android.volley.*
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
 import com.smartgeeks.busticket.Menu.PreciosRutaConductor
-import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R
-import com.smartgeeks.busticket.api.Service
-import com.smartgeeks.busticket.data.local.entities.TicketEntity
-import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.repository.ticket.TicketRepository
-import com.smartgeeks.busticket.repository.ticket.TicketRepositoryImpl
-import dagger.hilt.InstallIn
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.text.DecimalFormat
 import java.util.*
-import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.Map
-import kotlin.collections.MutableMap
-import kotlin.collections.set
-import kotlin.collections.toList
-import kotlin.collections.toTypedArray
 
 private const val LEFT_LENGTH = 16
 private const val RIGHT_LENGTH = 16
@@ -61,10 +34,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         fun isLoading(state: Boolean)
         fun onFinishPrint()
     }
-
-    //VOLLEY
-    private var requestQueue: RequestQueue
-    private var stringRequest: StringRequest? = null
 
     private var printState = false
     private var namePrint: String? = null
@@ -118,7 +87,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         idEmpresa = UsuarioPreferences.getInstance(context).idEmpresa
 
         encontrarDispositivoBlue()
-        requestQueue = Volley.newRequestQueue(context)
     }
 
     fun setData(
@@ -139,20 +107,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     fun print() {
-        InternetCheck { internet ->
-            if (internet) {
-                // Enviar Ticket al servidor
-                registerTicket()
-            } else {
-                // Guardar Ticket en Bd Local para sincronización
-                printOffLine()
-            }
-        }.execute()
-    }
-
-    private fun printOffLine() {
-        // Guarda los datos en la BD Local
-        saveTicketLocal()
         try {
             stateListener.isLoading(false)
 
@@ -178,152 +132,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
         }
-    }
-
-    private fun saveTicketLocal() {
-        val fecha = Helpers.getCurrentDate()
-        val hora = Helpers.getCurrentTime()
-        numVoucher =
-            idVehiculo.toString() + "" + idOperador + "-" + Helpers.setString2DateVoucher(fecha) + "-" + Helpers.setString2HourVoucher(
-                hora
-            )
-        Log.e(PreciosRutaConductor.TAG, "Ticket Guardado Localmente $numVoucher")
-        val ticket = Ticket()
-        ticket.idRemoto = ""
-        ticket.paradaInicio = idParaderoInicio
-        ticket.paradaDestino = idParaderoFin
-        ticket.idRutaDisponible = idRutaDisponible
-        ticket.idOperador = UsuarioPreferences.getInstance(context).idUser
-        ticket.horaSalida = horario
-        ticket.tipoUsuario = idTipoUsuario
-        ticket.fecha = fecha
-        ticket.hora = hora
-        ticket.cantPasajes = countPasajes
-        ticket.totalPagar = precioSumPasaje.toDouble()
-        ticket.estado = 0
-        ticket.pendiente = Constantes.ESTADO_SYNC
-        ticket.save()
-
-        // El estado = 0 y estado_sync = 1, para cuando se inicie la sincronización remota
-        // se cambie el estado = 1
-    }
-
-    /**
-     * Envía el Ticket al servidor e imprime el boleto
-     */
-    private fun registerTicket() {
-        Log.e(PreciosRutaConductor.TAG, "Enviando Ticket al servidor")
-        stringRequest = object : StringRequest(
-            Method.POST, Service.SET_TICKET_PIE_TEST,
-            object : Response.Listener<String> {
-                override fun onResponse(response: String) {
-                    Log.e(PreciosRutaConductor.TAG, "response: $response")
-                    try {
-                        val jsonObject = JSONObject(response)
-                        val respuesta = jsonObject.getString("message")
-                        if (respuesta == "success") {
-                            stateListener.isLoading(false)
-                            numVoucher = jsonObject.getString("num_voucher")
-                            Log.e(PreciosRutaConductor.TAG, "Num Voucher: $numVoucher")
-                            try {
-                                getDataPrint()
-                                if (printState) {
-                                    Log.e(PreciosRutaConductor.TAG, "entro estado")
-                                    val pairedDevice = bluetoothAdapter.bondedDevices
-                                    Log.e(PreciosRutaConductor.TAG, "parired: " + pairedDevice.size)
-                                    if (pairedDevice.size > 0) {
-                                        for (pairedDev in pairedDevice) {
-                                            if (pairedDev.name == namePrint) {
-                                                bluetoothDevice = pairedDev
-                                                abrirImpresoraBlue()
-                                                break
-                                            } else {
-                                                Log.e(
-                                                    PreciosRutaConductor.TAG,
-                                                    "error no existe impresora"
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
-                                    }
-                                } else {
-                                    showDialogTiquete()
-                                }
-                            } catch (ex: Exception) {
-                                Log.e(PreciosRutaConductor.TAG, "onResponse: " + ex.message)
-                                ex.printStackTrace()
-                            }
-                        } else {
-                            DialogAlert.showDialogFailed(
-                                context,
-                                "Error",
-                                "Ha ocurrido un error \n al registrar el ticket",
-                                SweetAlertDialog.ERROR_TYPE
-                            )
-                            stateListener.isLoading(false)
-                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-                }
-            },
-            // No convertir a lambda
-            object : Response.ErrorListener {
-                override fun onErrorResponse(volleyError: VolleyError?) {
-                    stateListener.isLoading(false)
-                    DialogAlert.showDialogFailed(
-                        context, "Error", "Ha ocurrido un error \n al registrar el ticket",
-                        SweetAlertDialog.ERROR_TYPE
-                    )
-                    Log.e(PreciosRutaConductor.TAG, "error: " + volleyError?.message)
-                    if (volleyError is TimeoutError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ha pasado el tiempo Limitado",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is ServerError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. Error en el servidor",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is NoConnectionError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. No hay conexion a internet",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is NetworkError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. Hay error en la red",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    }
-                }
-            }) {
-            override fun getParams(): Map<String, String> {
-                val params: MutableMap<String, String> = HashMap()
-                params["id_paradero_inicio"] = idParaderoInicio.toString()
-                params["id_paradero_fin"] = idParaderoFin.toString()
-                params["id_ruta"] = idRutaDisponible.toString()
-                params["id_operador"] = idOperador.toString()
-                params["hora"] = horario
-                params["id_tipo_usuario"] = idTipoUsuario.toString()
-                params["total_pagar"] = precioSumPasaje.toString()
-                params["cantidad"] = countPasajes.toString()
-                params["id_empresa"] = idEmpresa.toString()
-                params["id_vehiculo"] = idVehiculo.toString()
-                return params
-            }
-        }
-        requestQueue.add(stringRequest)
     }
 
     private fun showDialogTiquete() {

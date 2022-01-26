@@ -145,7 +145,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private fun signIn(email: String, password: String) {
-        authViewModel.userLogin(email, password).observe(this, { result ->
+        authViewModel.userLogin(email, password).observe(this) { result ->
             when (result) {
                 is Loading -> {
                     Log.e(TAG, "example: Cargando datos")
@@ -200,16 +200,16 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     }
                 }
             }
-        })
+        }
     }
 
     private fun sendLoginLogs(userID: Int) {
         val deviceID = Utilities.getDeviceId(this)
         val location = "${userLocation?.latitude},${userLocation?.longitude}"
-        authViewModel.setLoginLogs(userID, deviceID, location).observe(this, { result ->
+        authViewModel.setLoginLogs(userID, deviceID, location).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Toast.makeText(this, result.exception.message, Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "sendLoginLogs: ${result.exception}")
                 }
                 is Loading -> {
                     Log.d(TAG, "sendingLoginLogs")
@@ -218,17 +218,17 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                     Log.d(TAG, "Logs have been sent")
                 }
             }
-        })
+        }
     }
 
     private fun checkLockedDevice() {
         authViewModel.checkLockedDevice(
             UsuarioPreferences.getInstance(this).idUser,
             Utilities.getDeviceId(this)
-        ).observe(this, { result ->
+        ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                    Log.d(TAG, "checkLockedDevice: ${result.exception}")
                 }
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
@@ -236,7 +236,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                         showDialogLockedDevice()
                 }
             }
-        })
+        }
     }
 
     private fun showDialogLockedDevice() {

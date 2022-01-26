@@ -22,14 +22,18 @@ import com.smartgeeks.busticket.Modelo.Paradero
 import com.smartgeeks.busticket.Modelo.TarifaParadero
 import com.smartgeeks.busticket.Modelo.TipoUsuario
 import com.smartgeeks.busticket.R
+import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.*
 import com.smartgeeks.busticket.utils.PrintTicket.PrintState
+import com.smartgeeks.busticket.utils.Utilities.toString
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.math.log
 
 @AndroidEntryPoint
 class SelectRutas : AppCompatActivity(), PrintState {
@@ -87,6 +91,7 @@ class SelectRutas : AppCompatActivity(), PrintState {
         binding = ActivitySelectRutasBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initWidget()
+
         printTicket = PrintTicket(this@SelectRutas, this)
         binding.spUsuarios.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
@@ -206,6 +211,7 @@ class SelectRutas : AppCompatActivity(), PrintState {
             }
             goIntentMain()
         }
+
         binding.btnFinalizar.setOnClickListener {
             precio_sum_pasaje = precioPasaje * countPasajes
 
@@ -227,30 +233,11 @@ class SelectRutas : AppCompatActivity(), PrintState {
                 binding.btnFinalizar.isEnabled = false
                 binding.btnFinalizar.visibility = View.GONE
 
-                printTicket.setData(
-                    id_paradero_inicio,
-                    id_paradero_fin,
-                    id_ruta_disponible,
-                    horario,
-                    id_tipo_usuario,
-                    precio_sum_pasaje.toDouble(),
-                    id_vehiculo,
-                    nameUsuario,
-                    info,
-                    1
-                )
-                printTicket.print()
-
                 // Guarda los datos en la BD Local
-                val fecha = Helpers.getCurrentDate()
-                val hora = Helpers.getCurrentTime()
-                val id_operador = UsuarioPreferences.getInstance(context).idUser
-                val numVoucher =
-                    id_vehiculo.toString() + "" + id_operador + "-" + Helpers.setString2DateVoucher(
-                        fecha
-                    ) + "-" + Helpers.setString2HourVoucher(
-                        hora
-                    )
+                val fecha = Utilities.getTimeByTimezone("yyyy-MM-dd")
+                val hora = Utilities.getTimeByTimezone("HH:mm:ss")
+                val numVoucher = Utilities.getVoucherName(id_vehiculo, id_operador, fecha, hora)
+
                 val ticketEntity = TicketEntity(
                     0,
                     id_paradero_inicio,
@@ -265,8 +252,21 @@ class SelectRutas : AppCompatActivity(), PrintState {
                     id_vehiculo,
                     numVoucher
                 )
-                ticketViewModel.saveTicketLocally(ticketEntity)
+                saveTicket(ticketEntity)
 
+                printTicket.setData(
+                    id_paradero_inicio,
+                    id_paradero_fin,
+                    id_ruta_disponible,
+                    horario,
+                    id_tipo_usuario,
+                    precio_sum_pasaje.toDouble(),
+                    id_vehiculo,
+                    nameUsuario,
+                    info,
+                    1
+                )
+                printTicket.print()
             }
         }
 
@@ -310,6 +310,28 @@ class SelectRutas : AppCompatActivity(), PrintState {
                 }
             }
         })
+    }
+
+    private fun saveTicket(ticketEntity: TicketEntity) {
+        ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Log.e(TAG, "Failue: ${result.exception.message}")
+                is Resource.Loading -> Log.e(TAG, "Loading")
+                is Resource.Success -> {
+                    when (result.data) {
+                        is Long -> {
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                        }
+                        is ResponseSaveTicket -> {
+                            if (result.data.estado == 1)
+                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                    Log.e(TAG, "Success ${result.data}")
+                }
+            }
+        }
     }
 
     private fun startSelectSillasActivity() {

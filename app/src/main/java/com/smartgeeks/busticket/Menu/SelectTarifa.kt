@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.Window
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -19,15 +21,21 @@ import com.smartgeeks.busticket.Modelo.Paradero
 import com.smartgeeks.busticket.Modelo.TarifaParadero
 import com.smartgeeks.busticket.Modelo.TipoUsuario
 import com.smartgeeks.busticket.R
+import com.smartgeeks.busticket.core.Resource
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding
+import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.PrintTicket
 import com.smartgeeks.busticket.utils.PrintTicket.PrintState
 import com.smartgeeks.busticket.utils.RecyclerItemClickListener
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.ArrayList
 
+@AndroidEntryPoint
 class SelectTarifa : AppCompatActivity(), PrintState {
     var context: Context? = null
     var bundle: Bundle? = null
@@ -36,7 +44,7 @@ class SelectTarifa : AppCompatActivity(), PrintState {
     var id_operador = 0
     var id_ruta = 0
     var id_ruta_disponible = 0
-    var horario: String? = null
+    var horario: String = ""
     var info: String? = null
     var ruta = ""
     var tarifaLists: MutableList<TipoUsuario> = ArrayList()
@@ -45,6 +53,7 @@ class SelectTarifa : AppCompatActivity(), PrintState {
     private var printTicket: PrintTicket? = null
 
     private lateinit var binding: ActivitySelectTarifaBinding
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +84,7 @@ class SelectTarifa : AppCompatActivity(), PrintState {
             // addItemDecoration(dividerItemDecoration)
         }
 
-        tvTxtDate.text = Utilities.getDate()
+        tvTxtDate.text = Utilities.getDate("dd-MM-yyyy")
         getTarifasLocal()
 
         bundle = intent.extras
@@ -84,7 +93,7 @@ class SelectTarifa : AppCompatActivity(), PrintState {
             id_ruta_disponible = bundle!!.getInt(ID_RUTA_DISPONIBLE)
             id_vehiculo = bundle!!.getInt(ID_VEHICULO)
             id_horario = bundle!!.getInt(ID_HORARIO)
-            horario = bundle!!.getString(HORARIO)
+            horario = bundle!!.getString(HORARIO) ?: ""
             info = bundle!!.getString(INFO)
             ruta = bundle!!.getString(INFO)!!.split(",").toTypedArray()[1]
         } else {
@@ -178,15 +187,41 @@ class SelectTarifa : AppCompatActivity(), PrintState {
      * This method printTicket.
      */
     private fun printTicket(
-        departureId: Int, arrivalId: Int, routeAvailableId: Int, schedule: String?,
+        departureId: Int, arrivalId: Int, routeAvailableId: Int, schedule: String,
         passengerTypeId: Int, ticketPrice: Double, vehicleId: Int, passengerTypeName: String,
         companyInfo: String?
     ) {
+
+        /**
+         * This save the ticket in the database Remote or Local
+         */
+        val date = Utilities.getTimeByTimezone("yyyy-MM-dd")
+        val hour = Utilities.getTimeByTimezone("HH:mm:ss")
+        val numVoucher = Utilities.getVoucherName(id_vehiculo, id_operador, date, hour)
+        val ticketEntity = TicketEntity(
+            0,
+            departureId,
+            arrivalId,
+            routeAvailableId,
+            id_operador,
+            schedule,
+            passengerTypeId,
+            date, hour,
+            1,
+            ticketPrice,
+            vehicleId,
+            numVoucher
+        )
+        saveTicket(ticketEntity)
+
+        /**
+         * This method printTicket.
+         */
         printTicket!!.setData(
             departureId,
             arrivalId,
             routeAvailableId,
-            schedule!!,
+            schedule,
             passengerTypeId,
             ticketPrice,
             vehicleId,
@@ -194,6 +229,28 @@ class SelectTarifa : AppCompatActivity(), PrintState {
             companyInfo!!
         )
         printTicket!!.print()
+    }
+
+    private fun saveTicket(ticketEntity: TicketEntity) {
+        ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    when (result.data) {
+                        is Long -> {
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                        }
+                        is ResponseSaveTicket -> {
+                            if (result.data.estado == 1)
+                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                    Log.e(SelectRutas.TAG, "Success ${result.data}")
+                }
+            }
+        }
     }
 
     // List<TipoUsuario> tipoUsuarios = TipoUsuario.listAll(TipoUsuario.class);

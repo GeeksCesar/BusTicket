@@ -7,7 +7,7 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 interface TicketDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(ticket: TicketEntity)
+    suspend fun insert(ticket: TicketEntity) : Long
 
     @Update
     suspend fun update(ticket: TicketEntity)

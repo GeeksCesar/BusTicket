@@ -11,6 +11,8 @@ import android.view.Window
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -21,13 +23,16 @@ import com.smartgeeks.busticket.Menu.AdapterPrecios.ItemClickListener
 import com.smartgeeks.busticket.Modelo.Paradero
 import com.smartgeeks.busticket.Modelo.TarifaParadero
 import com.smartgeeks.busticket.R
+import com.smartgeeks.busticket.core.Resource
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivityPrecioRutasConductorBinding
-import com.smartgeeks.busticket.utils.Constantes
-import com.smartgeeks.busticket.utils.PrintTicket
+import com.smartgeeks.busticket.presentation.TicketViewModel
+import com.smartgeeks.busticket.utils.*
 import com.smartgeeks.busticket.utils.PrintTicket.PrintState
-import com.smartgeeks.busticket.utils.RutaPreferences
-import com.smartgeeks.busticket.utils.UsuarioPreferences
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState {
 
     var bundle: Bundle? = null
@@ -35,7 +40,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
     var id_tipo_usuario = 0
     var id_paradero_inicio = 0
     var id_paradero_fin = 0
-    var horario: String? = null
+    var horario: String = ""
     var info: String? = null
     var nombreEmpresa: String? = null
     var desc_empresa: String? = null
@@ -55,6 +60,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
     private lateinit var context: Context
     private lateinit var binding: ActivityPrecioRutasConductorBinding
     private var ticketQuantity = 1
+    private val ticketViewModel : TicketViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +105,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
             id_tipo_usuario = bundle!!.getString(ID_TIPO_USUARIO)!!.toInt()
             getNameTipoPasajero = bundle!!.getString(NAME_TIPO_USUARIO)
             id_horario = bundle!!.getInt(ID_HORARIO)
-            horario = bundle!!.getString(HORARIO)
+            horario = bundle!!.getString(HORARIO) ?: ""
             info = bundle!!.getString(INFO)
             ruta = bundle!!.getString(INFO)!!.split(",").toTypedArray()[1]
         } else {
@@ -208,12 +214,13 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
 
     private fun printTicket() {
         precio_sum_pasaje *= ticketQuantity
+        saveTicket()
 
         printTicket.setData(
             id_paradero_inicio,
             id_paradero_fin,
             id_ruta_disponible,
-            horario!!,
+            horario,
             id_tipo_usuario,
             precio_sum_pasaje.toDouble(),
             id_vehiculo,
@@ -222,6 +229,47 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
             ticketQuantity
         )
         printTicket.print()
+    }
+
+    private fun saveTicket() {
+
+        val date = Utilities.getTimeByTimezone("yyyy-MM-dd")
+        val hour = Utilities.getTimeByTimezone("HH:mm:ss")
+        val numVoucher = Utilities.getVoucherName(id_vehiculo, id_operador, date, hour)
+        val ticketEntity = TicketEntity(
+            0,
+            id_paradero_inicio,
+            id_paradero_fin,
+            id_ruta_disponible,
+            id_operador,
+            horario,
+            id_tipo_usuario,
+            date, hour,
+            ticketQuantity,
+            precio_sum_pasaje.toDouble(),
+            id_vehiculo,
+            numVoucher
+        )
+
+        ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    when (result.data) {
+                        is Long -> {
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                        }
+                        is ResponseSaveTicket -> {
+                            if (result.data.estado == 1)
+                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+                    Log.e(SelectRutas.TAG, "Success ${result.data}")
+                }
+            }
+        }
     }
 
     fun goBack(view: View) {

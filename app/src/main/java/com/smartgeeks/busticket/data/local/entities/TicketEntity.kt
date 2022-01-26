@@ -7,16 +7,16 @@ import androidx.room.PrimaryKey
 data class TicketEntity(
     @PrimaryKey(autoGenerate = true)
     val id : Int,
-    var paradaInicio: Int = 0,
-    var paradaDestino: Int = 0,
-    var idRutaDisponible: Int = 0,
-    var idOperador: Int = 0,
-    var horaSalida: String = "",
-    var tipoUsuario: Int = 0,
-    var fecha: String = "",
-    var hora: String = "",
-    var cantPasajes: Int = 0,
-    var totalPagar: Double = 0.0,
-    var idVehiculo: Int = 0,
+    var paradaInicio: Int,
+    var paradaDestino: Int,
+    var idRutaDisponible: Int,
+    var idOperador: Int,
+    var horaSalida: String,
+    var tipoUsuario: Int,
+    var fecha: String,
+    var hora: String,
+    var cantPasajes: Int,
+    var totalPagar: Double,
+    var idVehiculo: Int,
     var voucher: String = ""
 )

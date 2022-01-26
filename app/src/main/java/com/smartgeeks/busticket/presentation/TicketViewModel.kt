@@ -60,4 +60,15 @@ class TicketViewModel @Inject constructor(
         Log.e(TAG, "saveTicketLocally: $ticketEntity")
     }
 
+    fun saveTicket(ticketEntity: TicketEntity) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+        try {
+            val response = ticketRepository.saveTicket(ticketEntity)
+            Log.e(TAG, "saveTicket: $response")
+            emit(Resource.Success(response))
+        } catch (e: Exception) {
+            Log.e(TAG, "saveTicket: ${e.message}")
+            emit(Resource.Failure(e))
+        }
+    }
 }

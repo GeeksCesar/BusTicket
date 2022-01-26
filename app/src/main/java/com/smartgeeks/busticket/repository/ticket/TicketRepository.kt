@@ -18,4 +18,7 @@ interface TicketRepository {
     ): ResponseSendSeatTicket
 
     suspend fun saveTicketLocally(ticketEntity: TicketEntity)
+
+    suspend fun saveTicket(ticketEntity: TicketEntity) : Any
+
 }
