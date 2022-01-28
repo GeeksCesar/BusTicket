@@ -3,12 +3,18 @@ package com.smartgeeks.busticket.core;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnections;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
 
+import java.io.IOException;
+import java.util.UUID;
+
 public class MyBluetoothPrintersConnections extends BluetoothConnections {
+
+    private static final UUID PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     /**
      * Easy way to get the first bluetooth printer paired / connected.
@@ -53,7 +59,8 @@ public class MyBluetoothPrintersConnections extends BluetoothConnections {
             int majDeviceCl = device.getBluetoothClass().getMajorDeviceClass(),
                     deviceCl = device.getBluetoothClass().getDeviceClass();
 
-            if ((majDeviceCl == BluetoothClass.Device.Major.IMAGING && (deviceCl == 1664 || deviceCl == BluetoothClass.Device.Major.IMAGING)) || device.getName().equals("InnerPrinter")) {
+            if ((majDeviceCl == BluetoothClass.Device.Major.IMAGING && (deviceCl == 1664 || deviceCl == BluetoothClass.Device.Major.IMAGING))
+                    || device.getName().equals("InnerPrinter")  || device.getAddress().equals("00:11:22:33:44:55") ) {
                 printersTmp[i++] = new BluetoothConnection(device);
             }
         }
@@ -61,5 +68,14 @@ public class MyBluetoothPrintersConnections extends BluetoothConnections {
         System.arraycopy(printersTmp, 0, bluetoothPrinters, 0, i);
         return bluetoothPrinters;
     }
+
+    @SuppressLint("MissingPermission")
+    private static BluetoothSocket getSocket(BluetoothDevice device) throws IOException {
+        BluetoothSocket socket;
+        socket = device.createRfcommSocketToServiceRecord(PRINTER_UUID);
+        socket.connect();
+        return  socket;
+    }
+
 
 }

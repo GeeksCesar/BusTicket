@@ -30,6 +30,8 @@ import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.dantsu.escposprinter.EscPosPrinter
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
@@ -109,6 +111,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var preferences: SharedPreferences? = null
     var estadoPrint = false
     var namePrint: String? = null
+
+
+    private var bluetoothPrinterConnection : BluetoothConnection? = MyBluetoothPrintersConnections.selectFirstPaired()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -174,16 +180,22 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     private fun checkBluetoothDevices() {
         val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
+        Log.e(TAG, "checkBluetoothDevices: $bluetoothPrintersConnections")
 
-        // Si no hay conexiones bluetooth, se muestra un mensaje de error
+        // Si no hay conexiones bluetooth
         if (bluetoothPrintersConnections != null) {
-            if (bluetoothPrintersConnections.isEmpty()) {
-                DialogAlert.showDialogFailed(
-                    context,
-                    "Conectar Impresora",
-                    "No hay conexiones bluetooth",
-                    SweetAlertDialog.WARNING_TYPE
-                )
+            if (bluetoothPrinterConnection == null) {
+
+                SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE)
+                    .setTitleText("Conectar Impresora")
+                    .setContentText("No hay conexiones bluetooth")
+                    .setConfirmClickListener { sDialog ->
+                        sDialog.dismissWithAnimation()
+
+                        // Show dialog with list of bluetooth devices
+                        showDialogTicketLibrary()
+                    }
+                    .show()
             }
         }
 
@@ -258,7 +270,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
      * Request to Service
      */
     private fun fetchData() {
-        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario).observe(this, { result ->
+        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
                     progress?.dismiss()
@@ -282,11 +294,11 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     checkBluetoothStatus()
                 }
             }
-        })
+        }
     }
 
     private fun fetchVehicleInfo() {
-        vehicleViewModel.getVehicleInfo(id_vehiculo).observe(this, { result ->
+        vehicleViewModel.getVehicleInfo(id_vehiculo).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
                     progress?.dismiss()
@@ -301,7 +313,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
-        })
+        }
     }
 
     private fun getDataPrint() {
@@ -593,7 +605,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
 
                 bluetoothPrintersConnections?.forEach { bluetoothConnection ->
-                    Log.e(TAG, "Device: ${bluetoothConnection.device}")
+                    Log.e(TAG, "Device: ${bluetoothConnection.device.name}")
                 }
 
                 Log.e(TAG, "doPrintTicket: $bluetoothPrintersConnections")
@@ -602,7 +614,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 Toast.makeText(this, "${MyBluetoothPrintersConnections.selectFirstPaired()?.device?.name}", Toast.LENGTH_SHORT).show()
 
                 val printer =
-                    EscPosPrinter(MyBluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32)
+                    EscPosPrinter(bluetoothPrinterConnection, 203, 48f, 32)
 
                 val textToPrint = """
                     [C]<img>${
@@ -646,6 +658,68 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             e.printStackTrace()
             Log.e(TAG, "doPrintTicket Error: ${e.message}")
         }
+    }
+
+    private fun showDialogTicketLibrary() {
+        dialogPrint = Dialog(context!!)
+        dialogPrint.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialogPrint.setContentView(R.layout.dialog_print)
+        dialogPrint.setCanceledOnTouchOutside(false)
+        dialogPrint.setCancelable(false)
+        dialogPrint.window?.setLayout(
+            (getScreenWidth(this@SelectSillas) * .9).toInt(),
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        btnCancelar = dialogPrint.findViewById(R.id.btnCancelar)
+        lstPrint = dialogPrint.findViewById(R.id.listViewPrint)
+
+        /*val pairedDevice = bluetoothAdapter?.bondedDevices
+        if ((pairedDevice?.size ?: 0) > 0) {
+            lisPrintBluetooth.clear()
+            for (pairedDev in pairedDevice!!) {
+                lisPrintBluetooth.add(pairedDev.name)
+            }
+        }*/
+        val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list?.map { it.device.name } ?: listOf()
+
+        lstPrint.adapter = object :
+            ArrayAdapter<String?>(
+                this,
+                android.R.layout.simple_list_item_1,
+                bluetoothPrintersConnections.toList()
+            ) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val text = view.findViewById<TextView>(android.R.id.text1)
+                text.setTextColor(Color.BLACK)
+                return view
+            }
+        }
+        lstPrint.onItemClickListener =
+            AdapterView.OnItemClickListener { parent, view, position, id ->
+                val deviceName = parent.getItemAtPosition(position).toString()
+
+                // Connect to the device
+                bluetoothPrinterConnection = MyBluetoothPrintersConnections().list?.find { it.device.name == deviceName }
+
+                /*bluetoothDevice = bluetoothAdapter?.getRemoteDevice(deviceName)
+
+                //Standard uuid from string //
+                val uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
+                bluetoothSocket = bluetoothDevice!!.createRfcommSocketToServiceRecord(uuidSting)
+                bluetoothSocket?.let {
+                    it.connect()
+                    outputStream = it.outputStream
+                    outputStreamTitle = it.outputStream
+                    inputStream = it.inputStream
+                }*/
+
+                Log.e(TAG, "SelectPrinter: $deviceName - $bluetoothPrinterConnection")
+
+                dialogPrint.hide()
+            }
+        btnCancelar.setOnClickListener { dialogPrint.hide() }
+        dialogPrint.show()
     }
 
     private fun handlePrintTicket() {
