@@ -7,6 +7,7 @@ import com.smartgeeks.busticket.api.TicketApi
 import com.smartgeeks.busticket.data.local.AppDatabase
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.ticket.ResponseSendSeatTicket
 import com.smartgeeks.busticket.utils.InternetChecker
 import javax.inject.Inject
@@ -60,6 +61,29 @@ class TicketRepositoryImpl @Inject constructor(
             Log.e("Repo saveTicket", "NO Internet: ")
             ticketDAO.insert(ticketEntity)
         }
+    }
+
+    override suspend fun syncTickets(): ResponseSaveTicket {
+        return if (InternetChecker.checkForInternetConnection(context)){
+
+            for (ticket : TicketEntity in ticketDAO.getAllTickets()){
+                Log.e(TAG, "Sincronizando ticket: ${ticket.id}")
+                val response = ticketApi.saveTicket(ticket)
+                if (response.estado == 1 && response.remoto != 0){
+                    Log.e(TAG, "Deleting ticket: ${ticket.id}")
+                    ticketDAO.delete(ticket)
+                }
+            }
+
+            ResponseSaveTicket( "Tickets sincronizados", 1)
+        } else {
+            ResponseSaveTicket("No hay conexión a internet", 0)
+        }
+
+    }
+
+    override suspend fun getTickets(): List<TicketEntity> {
+        return ticketDAO.getAllTickets()
     }
 
 }

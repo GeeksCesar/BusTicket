@@ -3,8 +3,9 @@ package com.smartgeeks.busticket.sync;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.smartgeeks.busticket.utils.Constantes;
 

@@ -8,7 +8,9 @@ import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
-import android.content.*
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Point
@@ -27,11 +29,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.dantsu.escposprinter.EscPosPrinter
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
@@ -42,7 +42,6 @@ import com.smartgeeks.busticket.data.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
-import com.smartgeeks.busticket.sync.SyncServiceRemote
 import com.smartgeeks.busticket.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 import pub.devrel.easypermissions.EasyPermissions
@@ -113,7 +112,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var namePrint: String? = null
 
 
-    private var bluetoothPrinterConnection : BluetoothConnection? = MyBluetoothPrintersConnections.selectFirstPaired()
+    private var bluetoothPrinterConnection: BluetoothConnection? =
+        MyBluetoothPrintersConnections.selectFirstPaired()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,14 +127,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         initWidgets()
         fetchData()
 
-        // Filtro de acciones que serán alertadas
-        val filter = IntentFilter(Constantes.ACTION_RUN_REMOTE_SYNC)
-        filter.addAction(Constantes.EXTRA_PROGRESS)
-        filter.addAction(Constantes.ACTION_FINISH_REMOTE_SYNC)
-        val receiver = ResponseReceiver()
-        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(
-            receiver, filter
-        )
 
         binding.btnConfirmarTicket.setOnClickListener(View.OnClickListener {
             listSillas = ""
@@ -609,9 +601,16 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 }
 
                 Log.e(TAG, "doPrintTicket: $bluetoothPrintersConnections")
-                Log.e(TAG, "First Paired: ${MyBluetoothPrintersConnections.selectFirstPaired()?.device}")
+                Log.e(
+                    TAG,
+                    "First Paired: ${MyBluetoothPrintersConnections.selectFirstPaired()?.device}"
+                )
 
-                Toast.makeText(this, "${MyBluetoothPrintersConnections.selectFirstPaired()?.device?.name}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "${MyBluetoothPrintersConnections.selectFirstPaired()?.device?.name}",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 val printer =
                     EscPosPrinter(bluetoothPrinterConnection, 203, 48f, 32)
@@ -680,7 +679,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 lisPrintBluetooth.add(pairedDev.name)
             }
         }*/
-        val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list?.map { it.device.name } ?: listOf()
+        val bluetoothPrintersConnections =
+            MyBluetoothPrintersConnections().list?.map { it.device.name } ?: listOf()
 
         lstPrint.adapter = object :
             ArrayAdapter<String?>(
@@ -700,7 +700,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 val deviceName = parent.getItemAtPosition(position).toString()
 
                 // Connect to the device
-                bluetoothPrinterConnection = MyBluetoothPrintersConnections().list?.find { it.device.name == deviceName }
+                bluetoothPrinterConnection =
+                    MyBluetoothPrintersConnections().list?.find { it.device.name == deviceName }
 
                 /*bluetoothDevice = bluetoothAdapter?.getRemoteDevice(deviceName)
 
@@ -1074,10 +1075,16 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun remoteSync() {
-        if (!state_sync) {
-            val sync = Intent(context, SyncServiceRemote::class.java)
-            sync.action = Constantes.ACTION_RUN_REMOTE_SYNC
-            applicationContext.startService(sync)
+        ticketViewModel.syncTickets().observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    if (result.data.estado == 1) {
+                        Toast.makeText(this, "Datos sincronizados", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         }
     }
 
@@ -1090,16 +1097,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             bluetoothSocket!!.close()
         } catch (ex: Exception) {
             ex.printStackTrace()
-        }
-    }
-
-    // Broadcast receiver que recibe las emisiones desde los servicios
-    private inner class ResponseReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                Constantes.ACTION_RUN_REMOTE_SYNC -> state_sync =
-                    intent.getBooleanExtra(Constantes.EXTRA_PROGRESS, false)
-            }
         }
     }
 

@@ -71,4 +71,24 @@ class TicketViewModel @Inject constructor(
             emit(Resource.Failure(e))
         }
     }
+
+    fun syncTickets() = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+        try {
+            emit(Resource.Success(ticketRepository.syncTickets()))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
+
+    fun getTickets() = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+        try {
+            emit(Resource.Success(ticketRepository.getTickets()))
+        } catch (e: Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
+
+
 }

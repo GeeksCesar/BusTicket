@@ -1,10 +1,6 @@
 package com.smartgeeks.busticket
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
+import android.content.*
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -25,8 +21,8 @@ import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivitySplashScreenBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
+import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.sync.SyncServiceLocal
-import com.smartgeeks.busticket.sync.SyncServiceRemote
 import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
@@ -48,6 +44,7 @@ class SplashScreen : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     private var timer: CountDownTimer? = null
     private lateinit var textView: TextView
@@ -94,13 +91,17 @@ class SplashScreen : AppCompatActivity() {
         authViewModel.checkLockedDevice(
             UsuarioPreferences.getInstance(this).idUser,
             Utilities.getDeviceId(this)
-        ).observe(this, { result ->
+        ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
                     goNextScreen()
 
                     when (result.exception) {
-                        is UnknownHostException -> Toast.makeText(this, "Sin conexión al servidor", Toast.LENGTH_SHORT).show()
+                        is UnknownHostException -> Toast.makeText(
+                            this,
+                            "Sin conexión al servidor",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                     Log.e(TAG, "checkLockedDevice: ${result.exception}")
                     binding.progresBar.visibility = View.GONE
@@ -112,20 +113,21 @@ class SplashScreen : AppCompatActivity() {
                     Log.e(TAG, "checkLockedDevice: ${result.data}")
                 }
             }
-        })
+        }
     }
 
     private fun goNextScreen() {
         if (session == "SessionSuccess" && !AppPreferences.isLockedDevice) {
 
+            remoteSync()
             // Execute JOB on coroutines
             syncJob = scope.launch(Dispatchers.Main) {
                 setInformationLoading()
             }
 
             scope.launch {
+                // Manage in a service
                 localSync()
-                remoteSync()
             }
         } else if (session == "SessionFailed" || AppPreferences.isLockedDevice) {
             intent = Intent(this, Login::class.java)
@@ -174,7 +176,7 @@ class SplashScreen : AppCompatActivity() {
 
     private fun getMessageCompany() {
         authViewModel.getMessageCompany(UsuarioPreferences.getInstance(this).idEmpresa)
-            .observe(this, { result ->
+            .observe(this) { result ->
                 when (result) {
                     is Resource.Failure -> {
                         Log.e(TAG, "getMessageCompany: ${result.exception.message}")
@@ -185,7 +187,7 @@ class SplashScreen : AppCompatActivity() {
                     }
                 }
 
-            })
+            }
     }
 
     private fun localSync() {
@@ -198,9 +200,13 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun remoteSync() {
-        val sync = Intent(this, SyncServiceRemote::class.java)
-        sync.action = Constantes.ACTION_RUN_REMOTE_SYNC
-        startService(sync)
+        ticketViewModel.syncTickets().observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> Unit
+            }
+        }
     }
 
     override fun onDestroy() {

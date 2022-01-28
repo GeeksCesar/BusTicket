@@ -230,7 +230,6 @@ class SelectRutas : AppCompatActivity(), PrintState {
                     SweetAlertDialog.NORMAL_TYPE
                 )
             } else {
-                binding.btnFinalizar.isEnabled = false
                 binding.btnFinalizar.visibility = View.GONE
 
                 // Guarda los datos en la BD Local
