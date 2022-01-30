@@ -400,6 +400,10 @@ public class Ticket extends Fragment {
             super.onPostExecute(s);
             //setAdapter
             spPlaca.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_placa, R.id.txtName, listPlacas));
+
+            if (listPlacas.size() == 0) {
+                DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido Vehiculos", SweetAlertDialog.WARNING_TYPE);
+            }
         }
     }
 
@@ -411,10 +415,6 @@ public class Ticket extends Fragment {
             listHora.clear();
             Log.e(TAG, "Id Vehículo: " + strings[0]);
             listRutas = Ruta.find(Ruta.class, "vehiculo = ?", strings[0]);
-
-            if (listRutas.size() == 0) {
-                DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido rutas para este Vehiculo", SweetAlertDialog.WARNING_TYPE);
-            }
 
             for (Ruta ruta : listRutas) {
                 String nameRuta = ruta.getPartida() + " - " + ruta.getDestino();
@@ -428,6 +428,10 @@ public class Ticket extends Fragment {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             spRuta.setAdapter(new ArrayAdapter<String>(context, R.layout.custom_spinner_rutas, R.id.txtName, listRuta));
+
+            if (listRutas.size() == 0) {
+                DialogAlert.showDialogFailed(context, "¡Atención!", "No se han definido rutas para este Vehiculo", SweetAlertDialog.WARNING_TYPE);
+            }
         }
     }
 

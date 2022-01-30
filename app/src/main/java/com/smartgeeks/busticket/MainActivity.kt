@@ -215,8 +215,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        setUserStatus(1)
-        observeRemoteSync()
+
+        try {
+            setUserStatus(1)
+            observeRemoteSync()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun observeRemoteSync() {
