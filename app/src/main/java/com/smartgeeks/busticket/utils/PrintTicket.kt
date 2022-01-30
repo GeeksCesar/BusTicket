@@ -120,11 +120,11 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
                             abrirImpresoraBlue()
                             break
                         } else {
-                            Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
+                            Log.e(TAG, "error no existe impresora")
                         }
                     }
                 } else {
-                    Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
+                    Log.e(TAG, "No hay dispositivos emparejados")
                 }
             } else {
                 showDialogTiquete()
@@ -187,11 +187,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             }
         }
 
-        btnCancel.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                printDialog.dismiss()
-            }
-        })
+        btnCancel.setOnClickListener { printDialog.dismiss() }
         try {
             printDialog.show()
         } catch (e: java.lang.Exception) {
@@ -239,7 +235,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
 
     private fun abrirImpresoraBlue() {
         try {
-            Log.i(PreciosRutaConductor.TAG, "Entro a print")
+            Log.e(TAG, "Abriendo impresora $bluetoothDevice   - ${bluetoothDevice.name}")
             //Standard uuid from string //
             val uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting)
@@ -251,7 +247,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             printData()
             finishProcess()
         } catch (ex: java.lang.Exception) {
-            Log.i(PreciosRutaConductor.TAG, "Error P: " + ex.message)
+            Log.i(TAG, "Error P: " + ex.message)
         }
     }
 
@@ -285,7 +281,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             readBufferPosition = 0
             readBuffer = ByteArray(1024)
             thread = Thread {
-                Log.d(PreciosRutaConductor.TAG, "method run")
+                Log.d(TAG, "method run")
                 while (!Thread.currentThread().isInterrupted && !stopWorker) {
                     try {
                         val byteAvailable = inputStream!!.available()
@@ -318,7 +314,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     private fun printData() {
-        Log.d(PreciosRutaConductor.TAG, "entro a printdata")
+        Log.d(TAG, "entro a printdata")
         val split: Array<String> = info.split(",").toTypedArray()
         try {
             val arrayOfByte1 = byteArrayOf(27, 33, 0)
@@ -464,7 +460,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
-            Log.e(PreciosRutaConductor.TAG, "error in printdata")
+            Log.e(TAG, "error in printdata")
         }
     }
 
