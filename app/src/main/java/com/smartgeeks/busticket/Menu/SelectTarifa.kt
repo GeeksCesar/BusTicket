@@ -12,7 +12,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.pedant.SweetAlert.SweetAlertDialog
@@ -26,8 +25,7 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.utils.PrintTicket
-import com.smartgeeks.busticket.utils.PrintTicket.PrintState
+import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.RecyclerItemClickListener
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
@@ -36,7 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.ArrayList
 
 @AndroidEntryPoint
-class SelectTarifa : AppCompatActivity(), PrintState {
+class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
     var context: Context? = null
     var bundle: Bundle? = null
     var id_horario = 0
@@ -50,7 +48,8 @@ class SelectTarifa : AppCompatActivity(), PrintState {
     var tarifaLists: MutableList<TipoUsuario> = ArrayList()
     var layoutManager: RecyclerView.LayoutManager? = null
     var adapterListTarifas: AdapterTarifas? = null
-    private var printTicket: PrintTicket? = null
+
+    private lateinit var printTicketLibrary: PrintTicketLibrary
 
     private lateinit var binding: ActivitySelectTarifaBinding
     private val ticketViewModel: TicketViewModel by viewModels()
@@ -67,7 +66,7 @@ class SelectTarifa : AppCompatActivity(), PrintState {
         context = this@SelectTarifa
         initWidgets()
         setupOnBackButton()
-        printTicket = PrintTicket(this@SelectTarifa, this)
+        printTicketLibrary = PrintTicketLibrary(this@SelectTarifa, this)
     }
 
     private fun setupOnBackButton() {
@@ -217,18 +216,9 @@ class SelectTarifa : AppCompatActivity(), PrintState {
         /**
          * This method printTicket.
          */
-        printTicket!!.setData(
-            departureId,
-            arrivalId,
-            routeAvailableId,
-            schedule,
-            passengerTypeId,
-            ticketPrice,
-            vehicleId,
-            passengerTypeName,
-            companyInfo!!
-        )
-        printTicket!!.print()
+
+        printTicketLibrary.setData(ticketEntity, passengerTypeName, companyInfo ?: "")
+        printTicketLibrary.print()
     }
 
     private fun saveTicket(ticketEntity: TicketEntity) {
@@ -239,11 +229,16 @@ class SelectTarifa : AppCompatActivity(), PrintState {
                 is Resource.Success -> {
                     when (result.data) {
                         is Long -> {
-                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         is ResponseSaveTicket -> {
                             if (result.data.estado == 1)
-                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this,
+                                    "Ticket guardado en el servidor",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                         }
 
                     }

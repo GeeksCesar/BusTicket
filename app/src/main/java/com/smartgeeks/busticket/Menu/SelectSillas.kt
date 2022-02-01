@@ -717,6 +717,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
         // Transform text to print ticket correctly
         textToPrint = textToPrint.lines().joinToString(transform = String::trim, separator = "\n")
+        Log.e(TAG, textToPrint)
 
         return printer.setTextToPrint(textToPrint)
     }

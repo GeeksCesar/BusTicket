@@ -27,16 +27,14 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
+import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.*
-import com.smartgeeks.busticket.utils.PrintTicket.PrintState
-import com.smartgeeks.busticket.utils.Utilities.toString
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.util.*
-import kotlin.math.log
 
 @AndroidEntryPoint
-class SelectRutas : AppCompatActivity(), PrintState {
+class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     var bundle: Bundle? = null
     var formatea = DecimalFormat("###,###.##")
 
@@ -75,8 +73,7 @@ class SelectRutas : AppCompatActivity(), PrintState {
     var estadoRuta = false
     var estadoPrint = false
     var namePrint: String? = null
-    private lateinit var printTicket: PrintTicket
-
+    private lateinit var printTicket: PrintTicketLibrary
 
     private val ticketViewModel: TicketViewModel by viewModels()
     private lateinit var binding: ActivitySelectRutasBinding
@@ -92,7 +89,7 @@ class SelectRutas : AppCompatActivity(), PrintState {
         setContentView(binding.root)
         initWidget()
 
-        printTicket = PrintTicket(this@SelectRutas, this)
+        printTicket = PrintTicketLibrary(this@SelectRutas, this)
         binding.spUsuarios.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
@@ -253,17 +250,11 @@ class SelectRutas : AppCompatActivity(), PrintState {
                 )
                 saveTicket(ticketEntity)
 
+                val ticketInfo = "$info,$ruta_inicio,$ruta_fin"
                 printTicket.setData(
-                    id_paradero_inicio,
-                    id_paradero_fin,
-                    id_ruta_disponible,
-                    horario,
-                    id_tipo_usuario,
-                    precio_sum_pasaje.toDouble(),
-                    id_vehiculo,
+                    ticketEntity,
                     nameUsuario,
-                    info,
-                    1
+                    ticketInfo
                 )
                 printTicket.print()
             }
@@ -293,11 +284,9 @@ class SelectRutas : AppCompatActivity(), PrintState {
                     InternetCheck { internet ->
                         if (internet) {
                             Log.e(TAG, "Hay conexión a Internet")
-                            //doSomethingOnConnected();
                             startSelectSillasActivity()
                         } else {
                             Log.e(TAG, "No hay conexión a Internet")
-                            //doSomethingOnNoInternet();
                             DialogAlert.showDialogFailed(
                                 context,
                                 "Error",
@@ -319,11 +308,16 @@ class SelectRutas : AppCompatActivity(), PrintState {
                 is Resource.Success -> {
                     when (result.data) {
                         is Long -> {
-                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         is ResponseSaveTicket -> {
                             if (result.data.estado == 1)
-                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this,
+                                    "Ticket guardado en el servidor",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                         }
 
                     }

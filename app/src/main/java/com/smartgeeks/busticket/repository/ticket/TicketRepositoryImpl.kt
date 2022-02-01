@@ -52,7 +52,7 @@ class TicketRepositoryImpl @Inject constructor(
         return if (InternetChecker.checkForInternetConnection(context)){
             Log.e("Repo saveTicket", "Internet: ")
             val response = ticketApi.saveTicket(ticketEntity)
-            if (response.estado == 1){
+            if (response.estado == 1 && ticketEntity.id > 0){
                 Log.e(TAG, "Deleting ticket: ${ticketEntity.id}")
                 ticketDAO.delete(ticketEntity)
             }
