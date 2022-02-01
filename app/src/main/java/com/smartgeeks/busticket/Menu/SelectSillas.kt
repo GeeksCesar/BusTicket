@@ -30,8 +30,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import cn.pedant.SweetAlert.SweetAlertDialog
-import com.dantsu.escposprinter.EscPosPrinter
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection
+import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
@@ -42,9 +41,10 @@ import com.smartgeeks.busticket.data.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
+import com.smartgeeks.busticket.printer.AsyncBluetoothEscPosPrint
+import com.smartgeeks.busticket.printer.AsyncEscPosPrinter
 import com.smartgeeks.busticket.utils.*
 import dagger.hilt.android.AndroidEntryPoint
-import pub.devrel.easypermissions.EasyPermissions
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -52,6 +52,8 @@ import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.math.ceil
+
+private const val PERMISSION_BLUETOOTH = 1
 
 @AndroidEntryPoint
 class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
@@ -99,8 +101,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private val vehicleViewModel: VehicleViewModel by viewModels()
     private val ticketViewModel: TicketViewModel by viewModels()
 
-    private val PERMISSION_BLUETOOTH = 1
-
     @Volatile
     var stopWorker = false
     lateinit var dialogPrint: Dialog
@@ -110,10 +110,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var preferences: SharedPreferences? = null
     var estadoPrint = false
     var namePrint: String? = null
-
-
-    private var bluetoothPrinterConnection: BluetoothConnection? =
-        MyBluetoothPrintersConnections.selectFirstPaired()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,6 +121,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         binding = ActivitySelectSillasBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initWidgets()
+        getDataPrint()
         fetchData()
 
 
@@ -153,10 +150,13 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     listSillas = "$listSillas$silla-"
                 }
                 listSillas = listSillas.substring(0, listSillas.length - 1)
+
+                /*printBluetooth()
+                return@OnClickListener*/
+
                 binding.btnConfirmarTicket.isEnabled = false
                 binding.btnConfirmarTicket.visibility = View.GONE
                 showProgress(true)
-
                 registerTicket(
                     id_paradero_incio,
                     id_paradero_final,
@@ -168,65 +168,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 )
             }
         })
-    }
-
-    private fun checkBluetoothDevices() {
-        val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
-        Log.e(TAG, "checkBluetoothDevices: $bluetoothPrintersConnections")
-
-        // Si no hay conexiones bluetooth
-        if (bluetoothPrintersConnections != null) {
-            if (bluetoothPrinterConnection == null) {
-
-                SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE)
-                    .setTitleText("Conectar Impresora")
-                    .setContentText("No hay conexiones bluetooth")
-                    .setConfirmClickListener { sDialog ->
-                        sDialog.dismissWithAnimation()
-
-                        // Show dialog with list of bluetooth devices
-                        showDialogTicketLibrary()
-                    }
-                    .show()
-            }
-        }
-
-        bluetoothPrintersConnections?.forEach { bluetoothConnection ->
-            Log.e(TAG, "Device: ${bluetoothConnection.device}")
-        }
-    }
-
-    private fun checkBluetoothStatus() {
-        if (Utilities.isBluetoothEnabled(this)) {
-            checkBluetoothDevices()
-        } else {
-            val alertDialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
-            alertDialog.titleText = "Bluetooth"
-            alertDialog.contentText = "Habilita el Bluetooth"
-            alertDialog.confirmText = "Aceptar"
-            alertDialog.setConfirmClickListener {
-                alertDialog.dismissWithAnimation()
-
-                // Turn on Bluetooth
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                startActivityForResult(enableBtIntent, PERMISSION_BLUETOOTH)
-            }
-            alertDialog.show()
-        }
-    }
-
-    private fun requestBluetoothPermissions() {
-        if (Utilities.hasBluetoothPermission(this)) {
-            Log.e(TAG, "requestBluetoothPermissions: Los tiene")
-            return
-        }
-
-        EasyPermissions.requestPermissions(
-            this,
-            "Debes habilitar el permiso de Bluetooth para usar esta app.",
-            PERMISSION_BLUETOOTH,
-            Manifest.permission.BLUETOOTH
-        )
     }
 
     private fun initWidgets() {
@@ -253,9 +194,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
         //Input
         showDataTextView()
-        encontrarDispositivoBlue()
-        remoteSync()
-        getDataPrint()
+        // encontrarDispositivoBlue()
+        // remoteSync()
     }
 
     /**
@@ -282,8 +222,9 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
                     }
                     fetchVehicleInfo()
-                    // requestBluetoothPermissions()
                     checkBluetoothStatus()
+
+                    // requestBluetoothPermissions()
                 }
             }
         }
@@ -311,8 +252,14 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private fun getDataPrint() {
         namePrint = RutaPreferences.getInstance(context).namePrint
         estadoPrint = RutaPreferences.getInstance(context).estadoPrint
-        Log.d(Service.TAG, "name print: $namePrint")
-        Log.d(Service.TAG, "boolen print: $estadoPrint")
+        Constants.selectedDevice =
+            MyBluetoothPrintersConnections().list?.find { it.device.name == namePrint }
+
+        Log.e(
+            TAG,
+            "Printer name: $namePrint - ${Constants.selectedDevice?.device?.name}  ${Constants.selectedDevice?.isConnected}"
+        )
+        Log.d(TAG, "boolen print: $estadoPrint")
     }
 
     @SuppressLint("SetTextI18n")
@@ -557,8 +504,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         button.setOnClickListener {
                             try {
                                 alertDialog.dismiss()
+                                printBluetooth()
                                 // handlePrintTicket()
-                                doPrintTicket()
                             } catch (ex: Exception) {
                                 ex.printStackTrace()
                             }
@@ -579,83 +526,24 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
-    private fun doPrintTicket() {
-        try {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.e(TAG, "doPrintTicket: Permission Failed")
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.BLUETOOTH),
-                    PERMISSION_BLUETOOTH
-                )
-            } else {
-                val split = info_ruta.split(",")
-                val bluetoothPrintersConnections = MyBluetoothPrintersConnections().list
+    private fun checkBluetoothStatus() {
+        if (!Utilities.isBluetoothEnabled(this)) {
+            val alertDialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            alertDialog.titleText = "Bluetooth"
+            alertDialog.contentText = "Habilita el Bluetooth"
+            alertDialog.confirmText = "Aceptar"
+            alertDialog.setConfirmClickListener {
+                alertDialog.dismissWithAnimation()
 
-                bluetoothPrintersConnections?.forEach { bluetoothConnection ->
-                    Log.e(TAG, "Device: ${bluetoothConnection.device.name}")
-                }
-
-                Log.e(TAG, "doPrintTicket: $bluetoothPrintersConnections")
-                Log.e(
-                    TAG,
-                    "First Paired: ${MyBluetoothPrintersConnections.selectFirstPaired()?.device}"
-                )
-
-                Toast.makeText(
-                    this,
-                    "${MyBluetoothPrintersConnections.selectFirstPaired()?.device?.name}",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                val printer =
-                    EscPosPrinter(bluetoothPrinterConnection, 203, 48f, 32)
-
-                val textToPrint = """
-                    [C]<img>${
-                    PrinterTextParserImg.bitmapToHexadecimalString(
-                        printer,
-                        this.applicationContext.resources.getDrawableForDensity(
-                            R.drawable.imagotipo_busticket,
-                            DisplayMetrics.DENSITY_MEDIUM
-                        )
-                    )
-                }</img>
-                    [L]
-                    [C]<b>${split[3].trim { it <= ' ' }.uppercase(Locale.getDefault())} a ${
-                    split[4].trim { it <= ' ' }
-                        .uppercase(Locale.getDefault())
-                }<b>
-                    [L]
-                    [C]Usted Pagó:
-                    [L]
-                    [C]<font size='wide'>$getPrecioPasaje</font>
-                    [C]${nombreUsuario}
-                    [L]
-                    [C]--------------------------------
-                    [C]Fecha[C]Salida[C]Asiento
-                    [C]${Utilities.getDate("dd-MM-yy")}[C]${split[2]}[C]$listSillas
-                    [C]--------------------------------
-                    [L]
-                    [C]${desc_empresa}
-                    [L]
-                    [L]$numVoucher
-                    [L]Emisión: ${Utilities.getDate("dd-MM-yy")}
-                    [L]${Utilities.getTime()} ${split[0]} ${UsuarioPreferences.getInstance(context).nombre}
-                    [L]
-                    [C]www.busticket.cl
-                    [C]Copia Cliente
-                    """.trimIndent()
-
-                printer.printFormattedText(textToPrint)
+                // Turn on Bluetooth
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, PERMISSION_BLUETOOTH)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "doPrintTicket Error: ${e.message}")
+            alertDialog.show()
+        } else {
+            if (Constants.selectedDevice == null) {
+                showDialogTicketLibrary()
+            }
         }
     }
 
@@ -672,13 +560,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         btnCancelar = dialogPrint.findViewById(R.id.btnCancelar)
         lstPrint = dialogPrint.findViewById(R.id.listViewPrint)
 
-        /*val pairedDevice = bluetoothAdapter?.bondedDevices
-        if ((pairedDevice?.size ?: 0) > 0) {
-            lisPrintBluetooth.clear()
-            for (pairedDev in pairedDevice!!) {
-                lisPrintBluetooth.add(pairedDev.name)
-            }
-        }*/
         val bluetoothPrintersConnections =
             MyBluetoothPrintersConnections().list?.map { it.device.name } ?: listOf()
 
@@ -698,25 +579,18 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         lstPrint.onItemClickListener =
             AdapterView.OnItemClickListener { parent, view, position, id ->
                 val deviceName = parent.getItemAtPosition(position).toString()
-
                 // Connect to the device
-                bluetoothPrinterConnection =
+                Constants.selectedDevice =
                     MyBluetoothPrintersConnections().list?.find { it.device.name == deviceName }
 
-                /*bluetoothDevice = bluetoothAdapter?.getRemoteDevice(deviceName)
+                preferences =
+                    context!!.getSharedPreferences(RutaPreferences.PREFERENCES_PRINT, MODE_PRIVATE)
+                preferences?.edit {
+                    putString(RutaPreferences.NAME_PRINT, deviceName)
+                    apply()
+                }
 
-                //Standard uuid from string //
-                val uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
-                bluetoothSocket = bluetoothDevice!!.createRfcommSocketToServiceRecord(uuidSting)
-                bluetoothSocket?.let {
-                    it.connect()
-                    outputStream = it.outputStream
-                    outputStreamTitle = it.outputStream
-                    inputStream = it.inputStream
-                }*/
-
-                Log.e(TAG, "SelectPrinter: $deviceName - $bluetoothPrinterConnection")
-
+                Log.e(TAG, "SelectPrinter: $deviceName - ${Constants.selectedDevice}")
                 dialogPrint.hide()
             }
         btnCancelar.setOnClickListener { dialogPrint.hide() }
@@ -1170,5 +1044,103 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             activity.windowManager.defaultDisplay.getSize(size)
             return size.x
         }
+    }
+
+    /*==============================================================================================
+    ======================================BLUETOOTH PART============================================
+    ==============================================================================================*/
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            when (requestCode) {
+                PERMISSION_BLUETOOTH -> printBluetooth()
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == PERMISSION_BLUETOOTH && resultCode == RESULT_OK) {
+            // showDialogTicketLibrary()
+        }
+    }
+
+    fun printBluetooth() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.BLUETOOTH),
+                PERMISSION_BLUETOOTH
+            )
+        } else {
+            AsyncBluetoothEscPosPrint(this).execute(this.getAsyncEscPosPrinter(Constants.selectedDevice))
+        }
+    }
+
+    /**
+     * Asynchronous printing
+     */
+    @SuppressLint("SimpleDateFormat")
+    fun getAsyncEscPosPrinter(printerConnection: DeviceConnection?): AsyncEscPosPrinter? {
+        val printer = AsyncEscPosPrinter(printerConnection, 203, 48f, 32)
+        val split = info_ruta.split(",")
+        val image = PrinterTextParserImg.bitmapToHexadecimalString(
+            printer, this.applicationContext.resources.getDrawableForDensity(
+                R.drawable.imagotipo_busticket,
+                DisplayMetrics.DENSITY_MEDIUM
+            )
+        )
+        val logo = PrinterTextParserImg.bitmapToHexadecimalString(
+            printer,
+            this.applicationContext.resources.getDrawableForDensity(
+                R.drawable.imagotipo_busticket,
+                DisplayMetrics.DENSITY_MEDIUM
+            )
+        )
+        val stopOne = split[3].trim { it <= ' ' }.uppercase(Locale.getDefault())
+        val stopTwo = split[4].trim { it <= ' ' }.uppercase(Locale.getDefault())
+        val companyName =
+            UsuarioPreferences.getInstance(context).nombreEmpresa.uppercase(Locale.getDefault())
+
+        var textToPrint = """
+            [C]<font size='big'>$companyName</font>
+            [L]
+            [C]<b>${stopOne} a ${stopTwo}<b>
+            [L]
+            [C]Usted Pagó:
+            [L]
+            [C]<font size='wide'>$getPrecioPasaje</font>
+            [C]${nombreUsuario}
+            [L]
+            [C]--------------------------------
+            [C]Fecha[C]Salida[C]Asiento
+            [C]${Utilities.getDate("dd-MM-yy")}[C]${split[2]}[C]$listSillas
+            [C]--------------------------------
+            [L]
+            [C]${desc_empresa}
+            [L]
+            [L]$numVoucher
+            [L]Emisión: ${Utilities.getDate("dd-MM-yy")}
+            [L]${Utilities.getTime()} ${split[0]} ${UsuarioPreferences.getInstance(context).nombre}
+            [L]
+            [C]www.busticket.cl
+            [C]Copia Cliente
+            """
+
+        // Tranform text to print ticket correctly
+        textToPrint = textToPrint.lines().joinToString(transform = String::trim, separator = "\n")
+        Log.e("", textToPrint)
+
+        return printer.setTextToPrint(textToPrint)
     }
 }

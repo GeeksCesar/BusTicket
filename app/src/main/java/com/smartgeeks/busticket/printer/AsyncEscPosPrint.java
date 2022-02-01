@@ -92,10 +92,10 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
             }
 
             this.dialog = new ProgressDialog(context);
-            this.dialog.setTitle("Printing in progress...");
+            this.dialog.setTitle("Impresión en progreso...");
             this.dialog.setMessage("...");
             this.dialog.setProgressNumberFormat("%1d / %2d");
-            this.dialog.setCancelable(false);
+            this.dialog.setCancelable(true);
             this.dialog.setIndeterminate(false);
             this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.show();
@@ -105,16 +105,16 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
     protected void onProgressUpdate(Integer... progress) {
         switch (progress[0]) {
             case AsyncEscPosPrint.PROGRESS_CONNECTING:
-                this.dialog.setMessage("Connecting printer...");
+                this.dialog.setMessage("Conectando impresora...");
                 break;
             case AsyncEscPosPrint.PROGRESS_CONNECTED:
-                this.dialog.setMessage("Printer is connected...");
+                this.dialog.setMessage("La impresora está conectada...");
                 break;
             case AsyncEscPosPrint.PROGRESS_PRINTING:
-                this.dialog.setMessage("Printer is printing...");
+                this.dialog.setMessage("Imprimiendo...");
                 break;
             case AsyncEscPosPrint.PROGRESS_PRINTED:
-                this.dialog.setMessage("Printer has finished...");
+                this.dialog.setMessage("La impresión ha finalizado...");
                 break;
         }
         this.dialog.setProgress(progress[0]);
@@ -134,38 +134,38 @@ public abstract class AsyncEscPosPrint extends AsyncTask<AsyncEscPosPrinter, Int
         switch (result) {
             case AsyncEscPosPrint.FINISH_SUCCESS:
                 new AlertDialog.Builder(context)
-                        .setTitle("Success")
-                        .setMessage("Congratulation ! The text is printed !")
+                        .setTitle("Éxito")
+                        .setMessage("Se ha realizado la impresión!")
                         .show();
                 break;
             case AsyncEscPosPrint.FINISH_NO_PRINTER:
                 new AlertDialog.Builder(context)
-                        .setTitle("No printer")
-                        .setMessage("The application can't find any printer connected.")
+                        .setTitle("Sin impresora")
+                        .setMessage("La aplicación no encuentra ninguna impresora conectada.")
                         .show();
                 break;
             case AsyncEscPosPrint.FINISH_PRINTER_DISCONNECTED:
                 new AlertDialog.Builder(context)
-                    .setTitle("Broken connection")
-                    .setMessage("Unable to connect the printer.")
+                    .setTitle("Sin conexión")
+                    .setMessage("No se puede conectar la impresora.")
                     .show();
                 break;
             case AsyncEscPosPrint.FINISH_PARSER_ERROR:
                 new AlertDialog.Builder(context)
-                    .setTitle("Invalid formatted text")
-                    .setMessage("It seems to be an invalid syntax problem.")
+                    .setTitle("Texto con formato no válido")
+                    .setMessage("Parece ser un problema de sintaxis no válida.")
                     .show();
                 break;
             case AsyncEscPosPrint.FINISH_ENCODING_ERROR:
                 new AlertDialog.Builder(context)
-                    .setTitle("Bad selected encoding")
-                    .setMessage("The selected encoding character returning an error.")
+                    .setTitle("Codificación mal seleccionada")
+                    .setMessage("El carácter de codificación seleccionado que devuelve un error.")
                     .show();
                 break;
             case AsyncEscPosPrint.FINISH_BARCODE_ERROR:
                 new AlertDialog.Builder(context)
-                    .setTitle("Invalid barcode")
-                    .setMessage("Data send to be converted to barcode or QR code seems to be invalid.")
+                    .setTitle("Código de barras no válido")
+                    .setMessage("El envío de datos para convertir a código de barras o código QR parece no ser válido.")
                     .show();
                 break;
         }

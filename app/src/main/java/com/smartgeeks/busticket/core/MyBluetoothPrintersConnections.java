@@ -14,8 +14,6 @@ import java.util.UUID;
 
 public class MyBluetoothPrintersConnections extends BluetoothConnections {
 
-    private static final UUID PRINTER_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
     /**
      * Easy way to get the first bluetooth printer paired / connected.
      *
@@ -59,23 +57,15 @@ public class MyBluetoothPrintersConnections extends BluetoothConnections {
             int majDeviceCl = device.getBluetoothClass().getMajorDeviceClass(),
                     deviceCl = device.getBluetoothClass().getDeviceClass();
 
-            if ((majDeviceCl == BluetoothClass.Device.Major.IMAGING && (deviceCl == 1664 || deviceCl == BluetoothClass.Device.Major.IMAGING))
+            /*if ((majDeviceCl == BluetoothClass.Device.Major.IMAGING && (deviceCl == 1664 || deviceCl == BluetoothClass.Device.Major.IMAGING))
                     || device.getName().equals("InnerPrinter")  || device.getAddress().equals("00:11:22:33:44:55") ) {
                 printersTmp[i++] = new BluetoothConnection(device);
-            }
+            }*/
+            printersTmp[i++] = new BluetoothConnection(device);
         }
         BluetoothConnection[] bluetoothPrinters = new BluetoothConnection[i];
         System.arraycopy(printersTmp, 0, bluetoothPrinters, 0, i);
         return bluetoothPrinters;
     }
-
-    @SuppressLint("MissingPermission")
-    private static BluetoothSocket getSocket(BluetoothDevice device) throws IOException {
-        BluetoothSocket socket;
-        socket = device.createRfcommSocketToServiceRecord(PRINTER_UUID);
-        socket.connect();
-        return  socket;
-    }
-
 
 }
