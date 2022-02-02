@@ -33,13 +33,12 @@ import com.smartgeeks.busticket.utils.Utilities
 import java.text.DecimalFormat
 import java.util.Locale
 
-private const val LEFT_LENGTH = 16
-private const val RIGHT_LENGTH = 16
-private const val LEFT_TEXT_MAX_LENGTH = 8
-
 private const val TAG: String = "PrintTicketLibrary"
 private const val PERMISSION_BLUETOOTH = 1
 
+/**
+ * This class is use to delegate the work to print Tickets on the activities
+ */
 class PrintTicketLibrary(private val context: Activity, var stateListener: PrintState) {
 
     interface PrintState {
@@ -58,15 +57,13 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
     private var countPasajes = 1
     private var namePassengerType: String = ""
     private var info: String = ""
-    private lateinit var ticket : TicketEntity
+    private lateinit var ticket: TicketEntity
 
     // Preferences
     private var idEmpresa: Int = 0
     private var idOperador: Int = 0
     private var companyName: String = ""
     private var companyDesc: String = ""
-
-    private var numVoucher = ""
 
     init {
         idOperador = UsuarioPreferences.getInstance(context).idUser
@@ -91,9 +88,11 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
             }
     }
 
-    fun setData(ticketEntity: TicketEntity, passengerType: String,
+    fun setData(
+        ticketEntity: TicketEntity, passengerType: String,
         info: String = "", ticketQuantity: Int = 1
     ) {
+        stateListener.isLoading(true)
         ticket = ticketEntity
         namePassengerType = passengerType
         countPasajes = ticketQuantity
@@ -129,7 +128,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
                 return view
             }
         }
-        // No convertir a lambda
+
         lstPrint.onItemClickListener =
             AdapterView.OnItemClickListener { parent, view, position, id ->
 
@@ -206,7 +205,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
         var stops = ""
         try {
             stops = "<b>${split[3]} a ${split[4]}<b>"
-        } catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
 
