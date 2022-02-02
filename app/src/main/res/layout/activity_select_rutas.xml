@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/height_contenedor_head"
         android:layout_weight="10"
-        android:paddingHorizontal="@dimen/activity_horizontal_margin"
         android:background="@android:color/transparent"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/activity_horizontal_margin">
 
         <ImageButton
             android:id="@+id/imgBack"
@@ -22,8 +22,8 @@
             android:layout_height="50dp"
             android:layout_marginTop="5dp"
             android:layout_weight="2"
-            android:onClick="goBack"
             android:background="@android:color/transparent"
+            android:onClick="goBack"
             android:src="@mipmap/icon_back" />
 
         <ImageView
@@ -32,12 +32,12 @@
             android:layout_height="50dp"
             android:layout_marginTop="5dp"
             android:layout_weight="6"
-            android:src="@mipmap/header_tickets"/>
+            android:src="@mipmap/header_tickets" />
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"/>
+            android:layout_weight="2" />
 
 
     </LinearLayout>
@@ -45,8 +45,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:layout_below="@+id/contenedorHeader">
+        android:layout_below="@+id/contenedorHeader"
+        android:padding="@dimen/activity_horizontal_margin">
 
         <Spinner
             android:id="@+id/spUsuarios"
@@ -56,47 +56,47 @@
         <Spinner
             android:id="@+id/spInicio"
             style="@style/SpnnerCustom"
-            android:layout_marginTop="@dimen/activity_ontenedor_margin"
+            android:layout_below="@+id/spUsuarios"
             android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
-            android:layout_below="@+id/spUsuarios"/>
+            android:layout_marginTop="@dimen/activity_ontenedor_margin" />
 
         <Spinner
             android:id="@+id/spFin"
             style="@style/SpnnerCustom"
-            android:layout_marginTop="@dimen/activity_ontenedor_margin"
+            android:layout_below="@+id/spInicio"
             android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
-            android:layout_below="@+id/spInicio"/>
+            android:layout_marginTop="@dimen/activity_ontenedor_margin" />
 
 
         <LinearLayout
             android:id="@+id/contenedorCheckbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp"
             android:layout_below="@+id/spFin"
-            android:layout_marginHorizontal="35dp">
+            android:layout_marginHorizontal="35dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
 
             <CheckBox
                 android:id="@+id/cbAsientos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="10dp"
-                android:text="Asientos"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
                 android:buttonTint="@color/colorPrimary"
+                android:text="Asientos"
                 android:textColor="@color/colorAccent" />
 
             <CheckBox
                 android:id="@+id/cbPie"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="10dp"
-                android:text="De pie"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:layout_weight="1"
                 android:buttonTint="@color/colorPrimary"
+                android:text="De pie"
                 android:textColor="@color/colorAccent" />
 
         </LinearLayout>
@@ -105,18 +105,18 @@
             android:id="@+id/contenedorPrecio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="10"
             android:layout_below="@+id/contenedorCheckbox"
+            android:layout_marginHorizontal="25dp"
             android:layout_marginTop="25dp"
-            android:layout_marginHorizontal="25dp">
+            android:orientation="horizontal"
+            android:weightSum="10">
 
             <LinearLayout
                 android:id="@+id/contentButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="5"
                 android:layout_gravity="center"
+                android:layout_weight="5"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -125,20 +125,21 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_weight="4"
+                    android:background="@drawable/bg_button_count"
                     android:text="-"
-                    android:textSize="@dimen/text_size_button_count"
-                    android:background="@drawable/bg_button_count"/>
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="@dimen/text_size_button_count" />
 
                 <TextView
                     android:id="@+id/textCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="10dp"
                     android:layout_weight="2"
-                    android:textSize="@dimen/text_size_count"
-                    android:textColor="@color/colorGray"
-                    android:textStyle="bold"
                     android:text="1"
-                    android:layout_marginHorizontal="10dp" />
+                    android:textColor="@color/colorGray"
+                    android:textSize="@dimen/text_size_count"
+                    android:textStyle="bold" />
 
 
                 <Button
@@ -146,9 +147,10 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_weight="4"
+                    android:background="@drawable/bg_button_count"
                     android:text="+"
-                    android:textSize="@dimen/text_size_button_count"
-                    android:background="@drawable/bg_button_count"/>
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="@dimen/text_size_button_count" />
 
             </LinearLayout>
 
@@ -163,12 +165,12 @@
                     android:id="@+id/tvPrecio"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="@dimen/text_size_price"
                     android:layout_gravity="center"
                     android:gravity="center"
+                    android:text="0"
                     android:textColor="@color/colorGray"
-                    android:textStyle="bold"/>
+                    android:textSize="@dimen/text_size_price"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -196,16 +198,16 @@
         <Button
             android:id="@+id/btnSiguiente"
             style="@style/ButtonCustom"
+            android:layout_alignParentBottom="true"
             android:text="Siguiente"
-            android:visibility="gone"
-            android:layout_alignParentBottom="true"/>
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btnFinalizar"
             style="@style/ButtonCustom"
+            android:layout_alignParentBottom="true"
             android:text="Finalizar"
-            android:visibility="gone"
-            android:layout_alignParentBottom="true"/>
+            android:visibility="gone" />
 
     </RelativeLayout>
 

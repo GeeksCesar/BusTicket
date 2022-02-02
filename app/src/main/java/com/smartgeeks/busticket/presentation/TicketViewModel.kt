@@ -55,11 +55,6 @@ class TicketViewModel @Inject constructor(
         }
     }
 
-    fun saveTicketLocally(ticketEntity: TicketEntity) = viewModelScope.launch {
-        ticketRepository.saveTicketLocally(ticketEntity)
-        Log.e(TAG, "saveTicketLocally: $ticketEntity")
-    }
-
     fun saveTicket(ticketEntity: TicketEntity) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
         try {

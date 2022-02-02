@@ -28,12 +28,12 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivityPrecioRutasConductorBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
+import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.*
-import com.smartgeeks.busticket.utils.PrintTicket.PrintState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState {
+class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicketLibrary.PrintState {
 
     var bundle: Bundle? = null
     var precio_sum_pasaje = 0
@@ -56,11 +56,11 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
     var estadoRuta = false
     private var adapterPrices: AdapterPrecios? = null
 
-    private lateinit var printTicket: PrintTicket
+    private lateinit var printTicket: PrintTicketLibrary
     private lateinit var context: Context
     private lateinit var binding: ActivityPrecioRutasConductorBinding
     private var ticketQuantity = 1
-    private val ticketViewModel : TicketViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +72,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
         binding = ActivityPrecioRutasConductorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        printTicket = PrintTicket(this@PreciosRutaConductor, this)
+        printTicket = PrintTicketLibrary(this@PreciosRutaConductor, this)
         context = this@PreciosRutaConductor
 
         initWidget()
@@ -199,9 +199,8 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
             .setContentText("Se imprimirá el Ticket con el precio $$precio_sum_pasaje")
             .setConfirmText("Imprimir Ticket")
             .setConfirmClickListener { swAlert ->
-                showProgress(true)
                 swAlert.dismiss()
-                printTicket()
+                saveTicket()
             }
             .show()
         val button = sweetdialog.findViewById<Button>(R.id.confirm_button)
@@ -212,26 +211,8 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
         button.setPadding(paddingPixel, 5, paddingPixel, 5)
     }
 
-    private fun printTicket() {
-        precio_sum_pasaje *= ticketQuantity
-        saveTicket()
-
-        printTicket.setData(
-            id_paradero_inicio,
-            id_paradero_fin,
-            id_ruta_disponible,
-            horario,
-            id_tipo_usuario,
-            precio_sum_pasaje.toDouble(),
-            id_vehiculo,
-            getNameTipoPasajero!!,
-            info!!,
-            ticketQuantity
-        )
-        printTicket.print()
-    }
-
     private fun saveTicket() {
+        precio_sum_pasaje *= ticketQuantity
 
         val date = Utilities.getTimeByTimezone("yyyy-MM-dd")
         val hour = Utilities.getTimeByTimezone("HH:mm:ss")
@@ -251,18 +232,39 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
             numVoucher
         )
 
+        printTicket(ticketEntity)
+        sendTicket(ticketEntity)
+    }
+
+    private fun printTicket(ticketEntity: TicketEntity) {
+        printTicket.setData(
+            ticketEntity,
+            getNameTipoPasajero!!,
+            info!!,
+            ticketQuantity
+        )
+        printTicket.print()
+    }
+
+    private fun sendTicket(ticketEntity: TicketEntity) {
         ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
             when (result) {
-                is Resource.Failure -> Unit
-                is Resource.Loading -> Unit
+                is Resource.Failure -> showProgress(false)
+                is Resource.Loading -> showProgress(true)
                 is Resource.Success -> {
+                    showProgress(false)
                     when (result.data) {
                         is Long -> {
-                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Ticket guardado localmente", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         is ResponseSaveTicket -> {
                             if (result.data.estado == 1)
-                                Toast.makeText(this, "Ticket guardado en el servidor", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this,
+                                    "Ticket guardado en el servidor",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                         }
 
                     }
@@ -284,7 +286,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintState 
     }
 
     override fun isLoading(state: Boolean) {
-        showProgress(state)
+
     }
 
     override fun onFinishPrint() {

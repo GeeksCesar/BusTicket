@@ -205,7 +205,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
 
         var stops = ""
         try {
-            stops = "[C]<b>${split[3]} a ${split[4]}<b>"
+            stops = "<b>${split[3]} a ${split[4]}<b>"
         } catch (e: Exception){
             e.printStackTrace()
         }
@@ -213,7 +213,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
         var textToPrint = """
             [L]
             [C]<font size='big'>$companyName</font>
-            [L]$stops
+            [C]$stops
             [C]================================
             [L]
             [C]Usted Pagó:
