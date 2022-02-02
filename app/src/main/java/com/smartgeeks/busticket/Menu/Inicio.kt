@@ -38,6 +38,7 @@ class Inicio : Fragment(R.layout.menu_inicio) {
             when (result) {
                 is Resource.Loading -> Unit
                 is Resource.Success -> {
+                    binding.progresBar.visibility = View.GONE
                     if (result.data.isEmpty()) {
                         binding.btnSync.visibility = View.GONE
                         binding.tvTicketToSync.visibility = View.GONE
@@ -48,6 +49,7 @@ class Inicio : Fragment(R.layout.menu_inicio) {
                     }
                 }
                 is Resource.Failure -> {
+                    binding.progresBar.visibility = View.GONE
                     binding.btnSync.visibility = View.VISIBLE
                 }
             }

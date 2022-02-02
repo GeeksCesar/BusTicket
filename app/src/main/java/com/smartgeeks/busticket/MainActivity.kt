@@ -225,6 +225,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeRemoteSync() {
+        ticketViewModel.getCountTickets().observe(this) { count ->
+            Log.e(TAG, "observeRemoteSync: $count")
+            if (count > 0) {
+                handleSendLocalTickets()
+            }
+        }
+    }
+
+    private fun handleSendLocalTickets() {
         ticketViewModel.syncTickets().observe(this) { result ->
             when (result) {
                 is Resource.Failure -> Unit

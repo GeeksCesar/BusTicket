@@ -21,5 +21,7 @@ interface TicketDAO {
     @Query("SELECT * FROM ticket WHERE id = :id")
     suspend fun getTicketById(id: Int): TicketEntity
 
+    @Query("SELECT COUNT(*) FROM ticket")
+    suspend fun getCountTickets() : Int
 
 }

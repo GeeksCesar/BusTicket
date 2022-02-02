@@ -1,10 +1,8 @@
 package com.smartgeeks.busticket.repository.ticket
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import com.smartgeeks.busticket.api.TicketApi
-import com.smartgeeks.busticket.data.local.AppDatabase
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
@@ -12,7 +10,8 @@ import com.smartgeeks.busticket.data.ticket.ResponseSendSeatTicket
 import com.smartgeeks.busticket.utils.InternetChecker
 import javax.inject.Inject
 
-private val TAG : String = TicketRepositoryImpl::class.java.simpleName
+private val TAG: String = TicketRepositoryImpl::class.java.simpleName
+
 class TicketRepositoryImpl @Inject constructor(
     private val ticketApi: TicketApi,
     private val ticketDAO: TicketDAO,
@@ -49,10 +48,10 @@ class TicketRepositoryImpl @Inject constructor(
 
     override suspend fun saveTicket(ticketEntity: TicketEntity): Any {
 
-        return if (InternetChecker.checkForInternetConnection(context)){
+        return if (InternetChecker.checkForInternetConnection(context)) {
             Log.e("Repo saveTicket", "Internet: ")
             val response = ticketApi.saveTicket(ticketEntity)
-            if (response.estado == 1 && ticketEntity.id > 0){
+            if (response.estado == 1 && ticketEntity.id > 0) {
                 Log.e(TAG, "Deleting ticket: ${ticketEntity.id}")
                 ticketDAO.delete(ticketEntity)
             }
@@ -64,26 +63,26 @@ class TicketRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncTickets(): ResponseSaveTicket {
-        return if (InternetChecker.checkForInternetConnection(context)){
+        return if (InternetChecker.checkForInternetConnection(context)) {
 
-            for (ticket : TicketEntity in ticketDAO.getAllTickets()){
+            for (ticket: TicketEntity in ticketDAO.getAllTickets()) {
                 Log.e(TAG, "Sincronizando ticket: ${ticket.id}")
                 val response = ticketApi.saveTicket(ticket)
-                if (response.estado == 1 && response.remoto != 0){
+                if (response.estado == 1 && response.remoto != 0) {
                     Log.e(TAG, "Deleting ticket: ${ticket.id}")
                     ticketDAO.delete(ticket)
                 }
             }
 
-            ResponseSaveTicket( "Tickets sincronizados", 1)
+            ResponseSaveTicket("Tickets sincronizados", 1)
         } else {
             ResponseSaveTicket("No hay conexión a internet", 0)
         }
-
     }
 
     override suspend fun getTickets(): List<TicketEntity> {
         return ticketDAO.getAllTickets()
     }
 
+    override suspend fun getCountTickets(): Int = ticketDAO.getCountTickets()
 }

@@ -29,4 +29,6 @@ interface TicketRepository {
 
     suspend fun getTickets() : List<TicketEntity>
 
+    suspend fun getCountTickets() : Int
+
 }
