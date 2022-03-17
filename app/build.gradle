@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     defaultConfig {
         applicationId "com.smartgeeks.busticket"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 11
-        versionName "1.2.1"
+        targetSdkVersion 32
+        versionCode 12
+        versionName "1.2.2"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
