@@ -1,8 +1,8 @@
 package com.smartgeeks.busticket.di
 
-import com.smartgeeks.busticket.api.AuthApi
-import com.smartgeeks.busticket.api.TicketApi
-import com.smartgeeks.busticket.api.VehicleApi
+import com.smartgeeks.busticket.data.api.AuthApi
+import com.smartgeeks.busticket.data.api.TicketApi
+import com.smartgeeks.busticket.data.api.VehicleApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

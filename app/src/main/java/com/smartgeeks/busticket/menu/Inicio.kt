@@ -1,14 +1,12 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.MainActivity
-import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.MenuInicioBinding

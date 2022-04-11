@@ -30,7 +30,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsStatusCodes
-import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.core.Resource.Loading

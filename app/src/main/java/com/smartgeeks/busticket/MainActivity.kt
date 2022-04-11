@@ -15,9 +15,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
-import com.smartgeeks.busticket.Menu.Inicio
-import com.smartgeeks.busticket.Menu.Perfil
-import com.smartgeeks.busticket.Menu.Ticket
+import com.smartgeeks.busticket.menu.Inicio
+import com.smartgeeks.busticket.menu.Perfil
+import com.smartgeeks.busticket.menu.Ticket
 import com.smartgeeks.busticket.Modelo.*
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivityMainBinding

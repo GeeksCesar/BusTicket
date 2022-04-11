@@ -2,7 +2,7 @@ package com.smartgeeks.busticket.repository.ticket
 
 import android.app.Application
 import android.util.Log
-import com.smartgeeks.busticket.api.TicketApi
+import com.smartgeeks.busticket.data.api.TicketApi
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket

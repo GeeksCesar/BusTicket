@@ -3,48 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@mipmap/background_blanco"
     android:orientation="vertical"
-    tools:context=".Menu.SelectTarifa">
+    tools:context=".menu.SelectTarifa">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight=".7"
-        android:background="@color/brandColor">
-
-        <ImageButton
-            android:id="@+id/imgBtnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:padding="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_keyboard_backspace"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:gravity="center_horizontal"
-            android:src="@drawable/logotipo_busticket"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <include
+        android:id="@+id/customToolbar"
+        layout="@layout/common_toolbar" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight=".7"
         android:background="@drawable/bg_contenedor"
-        android:paddingHorizontal="16dp"
         android:gravity="center"
+        android:paddingHorizontal="16dp"
         android:weightSum="10">
 
         <TextView
@@ -52,10 +25,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="6"
-            tools:text="13-01-2022"
             android:fontFamily="@font/font_main"
             android:textColor="@color/md_text_white"
-            android:textSize="22sp">
+            android:textSize="22sp"
+            tools:text="13-01-2022">
 
         </TextView>
 
@@ -66,10 +39,10 @@
             android:layout_weight="4"
             android:fontFamily="@font/font_main"
             android:format12Hour="hh:mm:ss a"
-            tools:text="12:00 PM"
             android:textAlignment="textEnd"
             android:textColor="@color/md_text_white"
-            android:textSize="22sp" />
+            android:textSize="22sp"
+            tools:text="12:00 PM" />
 
     </LinearLayout>
 

@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.*
-import com.smartgeeks.busticket.Menu.PreciosRutaConductor
 import com.smartgeeks.busticket.R
 import java.io.InputStream
 import java.io.OutputStream

@@ -6,39 +6,11 @@
     android:layout_height="match_parent"
     android:background="@mipmap/background_blanco"
     android:orientation="vertical"
-    tools:context=".Menu.SelectRutas">
+    tools:context=".menu.PreciosRutaConductor">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/contenedorHeader"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.7"
-        android:background="@color/brandColor">
-
-        <ImageButton
-            android:id="@+id/imgBtnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:onClick="goBack"
-            android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_keyboard_backspace"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:gravity="center_horizontal"
-            android:src="@drawable/logotipo_busticket"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <include
+        android:id="@+id/customToolbar"
+        layout="@layout/common_toolbar"/>
 
     <LinearLayout
         android:layout_width="match_parent"

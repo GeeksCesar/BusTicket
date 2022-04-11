@@ -1,6 +1,6 @@
 package com.smartgeeks.busticket.repository.auth
 
-import com.smartgeeks.busticket.api.AuthApi
+import com.smartgeeks.busticket.data.api.AuthApi
 import com.smartgeeks.busticket.data.BasicResponse
 import com.smartgeeks.busticket.data.auth.AuthResponse
 import com.smartgeeks.busticket.data.auth.CompanyMessage

@@ -1,6 +1,6 @@
 package com.smartgeeks.busticket.repository.vehicle
 
-import com.smartgeeks.busticket.api.VehicleApi
+import com.smartgeeks.busticket.data.api.VehicleApi
 import com.smartgeeks.busticket.data.vehicle.ResponseOccupiedSeats
 import com.smartgeeks.busticket.data.vehicle.ResponseVehicleInfo
 import javax.inject.Inject

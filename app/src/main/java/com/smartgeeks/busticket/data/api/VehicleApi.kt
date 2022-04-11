@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.api
+package com.smartgeeks.busticket.data.api
 
 import com.smartgeeks.busticket.data.vehicle.ResponseOccupiedSeats
 import com.smartgeeks.busticket.data.vehicle.ResponseVehicleInfo

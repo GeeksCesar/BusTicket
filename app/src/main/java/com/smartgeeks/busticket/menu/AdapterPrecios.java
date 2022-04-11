@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu;
+package com.smartgeeks.busticket.menu;
 
 import android.content.Context;
 import androidx.recyclerview.widget.RecyclerView;

@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.content.Context
 import android.content.Intent
@@ -19,7 +19,6 @@ import androidx.core.content.edit
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.MainActivity
-import com.smartgeeks.busticket.Menu.AdapterPrecios.ItemClickListener
 import com.smartgeeks.busticket.Modelo.Paradero
 import com.smartgeeks.busticket.Modelo.TarifaParadero
 import com.smartgeeks.busticket.R
@@ -27,9 +26,13 @@ import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivityPrecioRutasConductorBinding
+import com.smartgeeks.busticket.menu.AdapterPrecios.ItemClickListener
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.printer.PrintTicketLibrary
-import com.smartgeeks.busticket.utils.*
+import com.smartgeeks.busticket.utils.Constantes
+import com.smartgeeks.busticket.utils.RutaPreferences
+import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -76,6 +79,7 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
         context = this@PreciosRutaConductor
 
         initWidget()
+        setupOnBackButton()
         handleTicketQuantity()
 
         // Filtro de acciones que serán alertadas
@@ -154,6 +158,10 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
         }
 
         setDataDefault()
+    }
+
+    private fun setupOnBackButton() {
+        binding.customToolbar.imgBtnBack.setOnClickListener { finish() }
     }
 
     private fun handleTicketQuantity() = with(binding) {
@@ -274,10 +282,6 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
         }
     }
 
-    fun goBack(view: View) {
-        finish()
-    }
-
     private fun goIntentMain() {
         val intent = Intent(context, MainActivity::class.java)
         intent.putExtra(MainActivity.BACK, true)
@@ -286,7 +290,6 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
     }
 
     override fun isLoading(state: Boolean) {
-
     }
 
     override fun onFinishPrint() {

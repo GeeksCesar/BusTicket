@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.content.Context
 import android.content.Intent
@@ -28,10 +28,14 @@ import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.printer.PrintTicketLibrary
-import com.smartgeeks.busticket.utils.*
+import com.smartgeeks.busticket.utils.DialogAlert
+import com.smartgeeks.busticket.utils.InternetCheck
+import com.smartgeeks.busticket.utils.RutaPreferences
+import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Locale
 
 @AndroidEntryPoint
 class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {

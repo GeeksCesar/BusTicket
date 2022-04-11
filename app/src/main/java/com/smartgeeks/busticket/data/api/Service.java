@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.api;
+package com.smartgeeks.busticket.data.api;
 
 public class Service {
 

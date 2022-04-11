@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/activity_horizontal_margin"
     android:paddingVertical="@dimen/activity_horizontal_margin"
-    tools:context=".Menu.Inicio">
+    tools:context=".menu.Inicio">
 
     <RelativeLayout
         android:id="@+id/contentTicket"

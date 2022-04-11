@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu;
+package com.smartgeeks.busticket.menu;
 
 
 import android.content.Context;
@@ -25,7 +25,7 @@ import com.smartgeeks.busticket.Modelo.Ruta;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.Objects.RutaPojo;
 import com.smartgeeks.busticket.R;
-import com.smartgeeks.busticket.api.Service;
+import com.smartgeeks.busticket.data.api.Service;
 import com.smartgeeks.busticket.utils.DialogAlert;
 import com.smartgeeks.busticket.utils.Helpers;
 import com.smartgeeks.busticket.utils.RutaPreferences;

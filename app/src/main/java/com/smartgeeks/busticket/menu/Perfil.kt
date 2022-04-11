@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,7 @@ import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import com.smartgeeks.busticket.Login
 import com.smartgeeks.busticket.R
-import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.databinding.MenuPerfilBinding
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences

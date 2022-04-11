@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.content.Context
 import android.content.Intent
@@ -31,7 +31,6 @@ import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.ArrayList
 
 @AndroidEntryPoint
 class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
@@ -70,7 +69,7 @@ class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
     }
 
     private fun setupOnBackButton() {
-        binding.imgBtnBack.setOnClickListener { finish() }
+        binding.customToolbar.imgBtnBack.setOnClickListener { finish() }
     }
 
     private fun initWidgets() = with(binding) {

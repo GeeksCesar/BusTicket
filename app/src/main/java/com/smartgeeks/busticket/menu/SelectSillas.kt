@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.Menu
+package com.smartgeeks.busticket.menu
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -31,7 +31,7 @@ import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
-import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.vehicle.SillaOcupada
