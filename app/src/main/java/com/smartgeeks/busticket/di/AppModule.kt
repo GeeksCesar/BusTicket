@@ -2,8 +2,10 @@ package com.smartgeeks.busticket.di
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Room
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.smartgeeks.busticket.data.local.AppDatabase
 import com.smartgeeks.busticket.utils.Constants
 import dagger.Module
 import dagger.Provides
@@ -18,6 +20,7 @@ import javax.inject.Singleton
 
 private const val BASE_URL = "https://mi.appbusticket.com/"
 private val TAG: String = "OkHTTP"
+private const val DB_NAME = "busticket"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -58,4 +61,10 @@ object AppModule {
     fun provideSharedPreferences(@ApplicationContext app: Context) = app.getSharedPreferences(
         Constants.SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE
     )
+
+    @Singleton
+    @Provides
+    fun provideDatabase(@ApplicationContext app: Context) : AppDatabase =
+        Room.databaseBuilder(app, AppDatabase::class.java, DB_NAME).build()
+
 }

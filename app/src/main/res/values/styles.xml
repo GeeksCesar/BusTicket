@@ -14,7 +14,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/md_pink_50</item>
-        <item name="android:textColorPrimary">@color/md_white_1000</item>
+        <item name="android:textColorPrimary">@color/md_black_1000</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 

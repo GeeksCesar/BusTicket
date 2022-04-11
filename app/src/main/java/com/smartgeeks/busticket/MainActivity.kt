@@ -10,10 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -21,15 +18,11 @@ import androidx.fragment.app.Fragment
 import com.smartgeeks.busticket.Menu.Inicio
 import com.smartgeeks.busticket.Menu.Perfil
 import com.smartgeeks.busticket.Menu.Ticket
-import com.smartgeeks.busticket.Modelo.Horario
-import com.smartgeeks.busticket.Modelo.Paradero
-import com.smartgeeks.busticket.Modelo.Ruta
-import com.smartgeeks.busticket.Modelo.SubRuta
-import com.smartgeeks.busticket.Modelo.TarifaParadero
-import com.smartgeeks.busticket.Modelo.TipoUsuario
-import com.smartgeeks.busticket.Modelo.Vehiculo
+import com.smartgeeks.busticket.Modelo.*
+import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivityMainBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
+import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
@@ -46,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val authViewModel: AuthViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     //_STRING OPCIONES DEL MENU
     val MenuItems = arrayOf("Perfil", "Inicio", "Tickets", "Cerrar Sesión")
@@ -105,11 +99,11 @@ class MainActivity : AppCompatActivity() {
         } else {
             setFragment(1)
         }
-        binding.btnAbrirMenu.setOnClickListener(View.OnClickListener {
+        binding.btnAbrirMenu.setOnClickListener {
             binding.drawerLayout.openDrawer(
                 binding.lvNavItems
             )
-        })
+        }
     }
 
     fun setFragment(pos: Int) {
@@ -204,11 +198,15 @@ class MainActivity : AppCompatActivity() {
      * Handle set StatusUser
      */
     private fun setUserStatus(status: Int) {
-        authViewModel.setUserStatus(
-            UsuarioPreferences.getInstance(this).idUser,
-            Utilities.getDeviceId(this),
-            status
-        )
+        try {
+            authViewModel.setUserStatus(
+                UsuarioPreferences.getInstance(this).idUser,
+                Utilities.getDeviceId(this),
+                status
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     companion object {
@@ -217,13 +215,42 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        setUserStatus(1)
+
+        try {
+            setUserStatus(1)
+            observeRemoteSync()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun observeRemoteSync() {
+        ticketViewModel.getCountTickets().observe(this) { count ->
+            Log.e(TAG, "observeRemoteSync: $count")
+            if (count > 0) {
+                handleSendLocalTickets()
+            }
+        }
+    }
+
+    private fun handleSendLocalTickets() {
+        ticketViewModel.syncTickets().observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    if (result.data.estado == 1) {
+                        Toast.makeText(this, "Datos sincronizados", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     override fun onPause() {
+        super.onPause()
         Log.e(TAG, "onPause: User Inactive")
         setUserStatus(0)
-        super.onPause()
     }
 
     override fun onDestroy() {

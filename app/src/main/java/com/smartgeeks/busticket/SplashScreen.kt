@@ -1,10 +1,6 @@
 package com.smartgeeks.busticket
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
+import android.content.*
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -25,8 +21,8 @@ import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivitySplashScreenBinding
 import com.smartgeeks.busticket.presentation.AuthViewModel
+import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.sync.SyncServiceLocal
-import com.smartgeeks.busticket.sync.SyncServiceRemote
 import com.smartgeeks.busticket.utils.Constantes
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
@@ -35,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 
 private val TAG: String = SplashScreen::class.java.simpleName
 
@@ -47,6 +44,7 @@ class SplashScreen : AppCompatActivity() {
 
     private lateinit var binding: ActivitySplashScreenBinding
     private val authViewModel: AuthViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by viewModels()
 
     private var timer: CountDownTimer? = null
     private lateinit var textView: TextView
@@ -73,8 +71,8 @@ class SplashScreen : AppCompatActivity() {
         preferences = getSharedPreferences(UsuarioPreferences.SHARED_PREF_NAME, MODE_PRIVATE)
         session = UsuarioPreferences.getInstance(this).sessionUser
 
-        // Get Message company - (DON'T include on the Thread)
         checkLockedDevice()
+        // Get Message company - (DON'T include on the Thread)
         getMessageCompany()
     }
 
@@ -93,31 +91,43 @@ class SplashScreen : AppCompatActivity() {
         authViewModel.checkLockedDevice(
             UsuarioPreferences.getInstance(this).idUser,
             Utilities.getDeviceId(this)
-        ).observe(this, { result ->
+        ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                    goNextScreen()
+
+                    when (result.exception) {
+                        is UnknownHostException -> Toast.makeText(
+                            this,
+                            "Sin conexión al servidor",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    Log.e(TAG, "checkLockedDevice: ${result.exception}")
+                    binding.progresBar.visibility = View.GONE
+
                 }
-                is Resource.Loading -> Unit
+                is Resource.Loading -> binding.progresBar.visibility = View.VISIBLE
                 is Resource.Success -> {
                     goNextScreen()
                     Log.e(TAG, "checkLockedDevice: ${result.data}")
                 }
             }
-        })
+        }
     }
 
     private fun goNextScreen() {
         if (session == "SessionSuccess" && !AppPreferences.isLockedDevice) {
 
+            remoteSync()
             // Execute JOB on coroutines
             syncJob = scope.launch(Dispatchers.Main) {
                 setInformationLoading()
             }
 
             scope.launch {
+                // Manage in a service
                 localSync()
-                remoteSync()
             }
         } else if (session == "SessionFailed" || AppPreferences.isLockedDevice) {
             intent = Intent(this, Login::class.java)
@@ -128,7 +138,6 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun setInformationLoading() {
-        binding.progresBar.visibility = View.VISIBLE
         val messages = listOf(
             "Validando usuario...",
             "Cargando rutas...",
@@ -167,18 +176,18 @@ class SplashScreen : AppCompatActivity() {
 
     private fun getMessageCompany() {
         authViewModel.getMessageCompany(UsuarioPreferences.getInstance(this).idEmpresa)
-            .observe(this, { result ->
+            .observe(this) { result ->
                 when (result) {
                     is Resource.Failure -> {
                         Log.e(TAG, "getMessageCompany: ${result.exception.message}")
                     }
-                    is Resource.Loading -> Unit
+                    is Resource.Loading -> binding.progresBar.visibility = View.VISIBLE
                     is Resource.Success -> {
                         UsuarioPreferences.getInstance(this).descEmpresa = result.data.data
                     }
                 }
 
-            })
+            }
     }
 
     private fun localSync() {
@@ -191,9 +200,13 @@ class SplashScreen : AppCompatActivity() {
     }
 
     private fun remoteSync() {
-        val sync = Intent(this, SyncServiceRemote::class.java)
-        sync.action = Constantes.ACTION_RUN_REMOTE_SYNC
-        startService(sync)
+        ticketViewModel.syncTickets().observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> Unit
+            }
+        }
     }
 
     override fun onDestroy() {

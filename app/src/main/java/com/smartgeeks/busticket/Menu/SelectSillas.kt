@@ -1,66 +1,52 @@
 package com.smartgeeks.busticket.Menu
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
-import android.os.Handler
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.ToggleButton
+import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import cn.pedant.SweetAlert.SweetAlertDialog
+import com.dantsu.escposprinter.connection.DeviceConnection
+import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.api.Service
+import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
-import com.smartgeeks.busticket.sync.SyncServiceRemote
-import com.smartgeeks.busticket.utils.Constantes
-import com.smartgeeks.busticket.utils.Constants
-import com.smartgeeks.busticket.utils.DialogAlert
-import com.smartgeeks.busticket.utils.Helpers
-import com.smartgeeks.busticket.utils.RutaPreferences
-import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.printer.AsyncBluetoothEscPosPrint
+import com.smartgeeks.busticket.printer.AsyncEscPosPrinter
+import com.smartgeeks.busticket.utils.*
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.InputStream
-import java.io.OutputStream
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
-import java.util.ArrayList
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 import kotlin.math.ceil
+
+private const val PERMISSION_BLUETOOTH = 1
 
 @AndroidEntryPoint
 class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
@@ -87,22 +73,9 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var desc_empresa: String = ""
     var context: Context? = null
     var progress: ProgressDialog? = null
-    private var state_sync = false
     private var numVoucher = ""
 
     var listSillas = ""
-
-    //Configuracion Impresora
-    private val lisPrintBluetooth = ArrayList<String>()
-    var bluetoothAdapter: BluetoothAdapter? = null
-    var bluetoothSocket: BluetoothSocket? = null
-    var bluetoothDevice: BluetoothDevice? = null
-    var outputStream: OutputStream? = null
-    var outputStreamTitle: OutputStream? = null
-    var inputStream: InputStream? = null
-    var thread: Thread? = null
-    lateinit var readBuffer: ByteArray
-    var readBufferPosition = 0
 
     lateinit var binding: ActivitySelectSillasBinding
     private val vehicleViewModel: VehicleViewModel by viewModels()
@@ -117,6 +90,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var preferences: SharedPreferences? = null
     var estadoPrint = false
     var namePrint: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -127,16 +101,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         binding = ActivitySelectSillasBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initWidgets()
+        getDataPrint()
         fetchData()
 
-        // Filtro de acciones que serán alertadas
-        val filter = IntentFilter(Constantes.ACTION_RUN_REMOTE_SYNC)
-        filter.addAction(Constantes.EXTRA_PROGRESS)
-        filter.addAction(Constantes.ACTION_FINISH_REMOTE_SYNC)
-        val receiver = ResponseReceiver()
-        LocalBroadcastManager.getInstance(applicationContext).registerReceiver(
-            receiver, filter
-        )
+
         binding.btnConfirmarTicket.setOnClickListener(View.OnClickListener {
             listSillas = ""
             if (sillasSeleccionadas.size == 0) {
@@ -162,10 +130,13 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     listSillas = "$listSillas$silla-"
                 }
                 listSillas = listSillas.substring(0, listSillas.length - 1)
+
+                /*printBluetooth()
+                return@OnClickListener*/
+
                 binding.btnConfirmarTicket.isEnabled = false
                 binding.btnConfirmarTicket.visibility = View.GONE
                 showProgress(true)
-
                 registerTicket(
                     id_paradero_incio,
                     id_paradero_final,
@@ -203,25 +174,18 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
         //Input
         showDataTextView()
-        encontrarDispositivoBlue()
-        remoteSync()
-        getDataPrint()
+        // remoteSync()
     }
 
     /**
      * Request to Service
      */
     private fun fetchData() {
-        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario).observe(this, { result ->
+        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario).observe(this) { result ->
             when (result) {
-                is Resource.Failure -> {
-                    progress?.dismiss()
-                }
-                is Resource.Loading -> {
-                    showProgressDialog()
-                }
+                is Resource.Failure -> progress?.dismiss()
+                is Resource.Loading -> showProgressDialog()
                 is Resource.Success -> {
-
                     val data = result.data
 
                     when (data.estado) {
@@ -232,13 +196,14 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
                     }
                     fetchVehicleInfo()
+                    checkBluetoothStatus()
                 }
             }
-        })
+        }
     }
 
     private fun fetchVehicleInfo() {
-        vehicleViewModel.getVehicleInfo(id_vehiculo).observe(this, { result ->
+        vehicleViewModel.getVehicleInfo(id_vehiculo).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
                     progress?.dismiss()
@@ -253,14 +218,20 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
-        })
+        }
     }
 
     private fun getDataPrint() {
         namePrint = RutaPreferences.getInstance(context).namePrint
         estadoPrint = RutaPreferences.getInstance(context).estadoPrint
-        Log.d(Service.TAG, "name print: $namePrint")
-        Log.d(Service.TAG, "boolen print: $estadoPrint")
+        Constants.selectedDevice =
+            MyBluetoothPrintersConnections().list?.find { it.device.name == namePrint }
+
+        Log.e(
+            TAG,
+            "Printer name: $namePrint - ${Constants.selectedDevice?.device?.name}  ${Constants.selectedDevice?.isConnected}"
+        )
+        Log.d(TAG, "boolen print: $estadoPrint")
     }
 
     @SuppressLint("SetTextI18n")
@@ -453,10 +424,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
-    /**
-     * Consultar sillas ocupadas por horario de ruta
-     */
-
     private fun registerTicket(
         id_paradero_inicio: Int,
         id_paradero_final: Int,
@@ -478,7 +445,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             listSillas,
             id_empresa,
             id_vehiculo
-        ).observe(this, { result ->
+        ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> showProgress(false)
                 is Resource.Loading -> showProgress(true)
@@ -505,25 +472,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         button.setOnClickListener {
                             try {
                                 alertDialog.dismiss()
-                                getDataPrint()
-                                if (estadoPrint) {
-                                    Log.e(Service.TAG, "entro estado: $estadoPrint")
-                                    val pairedDevice = bluetoothAdapter!!.bondedDevices
-                                    if (pairedDevice.size > 0) {
-                                        for (pairedDev in pairedDevice) {
-                                            if (pairedDev.name == namePrint) {
-                                                Log.e(Service.TAG, "name impresora_ $namePrint")
-                                                bluetoothDevice = pairedDev
-                                                abrirImpresoraBlue()
-                                                break
-                                            }
-                                        }
-                                    } else {
-                                        Log.e(Service.TAG, "error devices bluetooh")
-                                    }
-                                } else {
-                                    showDialogTiquete()
-                                }
+                                printBluetooth()
                             } catch (ex: Exception) {
                                 ex.printStackTrace()
                             }
@@ -541,264 +490,31 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
-        })
-    }
-
-    fun encontrarDispositivoBlue() {
-        try {
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-            if (bluetoothAdapter == null) {
-                //lblPrinterName.setText("No Bluetooth Adapter found");
-            }
-            if (bluetoothAdapter?.isEnabled == true) {
-                val enableBT = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                startActivityForResult(enableBT, 0)
-            }
-            val pairedDevice = bluetoothAdapter?.bondedDevices
-            if ((pairedDevice?.size ?: 0) > 0) {
-                for (pairedDev in pairedDevice!!) {
-                    lisPrintBluetooth.add(pairedDev.name)
-                }
-            }
-            //lblPrinterName.setText("Bluetookkkkth Printer Attached");
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            Log.i("otro Error", "" + ex.message)
         }
     }
 
-    private fun showProgress(show: Boolean) {
-        binding.loginProgress.visibility = if (show) View.VISIBLE else View.GONE
-    }
+    private fun checkBluetoothStatus() {
+        if (!Utilities.isBluetoothEnabled(this)) {
+            val alertDialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            alertDialog.titleText = "Bluetooth"
+            alertDialog.contentText = "Habilita el Bluetooth"
+            alertDialog.confirmText = "Aceptar"
+            alertDialog.setConfirmClickListener {
+                alertDialog.dismissWithAnimation()
 
-    fun abrirImpresoraBlue() {
-        try {
-            //Standard uuid from string //
-            val uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
-            bluetoothSocket = bluetoothDevice!!.createRfcommSocketToServiceRecord(uuidSting)
-            bluetoothSocket?.let {
-                it.connect()
-                outputStream = it.outputStream
-                outputStreamTitle = it.outputStream
-                inputStream = it.inputStream
+                // Turn on Bluetooth
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, PERMISSION_BLUETOOTH)
             }
-            comenzarAEscucharDatos()
-            printData()
-            goIntentMain()
-        } catch (ex: Exception) {
-            Log.i("Error P", "" + ex.message)
+            alertDialog.show()
+        } else {
+            if (Constants.selectedDevice == null) {
+                showDialogTicketLibrary()
+            }
         }
     }
 
-    fun comenzarAEscucharDatos() {
-        try {
-            val handler = Handler()
-            val delimiter: Byte = 10
-            stopWorker = false
-            readBufferPosition = 0
-            readBuffer = ByteArray(1024)
-            thread = Thread {
-                while (!Thread.currentThread().isInterrupted && !stopWorker) {
-                    try {
-                        val byteAvailable = inputStream!!.available()
-                        if (byteAvailable > 0) {
-                            val packetByte = ByteArray(byteAvailable)
-                            inputStream!!.read(packetByte)
-                            for (i in 0 until byteAvailable) {
-                                val b = packetByte[i]
-                                if (b == delimiter) {
-                                    val encodedByte = ByteArray(readBufferPosition)
-                                    System.arraycopy(
-                                        readBuffer, 0,
-                                        encodedByte, 0,
-                                        encodedByte.size
-                                    )
-                                    val data = String(encodedByte, StandardCharsets.US_ASCII)
-                                    readBufferPosition = 0
-                                    handler.post {
-                                        //lblPrinterName.setText(data);
-                                    }
-                                } else {
-                                    readBuffer[readBufferPosition++] = b
-                                }
-                            }
-                        }
-                    } catch (ex: Exception) {
-                        stopWorker = true
-                    }
-                }
-            }
-            thread!!.start()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-    }
-
-    fun printData() {
-        val command: ByteArray? = null
-        try {
-            val split = info_ruta!!.split(",").toTypedArray()
-            val arrayOfByte1 = byteArrayOf(27, 33, 0)
-            var format = byteArrayOf(27, 33, 0)
-            val centrado = byteArrayOf(0x1B, 'a'.toByte(), 0x01)
-            val der = byteArrayOf(0x1B, 'a'.toByte(), 0x02)
-            val izq = byteArrayOf(0x1B, 'a'.toByte(), 0x00)
-
-            // Espacio superior
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            val nom_empre = """
-                ${UsuarioPreferences.getInstance(context).nombreEmpresa.toUpperCase()}
-                
-                """.trimIndent()
-            outputStream!!.write(nom_empre.toByteArray(), 0, nom_empre.toByteArray().size)
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                "================================".toByteArray(),
-                0,
-                "================================".toByteArray().size
-            )
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            // Width
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var str_ruta = """${split[3].trim { it <= ' ' }.toUpperCase()} a
-""" + split[4].trim { it <= ' ' }
-                .toUpperCase() + "\n\n"
-            str_ruta = str_ruta.replace("(", "")
-            outputStream!!.write(str_ruta.toByteArray(), 0, str_ruta.toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var str_pago = "Usted pago:\n"
-            str_pago = str_pago.replace("(", "")
-            outputStream!!.write(str_pago.toByteArray(), 0, str_pago.toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            val str_precio = """
-                $getPrecioPasaje
-                
-                """.trimIndent()
-            outputStream!!.write(str_precio.toByteArray(), 0, str_precio.toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var str_tipo_pasajero = """
-                $nombreUsuario
-                
-                """.trimIndent()
-            str_tipo_pasajero = str_tipo_pasajero.replace("(", "")
-            outputStream!!.write(
-                str_tipo_pasajero.toByteArray(),
-                0,
-                str_tipo_pasajero.toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                """--------------------------------
-""".toByteArray(), 0, """--------------------------------
-""".toByteArray().size
-            )
-            format[2] = 0x8.toByte()
-            outputStream!!.write(format)
-            outputStream!!.write(
-                printThreeData("Fecha", "Salida", "Asiento", "One").toByteArray(),
-                0,
-                printThreeData("Fecha", "Salida", "Asiento", "One").toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            format[2] = (0x10 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(format)
-            var fecha_codi = Helpers.getDate()
-            val array_fecha = fecha_codi.split("-").toTypedArray()
-            fecha_codi = array_fecha[2] + "-" + array_fecha[1] + "-" + array_fecha[0].substring(
-                array_fecha[0].length - 2
-            )
-            val hora_salida_s = split[2].trim { it <= ' ' }.split(":").toTypedArray()
-            val hora_salida_str = hora_salida_s[0] + ":" + hora_salida_s[1]
-            outputStream!!.write(
-                printThreeData(
-                    fecha_codi,
-                    hora_salida_str,
-                    listSillas,
-                    "Two"
-                ).toByteArray(),
-                0,
-                printThreeData(fecha_codi, hora_salida_str, listSillas, "Two").toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                """--------------------------------
-""".toByteArray(), 0, """--------------------------------
-""".toByteArray().size
-            )
-            outputStream!!.write(format)
-            outputStream!!.write("\n\n".toByteArray(), 0, "\n\n".toByteArray().size)
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                """$desc_empresa
-
-""".toByteArray(), 0, """$desc_empresa
-
-""".toByteArray().size
-            )
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(izq)
-            outputStream!!.write(format)
-            var str = ""
-            str += """
-                $numVoucher
-                
-                """.trimIndent()
-            outputStream!!.write(str.toByteArray(), 0, str.toByteArray().size)
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(izq)
-            outputStream!!.write(format)
-            var str_emision = "Emision: $fecha_codi\n"
-            str_emision += """${Helpers.getTime()} ${split[0]} ${
-                UsuarioPreferences.getInstance(
-                    context
-                ).nombre
-            }
-"""
-            outputStream!!.write(str_emision.toByteArray(), 0, str_emision.toByteArray().size)
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var str_two = ""
-            str_two += "www.busticket.cl\n"
-            str_two += "Copia Cliente"
-            outputStream!!.write(str_two.toByteArray(), 0, str_two.toByteArray().size)
-            //no serive desde abajo
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-    }
-
-    private fun showDialogTiquete() {
+    private fun showDialogTicketLibrary() {
         dialogPrint = Dialog(context!!)
         dialogPrint.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialogPrint.setContentView(R.layout.dialog_print)
@@ -810,11 +526,15 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         )
         btnCancelar = dialogPrint.findViewById(R.id.btnCancelar)
         lstPrint = dialogPrint.findViewById(R.id.listViewPrint)
+
+        val bluetoothPrintersConnections =
+            MyBluetoothPrintersConnections().list?.map { it.device.name } ?: listOf()
+
         lstPrint.adapter = object :
             ArrayAdapter<String?>(
                 this,
                 android.R.layout.simple_list_item_1,
-                lisPrintBluetooth.toList()
+                bluetoothPrintersConnections.toList()
             ) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent)
@@ -825,29 +545,27 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
         lstPrint.onItemClickListener =
             AdapterView.OnItemClickListener { parent, view, position, id ->
-                val name_impresora = parent.getItemAtPosition(position).toString()
+                val deviceName = parent.getItemAtPosition(position).toString()
+                // Connect to the device
+                Constants.selectedDevice =
+                    MyBluetoothPrintersConnections().list?.find { it.device.name == deviceName }
+
                 preferences =
                     context!!.getSharedPreferences(RutaPreferences.PREFERENCES_PRINT, MODE_PRIVATE)
                 preferences?.edit {
-                    putString(RutaPreferences.NAME_PRINT, name_impresora)
-                    putBoolean(RutaPreferences.ESTADO_PRINT, true)
+                    putString(RutaPreferences.NAME_PRINT, deviceName)
                     apply()
                 }
 
-                val pairedDevice = bluetoothAdapter!!.bondedDevices
-                if (pairedDevice.size > 0) {
-                    for (pairedDev in pairedDevice) {
-                        if (pairedDev.name == name_impresora) {
-                            bluetoothDevice = pairedDev
-                            abrirImpresoraBlue()
-                            break
-                        }
-                    }
-                }
+                Log.e(TAG, "SelectPrinter: $deviceName - ${Constants.selectedDevice}")
                 dialogPrint.hide()
             }
         btnCancelar.setOnClickListener { dialogPrint.hide() }
         dialogPrint.show()
+    }
+
+    private fun showProgress(show: Boolean) {
+        binding.loginProgress.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     /***
@@ -861,12 +579,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun goIntentMain() {
-        try {
-            disconnectBT()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-        Log.d(Service.TAG, "entro a goIntentMain")
         val intent = Intent(context, MainActivity::class.java)
         intent.putExtra(MainActivity.BACK, true)
         startActivity(intent)
@@ -874,33 +586,23 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun remoteSync() {
-        if (!state_sync) {
-            val sync = Intent(context, SyncServiceRemote::class.java)
-            sync.action = Constantes.ACTION_RUN_REMOTE_SYNC
-            applicationContext.startService(sync)
-        }
-    }
-
-    // Disconnect Printer //
-    fun disconnectBT() {
-        try {
-            stopWorker = true
-            outputStream!!.close()
-            inputStream!!.close()
-            bluetoothSocket!!.close()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-        }
-    }
-
-    // Broadcast receiver que recibe las emisiones desde los servicios
-    private inner class ResponseReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                Constantes.ACTION_RUN_REMOTE_SYNC -> state_sync =
-                    intent.getBooleanExtra(Constantes.EXTRA_PROGRESS, false)
+        ticketViewModel.syncTickets().observe(this) { result ->
+            when (result) {
+                is Resource.Failure -> Unit
+                is Resource.Loading -> Unit
+                is Resource.Success -> {
+                    if (result.data.estado == 1) {
+                        Toast.makeText(this, "Datos sincronizados", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
+    }
+
+    fun getScreenWidth(activity: Activity): Int {
+        val size = Point()
+        activity.windowManager.defaultDisplay.getSize(size)
+        return size.x
     }
 
     companion object {
@@ -920,58 +622,103 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         private const val RIGHT_LENGTH = 16
         private const val LEFT_TEXT_MAX_LENGTH = 8
         private val TAG = SelectSillas::class.java.simpleName
-        fun printThreeData(
-            leftText: String,
-            middleText: String,
-            rightText: String,
-            tipo: String
-        ): String {
-            var leftText = leftText
-            val sb = StringBuilder()
-            // At most LEFT_TEXT_MAX_LENGTH Chinese characters + two dots are displayed on the left
-            if (leftText.length > LEFT_TEXT_MAX_LENGTH) {
-                leftText = leftText.substring(0, LEFT_TEXT_MAX_LENGTH) + ".."
-            }
-            val leftTextLength = getBytesLength(leftText)
-            val middleTextLength = getBytesLength(middleText)
-            val rightTextLength = getBytesLength(rightText)
-            sb.append(leftText)
-            // Calculate the length of the space between the left text and the middle text
-            var marginBetweenLeftAndMiddle = 0
-            marginBetweenLeftAndMiddle = if (tipo == "One") {
-                LEFT_LENGTH - leftTextLength - middleTextLength / 2
-            } else {
-                13 - leftTextLength - middleTextLength / 2
-            }
-            for (i in 0 until marginBetweenLeftAndMiddle) {
-                sb.append(" ")
-            }
-            sb.append(middleText)
+    }
 
-            // Calculate the length of the space between the right text and the middle text
-            var marginBetweenMiddleAndRight = 0
-            marginBetweenMiddleAndRight = if (tipo == "One") {
-                RIGHT_LENGTH - middleTextLength / 2 - rightTextLength
-            } else {
-                13 - middleTextLength / 2 - rightTextLength
-            }
-            for (i in 0 until marginBetweenMiddleAndRight) {
-                sb.append(" ")
-            }
+    /*==============================================================================================
+    ======================================BLUETOOTH PART============================================
+    ==============================================================================================*/
 
-            // When printing, I found that the rightmost text is always one character to the right, so a space needs to be deleted
-            sb.delete(sb.length - 1, sb.length).append(rightText)
-            return sb.toString()
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            when (requestCode) {
+                PERMISSION_BLUETOOTH -> printBluetooth()
+            }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
 
-        private fun getBytesLength(msg: String): Int {
-            return msg.toByteArray(Charset.forName("GB2312")).size
-        }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-        fun getScreenWidth(activity: Activity): Int {
-            val size = Point()
-            activity.windowManager.defaultDisplay.getSize(size)
-            return size.x
+        if (requestCode == PERMISSION_BLUETOOTH && resultCode == RESULT_OK) {
+            // showDialogTicketLibrary()
         }
+    }
+
+    private fun printBluetooth() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.BLUETOOTH),
+                PERMISSION_BLUETOOTH
+            )
+        } else {
+            AsyncBluetoothEscPosPrint(this).execute(this.getAsyncEscPosPrinter(Constants.selectedDevice))
+        }
+    }
+
+    /**
+     * Asynchronous printing
+     */
+    @SuppressLint("SimpleDateFormat")
+    fun getAsyncEscPosPrinter(printerConnection: DeviceConnection?): AsyncEscPosPrinter? {
+        val printer = AsyncEscPosPrinter(printerConnection, 203, 48f, 32)
+        val split = info_ruta.split(",")
+        val image = PrinterTextParserImg.bitmapToHexadecimalString(
+            printer, this.applicationContext.resources.getDrawableForDensity(
+                R.drawable.imagotipo_busticket,
+                DisplayMetrics.DENSITY_MEDIUM
+            )
+        )
+        val logo = PrinterTextParserImg.bitmapToHexadecimalString(
+            printer,
+            this.applicationContext.resources.getDrawableForDensity(
+                R.drawable.imagotipo_busticket,
+                DisplayMetrics.DENSITY_MEDIUM
+            )
+        )
+        val stopOne = split[3].trim { it <= ' ' }.uppercase(Locale.getDefault())
+        val stopTwo = split[4].trim { it <= ' ' }.uppercase(Locale.getDefault())
+        val companyName =
+            UsuarioPreferences.getInstance(context).nombreEmpresa.uppercase(Locale.getDefault())
+
+        var textToPrint = """
+            [C]<font size='big'>$companyName</font>
+            [L]
+            [C]<b>${stopOne} a ${stopTwo}<b>
+            [L]
+            [C]Usted Pagó:
+            [L]
+            [C]<font size='wide'>$getPrecioPasaje</font>
+            [C]${nombreUsuario}
+            [L]
+            [C]--------------------------------
+            [C]Fecha[C]Salida[C]Asiento
+            [C]${Utilities.getDate("dd-MM-yy")}[C]${split[2]}[C]$listSillas
+            [C]--------------------------------
+            [L]
+            [C]${desc_empresa}
+            [L]
+            [L]$numVoucher
+            [L]Emisión: ${Utilities.getDate("dd-MM-yy")}
+            [L]${Utilities.getTime()} ${split[0]} ${UsuarioPreferences.getInstance(context).nombre}
+            [L]
+            [C]www.busticket.cl
+            [C]Copia Cliente
+            """
+
+        // Transform text to print ticket correctly
+        textToPrint = textToPrint.lines().joinToString(transform = String::trim, separator = "\n")
+        Log.e(TAG, textToPrint)
+
+        return printer.setTextToPrint(textToPrint)
     }
 }

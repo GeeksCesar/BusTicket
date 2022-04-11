@@ -1,29 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/activity_horizontal_margin"
     android:paddingVertical="@dimen/activity_horizontal_margin"
-    tools:context=".Menu.Inicio"
-    android:id="@+id/container">
+    tools:context=".Menu.Inicio">
 
+    <RelativeLayout
+        android:id="@+id/contentTicket"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@drawable/bg_blue">
 
-        <RelativeLayout
-            android:id="@+id/contentTicket"
+        <ImageView
+            android:id="@+id/ivLogo"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:background="@drawable/bg_blue">
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:src="@mipmap/icon_action_tickets" />
 
-            <ImageView
-                android:id="@+id/ivLogo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:src="@mipmap/icon_action_tickets" />
-
-
-        </RelativeLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,26 +31,26 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tv_tickets_to_sync"
+            android:id="@+id/tvTicketToSync"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No hay Tickets por sincronizar"
             android:layout_gravity="center"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="No hay Tickets por sincronizar" />
 
         <Button
             android:id="@+id/btnSync"
             style="@style/ButtonCustom"
-            android:visibility="gone"
             android:layout_weight="1"
-            android:text="Sincronizar" />
+            android:text="Sincronizar"
+            android:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progresBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
     </LinearLayout>
 

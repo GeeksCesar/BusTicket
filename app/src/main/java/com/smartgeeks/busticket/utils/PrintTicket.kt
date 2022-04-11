@@ -13,35 +13,14 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
-import cn.pedant.SweetAlert.SweetAlertDialog
-import com.android.volley.NetworkError
-import com.android.volley.NoConnectionError
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.ServerError
-import com.android.volley.TimeoutError
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
-import com.smartgeeks.busticket.api.Service
+import android.widget.*
 import com.smartgeeks.busticket.Menu.PreciosRutaConductor
-import com.smartgeeks.busticket.Modelo.Ticket
 import com.smartgeeks.busticket.R
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.UUID
+import java.util.*
 
 private const val LEFT_LENGTH = 16
 private const val RIGHT_LENGTH = 16
@@ -55,10 +34,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         fun isLoading(state: Boolean)
         fun onFinishPrint()
     }
-
-    //VOLLEY
-    private var requestQueue: RequestQueue
-    private var stringRequest: StringRequest? = null
 
     private var printState = false
     private var namePrint: String? = null
@@ -112,13 +87,13 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         idEmpresa = UsuarioPreferences.getInstance(context).idEmpresa
 
         encontrarDispositivoBlue()
-        requestQueue = Volley.newRequestQueue(context)
     }
 
     fun setData(
         idStartBusStop: Int, idEndBusStop: Int, idEnabledRoute: Int, time: String,
         idPassengerType: Int, ticketPrice: Double, idVehicle: Int, passengerType: String,
-        info: String = "", ticketQuantity : Int = 1) {
+        info: String = "", ticketQuantity: Int = 1
+    ) {
         idParaderoInicio = idStartBusStop
         idParaderoFin = idEndBusStop
         idRutaDisponible = idEnabledRoute
@@ -132,20 +107,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     fun print() {
-        InternetCheck { internet ->
-            if (internet) {
-                // Enviar Ticket al servidor
-                registerTicket()
-            } else {
-                // Guardar Ticket en Bd Local para sincronización
-                printOffLine()
-            }
-        }.execute()
-    }
-
-    private fun printOffLine() {
-        // Guarda los datos en la BD Local
-        saveTicketLocal()
         try {
             stateListener.isLoading(false)
 
@@ -159,11 +120,11 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
                             abrirImpresoraBlue()
                             break
                         } else {
-                            Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
+                            Log.e(TAG, "error no existe impresora")
                         }
                     }
                 } else {
-                    Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
+                    Log.e(TAG, "No hay dispositivos emparejados")
                 }
             } else {
                 showDialogTiquete()
@@ -171,151 +132,6 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
         }
-    }
-
-    private fun saveTicketLocal() {
-        val fecha = Helpers.getCurrentDate()
-        val hora = Helpers.getCurrentTime()
-        numVoucher =
-            idVehiculo.toString() + "" + idOperador + "-" + Helpers.setString2DateVoucher(fecha) + "-" + Helpers.setString2HourVoucher(
-                hora
-            )
-        Log.e(PreciosRutaConductor.TAG, "Ticket Guardado Localmente $numVoucher")
-        val ticket = Ticket()
-        ticket.idRemoto = ""
-        ticket.paradaInicio = idParaderoInicio
-        ticket.paradaDestino = idParaderoFin
-        ticket.idRutaDisponible = idRutaDisponible
-        ticket.idOperador = UsuarioPreferences.getInstance(context).idUser
-        ticket.horaSalida = horario
-        ticket.tipoUsuario = idTipoUsuario
-        ticket.fecha = fecha
-        ticket.hora = hora
-        ticket.cantPasajes = countPasajes
-        ticket.totalPagar = precioSumPasaje.toDouble()
-        ticket.estado = 0
-        ticket.pendiente = Constantes.ESTADO_SYNC
-        ticket.save()
-        // El estado = 0 y estado_sync = 1, para cuando se inicie la sincronización remota
-        // se cambie el estado = 1
-    }
-
-    /**
-     * Envía el Ticket al servidor e imprime el boleto
-     */
-    private fun registerTicket() {
-        Log.e(PreciosRutaConductor.TAG, "Enviando Ticket al servidor")
-        stringRequest = object : StringRequest(
-            Method.POST, Service.SET_TICKET_PIE_TEST,
-            object : Response.Listener<String> {
-                override fun onResponse(response: String) {
-                    Log.e(PreciosRutaConductor.TAG, "response: $response")
-                    try {
-                        val jsonObject = JSONObject(response)
-                        val respuesta = jsonObject.getString("message")
-                        if (respuesta == "success") {
-                            stateListener.isLoading(false)
-                            numVoucher = jsonObject.getString("num_voucher")
-                            Log.e(PreciosRutaConductor.TAG, "Num Voucher: $numVoucher")
-                            try {
-                                getDataPrint()
-                                if (printState) {
-                                    Log.e(PreciosRutaConductor.TAG, "entro estado")
-                                    val pairedDevice = bluetoothAdapter.bondedDevices
-                                    Log.e(PreciosRutaConductor.TAG, "parired: " + pairedDevice.size)
-                                    if (pairedDevice.size > 0) {
-                                        for (pairedDev in pairedDevice) {
-                                            if (pairedDev.name == namePrint) {
-                                                bluetoothDevice = pairedDev
-                                                abrirImpresoraBlue()
-                                                break
-                                            } else {
-                                                Log.e(
-                                                    PreciosRutaConductor.TAG,
-                                                    "error no existe impresora"
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        Log.e(PreciosRutaConductor.TAG, "error no existe impresora")
-                                    }
-                                } else {
-                                    showDialogTiquete()
-                                }
-                            } catch (ex: Exception) {
-                                Log.e(PreciosRutaConductor.TAG, "onResponse: " + ex.message)
-                                ex.printStackTrace()
-                            }
-                        } else {
-                            DialogAlert.showDialogFailed(
-                                context,
-                                "Error",
-                                "Ha ocurrido un error \n al registrar el ticket",
-                                SweetAlertDialog.ERROR_TYPE
-                            )
-                            stateListener.isLoading(false)
-                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-                }
-            },
-            // No convertir a lambda
-            object : Response.ErrorListener {
-                override fun onErrorResponse(volleyError: VolleyError?) {
-                    stateListener.isLoading(false)
-                    DialogAlert.showDialogFailed(
-                        context, "Error", "Ha ocurrido un error \n al registrar el ticket",
-                        SweetAlertDialog.ERROR_TYPE
-                    )
-                    Log.e(PreciosRutaConductor.TAG, "error: " + volleyError?.message)
-                    if (volleyError is TimeoutError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ha pasado el tiempo Limitado",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is ServerError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. Error en el servidor",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is NoConnectionError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. No hay conexion a internet",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else if (volleyError is NetworkError) {
-                        DialogAlert.showDialogFailed(
-                            context,
-                            "Error",
-                            "Ops.. Hay error en la red",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    }
-                }
-            }) {
-            override fun getParams(): Map<String, String> {
-                val params: MutableMap<String, String> = HashMap()
-                params["id_paradero_inicio"] = idParaderoInicio.toString()
-                params["id_paradero_fin"] = idParaderoFin.toString()
-                params["id_ruta"] = idRutaDisponible.toString()
-                params["id_operador"] = idOperador.toString()
-                params["hora"] = horario
-                params["id_tipo_usuario"] = idTipoUsuario.toString()
-                params["total_pagar"] = precioSumPasaje.toString()
-                params["cantidad"] = countPasajes.toString()
-                params["id_empresa"] = idEmpresa.toString()
-                params["id_vehiculo"] = idVehiculo.toString()
-                return params
-            }
-        }
-        requestQueue.add(stringRequest)
     }
 
     private fun showDialogTiquete() {
@@ -371,11 +187,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             }
         }
 
-        btnCancel.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                printDialog.dismiss()
-            }
-        })
+        btnCancel.setOnClickListener { printDialog.dismiss() }
         try {
             printDialog.show()
         } catch (e: java.lang.Exception) {
@@ -423,7 +235,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
 
     private fun abrirImpresoraBlue() {
         try {
-            Log.i(PreciosRutaConductor.TAG, "Entro a print")
+            Log.e(TAG, "Abriendo impresora $bluetoothDevice   - ${bluetoothDevice.name}")
             //Standard uuid from string //
             val uuidSting = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuidSting)
@@ -435,7 +247,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             printData()
             finishProcess()
         } catch (ex: java.lang.Exception) {
-            Log.i(PreciosRutaConductor.TAG, "Error P: " + ex.message)
+            Log.i(TAG, "Error P: " + ex.message)
         }
     }
 
@@ -469,7 +281,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             readBufferPosition = 0
             readBuffer = ByteArray(1024)
             thread = Thread {
-                Log.d(PreciosRutaConductor.TAG, "method run")
+                Log.d(TAG, "method run")
                 while (!Thread.currentThread().isInterrupted && !stopWorker) {
                     try {
                         val byteAvailable = inputStream!!.available()
@@ -502,7 +314,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     private fun printData() {
-        Log.d(PreciosRutaConductor.TAG, "entro a printdata")
+        Log.d(TAG, "entro a printdata")
         val split: Array<String> = info.split(",").toTypedArray()
         try {
             val arrayOfByte1 = byteArrayOf(27, 33, 0)
@@ -648,7 +460,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
-            Log.e(PreciosRutaConductor.TAG, "error in printdata")
+            Log.e(TAG, "error in printdata")
         }
     }
 

@@ -1,6 +1,9 @@
 package com.smartgeeks.busticket.api
 
+import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.ticket.ResponseSendSeatTicket
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
@@ -21,4 +24,10 @@ interface TicketApi {
         @Field("id_empresa") companyId: Int,
         @Field("id_vehiculo") vehicleId: Int,
     ): ResponseSendSeatTicket
+
+    @POST("apisync/saveTicketV2")
+    suspend fun saveTicket(
+        @Body ticketEntity: TicketEntity
+    ) : ResponseSaveTicket
+
 }
