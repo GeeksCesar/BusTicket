@@ -4,8 +4,14 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
-    <string name="dialogMessage">Desea recordar la ruta !</string>
+    <string name="dialog_remember_route">Desea recordar la ruta !</string>
+    <string name="dialog_forgot_route">Desea olvidar la ruta!</string>
     <string name="dialogMessageFinalizar">Desea finalizar la ruta !</string>
     <string name="dialogMessagePrint">Esta seguro de quitar la impresora !</string>
+    <string name="one_way">Ida</string>
+    <string name="back">Vuelta</string>
+    <string name="remove_date">Remove Date</string>
+    <string name="remember_route">Recordar ruta</string>
+    <string name="forget_route">Olvidar ruta</string>
 
 </resources>

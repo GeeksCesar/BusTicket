@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.core.view.isVisible
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.orm.query.Select
 import com.smartgeeks.busticket.MainActivity
@@ -27,6 +28,7 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
+import com.smartgeeks.busticket.presentation.ui.dialogs.DatePickerDialog
 import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.DialogAlert
 import com.smartgeeks.busticket.utils.InternetCheck
@@ -82,6 +84,9 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     private val ticketViewModel: TicketViewModel by viewModels()
     private lateinit var binding: ActivitySelectRutasBinding
 
+    private var dateOneWay = ""
+    private var dateBack = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -92,8 +97,10 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         binding = ActivitySelectRutasBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initWidget()
+        setupBackButton()
 
         printTicket = PrintTicketLibrary(this@SelectRutas, this)
+
         binding.spUsuarios.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
@@ -287,6 +294,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 if (binding.cbAsientos.isChecked) {
                     InternetCheck { internet ->
                         if (internet) {
+                            // TODO: Create request to know price using date
                             Log.e(TAG, "Hay conexión a Internet")
                             startSelectSillasActivity()
                         } else {
@@ -302,6 +310,21 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 }
             }
         })
+    }
+
+    private fun showSelectByDate(show: Boolean) = with(binding) {
+        salesByDates.isVisible = show
+
+        if (!show) {
+            removeDateOneWay.isVisible = show
+            removeDateBack.isVisible = show
+        }
+    }
+
+    private fun setupBackButton() {
+        binding.commonToolbar.imgBtnBack.setOnClickListener {
+            goBack()
+        }
     }
 
     private fun saveTicket(ticketEntity: TicketEntity) {
@@ -389,6 +412,39 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         getParaderosSQLite(id_ruta)
         validarCheckBox()
         textCount.setText("" + countPasajes)
+
+        setupSelectDate()
+    }
+
+    private fun setupSelectDate() = with(binding) {
+        tvOneWay.setOnClickListener {
+            DatePickerDialog(tvOneWay.text.toString()) { day, month, year ->
+                dateOneWay = "$day/$month/$year"
+                tvOneWay.text = dateOneWay
+                removeDateOneWay.isVisible = true
+            }.show(supportFragmentManager, "datePicker")
+        }
+
+        tvBack.setOnClickListener {
+            DatePickerDialog(tvBack.text.toString()) { day, month, year ->
+                dateBack = "$day/$month/$year"
+                tvBack.text = dateBack
+                removeDateBack.isVisible = true
+            }.show(supportFragmentManager, "datePicker")
+        }
+
+        removeDateOneWay.setOnClickListener {
+            dateOneWay = ""
+            removeDateOneWay.isVisible = false
+            tvOneWay.text = getString(R.string.one_way)
+        }
+
+        removeDateBack.setOnClickListener {
+            dateBack = ""
+            removeDateBack.isVisible = false
+            tvBack.text = getString(R.string.back)
+        }
+
     }
 
     val dataPrint: Unit
@@ -411,37 +467,34 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     }
 
     private fun validarCheckBox() = with(binding) {
-        cbAsientos.setOnCheckedChangeListener { compoundButton, b ->
+        cbAsientos.setOnCheckedChangeListener { _, isChecked ->
             btnSiguiente.text = "Siguiente"
-            if (cbAsientos.isChecked) {
+            showSelectByDate(isChecked)
+            if (isChecked) {
                 cbPie.isChecked = false
+
                 if (sizeTarifas > 0) {
                     btnSiguiente.visibility = View.VISIBLE
                     btnFinalizar.visibility = View.GONE
-                    // btnOlvidarRuta.setVisibility(View.GONE);
                 }
             } else {
                 btnSiguiente.visibility = View.GONE
-                // btnOlvidarRuta.setVisibility(View.VISIBLE);
             }
         }
-        cbPie.setOnCheckedChangeListener { compoundButton, b ->
-            if (cbPie.isChecked) {
+        cbPie.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
                 cbAsientos.isChecked = false
                 if (sizeTarifas > 0) {
                     btnSiguiente.visibility = View.GONE
                     btnFinalizar.visibility = View.VISIBLE
                 }
-
-                //  btnOlvidarRuta.setVisibility(View.GONE);
             } else {
                 btnFinalizar.visibility = View.GONE
-                //  btnOlvidarRuta.setVisibility(View.VISIBLE);
             }
         }
     }
 
-    fun goBack(view: View?) {
+    fun goBack() {
         listParaderos.clear()
         listParaderoFin.clear()
         lisUsuarios.clear()

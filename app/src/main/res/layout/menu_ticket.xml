@@ -39,7 +39,7 @@
             android:id="@+id/btnRecordarRuta"
             style="@style/ButtonCustomEnable"
             android:layout_weight="5"
-            android:text="Recordar ruta"
+            android:text="@string/remember_route"
             android:layout_marginRight="5dp"
             android:layout_marginBottom="10dp"/>
 

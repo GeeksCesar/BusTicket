@@ -25,9 +25,9 @@
             android:id="@+id/btnRemove"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:background="@color/md_white_1000"
+            android:background="@color/brandColor"
             android:text="-"
-            android:textColor="@color/brandColor"
+            android:textColor="@color/md_white_1000"
             android:textSize="@dimen/text_size_button_count"
             android:textStyle="bold"
             tools:ignore="TouchTargetSizeCheck" />
@@ -47,9 +47,9 @@
             android:id="@+id/btnAdd"
             android:layout_width="42dp"
             android:layout_height="42dp"
-            android:background="@color/md_white_1000"
+            android:background="@color/brandColor"
             android:text="+"
-            android:textColor="@color/brandColor"
+            android:textColor="@color/md_white_1000"
             android:textSize="@dimen/text_size_button_count"
             tools:ignore="TouchTargetSizeCheck" />
 

@@ -322,7 +322,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/arrow_back_ios/baseline_arrow_back_ios_24.xml" />
+                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialicons/close/baseline_close_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -333,8 +333,8 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_arrow_back_ios" />
-                            <entry key="sourceFile" value="D:\AndroidStudioProjects\BusTicket" />
+                            <entry key="outputName" value="ic_close" />
+                            <entry key="sourceFile" value="C:\Users\jonca\Desktop\ic_back.svg" />
                           </map>
                         </option>
                       </PersistentState>

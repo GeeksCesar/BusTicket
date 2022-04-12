@@ -49,7 +49,7 @@
                 style="@style/Editext"
                 android:drawableLeft="@mipmap/icon_usuario"
                 android:drawablePadding="20dp"
-                android:hint="Usuario"/>
+                android:hint="Usuario" />
 
 
             <EditText

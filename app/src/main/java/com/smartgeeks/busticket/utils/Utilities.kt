@@ -8,8 +8,12 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import pub.devrel.easypermissions.EasyPermissions
 import java.text.DateFormat
+import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 object Utilities {
 
@@ -37,8 +41,9 @@ object Utilities {
         Manifest.permission.BLUETOOTH_CONNECT
     )
 
-    fun isBluetoothEnabled(context: Context) : Boolean {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    fun isBluetoothEnabled(context: Context): Boolean {
+        val bluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         return bluetoothManager.adapter.isEnabled
     }
 
@@ -61,7 +66,10 @@ object Utilities {
         return Calendar.getInstance().time
     }
 
-    fun getTimeByTimezone(format: String = "yyyy-MM-dd", timezone: String = "America/Santiago"): String {
+    fun getTimeByTimezone(
+        format: String = "yyyy-MM-dd",
+        timezone: String = "America/Santiago"
+    ): String {
         val c = Calendar.getInstance()
         val date = c.time //current date and time in UTC
         val df = SimpleDateFormat(format, Locale.getDefault())
@@ -73,8 +81,8 @@ object Utilities {
         var voucher = ""
         voucher += idVehicle.toString()
         voucher += idOperator.toString()
-        voucher += "-"+ stringToDate(date)?.toString("ddMMyy")
-        voucher += "-"+hour.split(":").joinToString("")
+        voucher += "-" + stringToDate(date)?.toString("ddMMyy")
+        voucher += "-" + hour.split(":").joinToString("")
         return voucher
     }
 
@@ -86,6 +94,15 @@ object Utilities {
         return formatter.parse(date)
     }
 
-
-
+    fun string2Calendar(dateStr: String, pattern: String = "dd/MM/yyyy"): Calendar {
+        val calendar = Calendar.getInstance()
+        val format = SimpleDateFormat(pattern, Locale.getDefault())
+        try {
+            val date = format.parse(dateStr)
+            calendar.time = date
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
+        return calendar
+    }
 }

@@ -4,6 +4,7 @@ package com.smartgeeks.busticket.menu;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,6 +36,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Archivos donde se imprime el Ticket
@@ -167,37 +170,37 @@ public class Ticket extends Fragment {
             }
         });
 
+        handleChangeTextSaveRoute(getStatusRuta);
         btnRecordarRuta.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                String message = (getStatusRuta) ? getString(R.string.dialog_forgot_route) : getString(R.string.dialog_remember_route);
+
                 final AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
                 builder.setTitle(context.getResources().getString(R.string.app_name));
-                builder.setMessage(context.getResources().getString(R.string.dialogMessage));
+                builder.setMessage(message);
 
                 builder.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.e(TAG, "Horario pref: " + horario);
-                        Log.e(TAG, "Ruta pref: " + id_ruta_disponible);
-
-                        RutaPojo ruta = new RutaPojo();
-
-                        ruta.setVehiculo_id(id_vehiculo);
-                        ruta.setRuta_id(id_ruta);
-                        ruta.setRuta_disponible_id(id_ruta_disponible);
-                        ruta.setHorario(horario);
-                        ruta.setHorario_id(id_horario);
-                        ruta.setInformacion(placa + "," + ruta_info + "," + hora);
-                        ruta.setStatus_ruta(true);
-
-                        RutaPreferences.getInstance(context).rutaPreferences(ruta);
-
-                        if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
-                            Intent intent = new Intent(context, SelectTarifa.class);
-                            startActivity(intent);
+                        /*
+                         * Save preferences when route is not has been saved on preferences
+                         */
+                        if (getStatusRuta) {
+                            handleChangeTextSaveRoute(false);
+                            deleteRoutePreference();
                         } else {
-                            Intent intent = new Intent(context, SelectRutas.class);
-                            startActivity(intent);
+                            handleChangeTextSaveRoute(true);
+                            saveRoutePreference();
+
+                            if (UsuarioPreferences.getInstance(context).getRoleVenta().equals("conductor")) {
+                                Intent intent = new Intent(context, SelectTarifa.class);
+                                startActivity(intent);
+                            } else {
+                                Intent intent = new Intent(context, SelectRutas.class);
+                                startActivity(intent);
+                            }
                         }
                     }
                 });
@@ -248,6 +251,38 @@ public class Ticket extends Fragment {
 
 
         return view;
+    }
+
+    private void saveRoutePreference() {
+        Log.e(TAG, "Horario pref: " + horario);
+        Log.e(TAG, "Ruta pref: " + id_ruta_disponible);
+
+        RutaPojo ruta = new RutaPojo();
+
+        ruta.setVehiculo_id(id_vehiculo);
+        ruta.setRuta_id(id_ruta);
+        ruta.setRuta_disponible_id(id_ruta_disponible);
+        ruta.setHorario(horario);
+        ruta.setHorario_id(id_horario);
+        ruta.setInformacion(placa + "," + ruta_info + "," + hora);
+        ruta.setStatus_ruta(true);
+
+        RutaPreferences.getInstance(context).rutaPreferences(ruta);
+        getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
+    }
+
+    private void deleteRoutePreference() {
+        SharedPreferences preferences = context.getSharedPreferences(RutaPreferences.SHARED_PREF_NAME, MODE_PRIVATE);
+        preferences.edit().putBoolean(RutaPreferences.ESTADO, false).apply();
+        getStatusRuta = RutaPreferences.getInstance(context).getEstadoRuta();
+    }
+
+    private void handleChangeTextSaveRoute(Boolean savedRoute) {
+        if (savedRoute) {
+            btnRecordarRuta.setText(getString(R.string.forget_route));
+        } else {
+            btnRecordarRuta.setText(getString(R.string.remember_route));
+        }
     }
 
     private void init() {
