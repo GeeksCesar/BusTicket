@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.data.vehicle
+package com.smartgeeks.busticket.data.models.vehicle
 
 data class ResponseOccupiedSeats(
     val estado: Int,

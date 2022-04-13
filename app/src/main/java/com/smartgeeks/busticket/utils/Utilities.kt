@@ -89,7 +89,7 @@ object Utilities {
     /**
      * This method return the date given a date in string
      */
-    private fun stringToDate(date: String, format: String = "yyyy-MM-dd"): Date? {
+    fun stringToDate(date: String, format: String = "yyyy-MM-dd"): Date? {
         val formatter = SimpleDateFormat(format, Locale.getDefault())
         return formatter.parse(date)
     }

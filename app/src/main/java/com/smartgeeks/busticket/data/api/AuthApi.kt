@@ -1,10 +1,10 @@
 package com.smartgeeks.busticket.data.api
 
 import com.smartgeeks.busticket.data.BasicResponse
-import com.smartgeeks.busticket.data.auth.AuthResponse
-import com.smartgeeks.busticket.data.auth.CompanyMessage
-import com.smartgeeks.busticket.data.auth.LockedDevices
-import com.smartgeeks.busticket.data.auth.RequestSessionLogs
+import com.smartgeeks.busticket.data.models.auth.AuthResponse
+import com.smartgeeks.busticket.data.models.auth.CompanyMessage
+import com.smartgeeks.busticket.data.models.auth.LockedDevices
+import com.smartgeeks.busticket.data.models.auth.RequestSessionLogs
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded

@@ -16,6 +16,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.orm.query.Select
 import com.smartgeeks.busticket.MainActivity
@@ -25,8 +26,10 @@ import com.smartgeeks.busticket.Modelo.TipoUsuario
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
-import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
+import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
+import com.smartgeeks.busticket.domain.models.PriceByDate
+import com.smartgeeks.busticket.presentation.PriceViewModel
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.ui.dialogs.DatePickerDialog
 import com.smartgeeks.busticket.printer.PrintTicketLibrary
@@ -82,6 +85,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     private lateinit var printTicket: PrintTicketLibrary
 
     private val ticketViewModel: TicketViewModel by viewModels()
+    private val priceViewModel: PriceViewModel by viewModels()
     private lateinit var binding: ActivitySelectRutasBinding
 
     private var dateOneWay = ""
@@ -417,14 +421,34 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     }
 
     private fun setupSelectDate() = with(binding) {
+
+        val priceObserver: Observer<Resource<List<PriceByDate>>> = Observer { result ->
+            when (result) {
+                is Resource.Failure -> {}
+                is Resource.Loading -> {
+                    Log.e(TAG, "loading")
+                }
+                is Resource.Success -> {
+                    Log.e(TAG, "setupSelectDate: ${result.data}")
+                }
+            }
+        }
+
         tvOneWay.setOnClickListener {
             DatePickerDialog(tvOneWay.text.toString()) { day, month, year ->
                 dateOneWay = "$day/$month/$year"
                 tvOneWay.text = dateOneWay
                 removeDateOneWay.isVisible = true
-            }.show(supportFragmentManager, "datePicker")
 
-            // TODO: Fetch hours by date
+                // TODO: Fetch hours by date
+                priceViewModel.getPriceByDate(
+                    id_paradero_inicio,
+                    id_paradero_fin,
+                    id_tipo_usuario,
+                    dateOneWay
+                ).observe(this@SelectRutas, priceObserver)
+
+            }.show(supportFragmentManager, "datePicker")
         }
 
         tvBack.setOnClickListener {
@@ -432,9 +456,16 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 dateBack = "$day/$month/$year"
                 tvBack.text = dateBack
                 removeDateBack.isVisible = true
-            }.show(supportFragmentManager, "datePicker")
 
-            // TODO: Fetch hours by date
+                // TODO: Fetch hours by date
+                priceViewModel.getPriceByDate(
+                    id_paradero_inicio,
+                    id_paradero_fin,
+                    id_tipo_usuario,
+                    dateBack
+                ).observe(this@SelectRutas, priceObserver)
+
+            }.show(supportFragmentManager, "datePicker")
         }
 
         removeDateOneWay.setOnClickListener {

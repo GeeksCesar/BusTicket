@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.data.auth
+package com.smartgeeks.busticket.data.models.auth
 
 import com.google.gson.annotations.SerializedName
 

@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.data.ticket
+package com.smartgeeks.busticket.data.models.ticket
 
 data class ResponseSaveTicket(
     val mensaje : String = "",

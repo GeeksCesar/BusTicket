@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.data.auth
+package com.smartgeeks.busticket.data.models.auth
 
 data class User(
     val descEmpresa: String,

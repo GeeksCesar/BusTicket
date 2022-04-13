@@ -5,8 +5,8 @@ import android.util.Log
 import com.smartgeeks.busticket.data.api.TicketApi
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
-import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
-import com.smartgeeks.busticket.data.ticket.ResponseSendSeatTicket
+import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
+import com.smartgeeks.busticket.data.models.ticket.ResponseSendSeatTicket
 import com.smartgeeks.busticket.utils.InternetChecker
 import javax.inject.Inject
 

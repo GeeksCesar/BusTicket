@@ -22,7 +22,7 @@ import com.smartgeeks.busticket.Modelo.TipoUsuario
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
-import com.smartgeeks.busticket.data.ticket.ResponseSaveTicket
+import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.printer.PrintTicketLibrary

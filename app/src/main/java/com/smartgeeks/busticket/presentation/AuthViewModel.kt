@@ -6,7 +6,7 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.smartgeeks.busticket.core.AppPreferences
 import com.smartgeeks.busticket.core.Resource
-import com.smartgeeks.busticket.data.auth.RequestSessionLogs
+import com.smartgeeks.busticket.data.models.auth.RequestSessionLogs
 import com.smartgeeks.busticket.repository.auth.AuthRepository
 import com.smartgeeks.busticket.utils.InternetChecker.isInternetAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -34,7 +34,7 @@ import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
-import com.smartgeeks.busticket.data.vehicle.SillaOcupada
+import com.smartgeeks.busticket.data.models.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel

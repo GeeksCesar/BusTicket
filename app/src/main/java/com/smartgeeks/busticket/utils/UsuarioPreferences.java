@@ -2,7 +2,7 @@ package com.smartgeeks.busticket.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.smartgeeks.busticket.data.auth.User;
+import com.smartgeeks.busticket.data.models.auth.User;
 
 public class UsuarioPreferences {
 

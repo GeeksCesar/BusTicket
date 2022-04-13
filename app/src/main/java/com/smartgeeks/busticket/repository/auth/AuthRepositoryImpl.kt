@@ -2,9 +2,9 @@ package com.smartgeeks.busticket.repository.auth
 
 import com.smartgeeks.busticket.data.api.AuthApi
 import com.smartgeeks.busticket.data.BasicResponse
-import com.smartgeeks.busticket.data.auth.AuthResponse
-import com.smartgeeks.busticket.data.auth.CompanyMessage
-import com.smartgeeks.busticket.data.auth.RequestSessionLogs
+import com.smartgeeks.busticket.data.models.auth.AuthResponse
+import com.smartgeeks.busticket.data.models.auth.CompanyMessage
+import com.smartgeeks.busticket.data.models.auth.RequestSessionLogs
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(

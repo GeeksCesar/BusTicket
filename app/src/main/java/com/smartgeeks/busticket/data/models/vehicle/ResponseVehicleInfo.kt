@@ -1,4 +1,4 @@
-package com.smartgeeks.busticket.data.vehicle
+package com.smartgeeks.busticket.data.models.vehicle
 
 data class ResponseVehicleInfo(
     val vehiculos: List<Vehiculo>

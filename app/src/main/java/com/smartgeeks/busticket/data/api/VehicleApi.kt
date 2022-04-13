@@ -1,7 +1,7 @@
 package com.smartgeeks.busticket.data.api
 
-import com.smartgeeks.busticket.data.vehicle.ResponseOccupiedSeats
-import com.smartgeeks.busticket.data.vehicle.ResponseVehicleInfo
+import com.smartgeeks.busticket.data.models.vehicle.ResponseOccupiedSeats
+import com.smartgeeks.busticket.data.models.vehicle.ResponseVehicleInfo
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
