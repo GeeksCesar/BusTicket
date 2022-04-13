@@ -294,7 +294,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 if (binding.cbAsientos.isChecked) {
                     InternetCheck { internet ->
                         if (internet) {
-                            // TODO: Create request to know price using date
+                            // TODO: Create request to know bus that for this date
                             Log.e(TAG, "Hay conexión a Internet")
                             startSelectSillasActivity()
                         } else {
@@ -379,12 +379,12 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         bundle = intent.extras
         estadoRuta = RutaPreferences.getInstance(context).estadoRuta
         dataPrint
-        btnOlvidarRuta.visibility = View.VISIBLE
+        /*btnOlvidarRuta.visibility = View.VISIBLE
         if (estadoRuta) {
             btnOlvidarRuta.visibility = View.VISIBLE
         } else {
             btnOlvidarRuta.visibility = View.GONE
-        }
+        }*/
         if (bundle != null) {
             id_ruta = bundle!!.getInt(ID_RUTA)
             id_ruta_disponible = bundle!!.getInt(ID_RUTA_DISPONIBLE)
@@ -423,6 +423,8 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 tvOneWay.text = dateOneWay
                 removeDateOneWay.isVisible = true
             }.show(supportFragmentManager, "datePicker")
+
+            // TODO: Fetch hours by date
         }
 
         tvBack.setOnClickListener {
@@ -431,6 +433,8 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 tvBack.text = dateBack
                 removeDateBack.isVisible = true
             }.show(supportFragmentManager, "datePicker")
+
+            // TODO: Fetch hours by date
         }
 
         removeDateOneWay.setOnClickListener {

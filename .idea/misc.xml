@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_button_count.xml" value="0.290625" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_button_rounded.xml" value="0.1575" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_contenedor.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_editext_main.xml" value="0.1575" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/bg_white_rounded.xml" value="0.1575" />
@@ -18,9 +19,12 @@
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_select_sillas.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_select_tarifa.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_splash_screen.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/adapter_price_pasaje.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/adapter_tarifa.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/common_toolbar.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner_rutas.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner_tipo_pasajero.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_inicio.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_perfil.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_ticket.xml" value="0.27447916666666666" />
