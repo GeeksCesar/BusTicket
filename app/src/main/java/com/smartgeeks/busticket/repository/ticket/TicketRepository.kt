@@ -16,6 +16,9 @@ interface TicketRepository {
         seatsList: String,
         companyId: Int,
         vehicleId: Int,
+        date : String,
+        idService : Int,
+        tipoTicket : String
     ): ResponseSendSeatTicket
 
     suspend fun saveTicketLocally(ticketEntity: TicketEntity)

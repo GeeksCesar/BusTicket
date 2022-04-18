@@ -20,7 +20,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.CompoundButton
+import android.widget.LinearLayout
+import android.widget.ListView
+import android.widget.TextView
+import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -31,19 +39,25 @@ import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
-import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
+import com.smartgeeks.busticket.data.api.Service
 import com.smartgeeks.busticket.data.models.vehicle.SillaOcupada
 import com.smartgeeks.busticket.databinding.ActivitySelectSillasBinding
+import com.smartgeeks.busticket.domain.models.PriceByDate
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.VehicleViewModel
 import com.smartgeeks.busticket.printer.AsyncBluetoothEscPosPrint
 import com.smartgeeks.busticket.printer.AsyncEscPosPrinter
-import com.smartgeeks.busticket.utils.*
+import com.smartgeeks.busticket.utils.Constants
+import com.smartgeeks.busticket.utils.DialogAlert
+import com.smartgeeks.busticket.utils.RutaPreferences
+import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.Utilities.formatDate
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Locale
 import kotlin.math.ceil
 
 private const val PERMISSION_BLUETOOTH = 1
@@ -90,6 +104,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     var preferences: SharedPreferences? = null
     var estadoPrint = false
     var namePrint: String? = null
+
+    private var saleByDate: Boolean = false
+    private var ticketOneWay: PriceByDate? = null
+    private var ticketBack: PriceByDate? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,6 +189,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         id_empresa = UsuarioPreferences.getInstance(context).idEmpresa
         nombreEmpresa = nombreEmpresa.trim { it <= ' ' }.uppercase(Locale.getDefault())
         getPrecioPasaje = "$ " + formatPrecio(precio_pasaje)
+
+        saleByDate = bundle!!.getBoolean(SALE_BY_DATE)
+        ticketOneWay = bundle!!.getSerializable(TICKET_ONE_WAY) as PriceByDate?
+        ticketBack = bundle!!.getSerializable(TICKET_BACK) as PriceByDate?
 
         //Input
         showDataTextView()
@@ -437,14 +459,16 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         ticketViewModel.saveSeatTicket(
             id_paradero_inicio,
             id_paradero_final,
-            id_ruta,
+            ticketOneWay?.idRuta ?: id_ruta,
             id_operador,
             horario,
             id_tipo_usuario,
             valor_pagar.toDouble(),
             listSillas,
             id_empresa,
-            id_vehiculo
+            id_vehiculo,
+            ticketOneWay?.fecha ?: "",
+            if (ticketBack == null) "SoloIda" else "IdayVuelta"
         ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> showProgress(false)
@@ -622,6 +646,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         private const val RIGHT_LENGTH = 16
         private const val LEFT_TEXT_MAX_LENGTH = 8
         private val TAG = SelectSillas::class.java.simpleName
+
+        const val SALE_BY_DATE = "sale_by_date"
+        const val TICKET_ONE_WAY = "ticket_one_way_data"
+        const val TICKET_BACK = "ticket_back_data"
     }
 
     /*==============================================================================================
@@ -690,6 +718,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         val companyName =
             UsuarioPreferences.getInstance(context).nombreEmpresa.uppercase(Locale.getDefault())
 
+        val ticketDate =
+            ticketOneWay?.fecha?.formatDate(inputFormat = "yyyy-MM-dd", outputFormat = "dd-MM-yy")
+                ?: Utilities.getDate("dd-MM-yy")
+
         var textToPrint = """
             [C]<font size='big'>$companyName</font>
             [L]
@@ -702,7 +734,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             [L]
             [C]--------------------------------
             [C]Fecha[C]Salida[C]Asiento
-            [C]${Utilities.getDate("dd-MM-yy")}[C]${split[2]}[C]$listSillas
+            [C]${ticketDate}[C]${split[2]}[C]$listSillas
             [C]--------------------------------
             [L]
             [C]${desc_empresa}

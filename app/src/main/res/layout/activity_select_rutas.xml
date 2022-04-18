@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,7 +14,11 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnSiguiente"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/commonToolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -168,103 +172,184 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/contenedorPrecio" />
 
-            <TextView
-                android:id="@+id/tvOneWay"
-                style="@style/tv_select_date"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/selectorOneWay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/one_way"
-                app:drawableStartCompat="@drawable/ic_one_way"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_white_rounded"
+                android:padding="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnOlvidarRuta" />
+                app:layout_constraintTop_toBottomOf="@+id/btnOlvidarRuta">
 
-            <ImageView
-                android:id="@+id/removeDateOneWay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:contentDescription="@string/remove_date"
-                android:padding="8dp"
-                android:src="@drawable/ic_close"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/tvOneWay"
-                app:layout_constraintEnd_toEndOf="@+id/tvOneWay"
-                app:layout_constraintTop_toTopOf="@+id/tvOneWay" />
+                <TextView
+                    android:id="@+id/tvOneWay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:padding="4dp"
+                    android:text="@string/one_way"
+                    android:textSize="16sp"
+                    app:drawableStartCompat="@drawable/ic_one_way"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvHourOneDay"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/tvBack"
-                style="@style/tv_select_date"
+                <TextView
+                    android:id="@+id/tvHourOneDay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:textAlignment="center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateOneWay"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toEndOf="@+id/tvOneWay"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="13:00:00" />
+
+                <ProgressBar
+                    android:id="@+id/progressOneWay"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminateTint="@color/colorPrimary"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateOneWay"
+                    app:layout_constraintStart_toEndOf="@+id/tvOneWay"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/removeDateOneWay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/remove_date"
+                    android:padding="2dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_weight=".2"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/selectorBack"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/back"
-                app:drawableStartCompat="@drawable/ic_back"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_white_rounded"
+                android:padding="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvOneWay" />
+                app:layout_constraintTop_toBottomOf="@+id/selectorOneWay">
 
-            <ImageView
-                android:id="@+id/removeDateBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:contentDescription="@string/remove_date"
-                android:padding="8dp"
-                android:src="@drawable/ic_close"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/tvBack"
-                app:layout_constraintEnd_toEndOf="@+id/tvBack"
-                app:layout_constraintTop_toTopOf="@+id/tvBack" />
+                <TextView
+                    android:id="@+id/tvBack"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:padding="4dp"
+                    android:text="@string/back"
+                    android:textSize="16sp"
+                    app:drawableStartCompat="@drawable/ic_back"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvHourBack"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvHourBack"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:textAlignment="center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateBack"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toEndOf="@+id/tvBack"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="13:00:00" />
+
+                <ProgressBar
+                    android:id="@+id/progressBack"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminateTint="@color/colorPrimary"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateBack"
+                    app:layout_constraintStart_toEndOf="@+id/tvBack"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/removeDateBack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/remove_date"
+                    android:padding="2dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_weight=".2"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.Group
                 android:id="@+id/salesByDates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                app:constraint_referenced_ids="tvBack,tvOneWay"
+                app:constraint_referenced_ids="selectorBack,selectorOneWay"
                 tools:visibility="visible" />
-
-            <ProgressBar
-                android:id="@+id/mProgressView"
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:visibility="gone" />
-
-            <Button
-                android:id="@+id/btnSiguiente"
-                style="@style/ButtonCustom"
-                android:layout_marginTop="48dp"
-                android:text="Siguiente"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvBack"
-                tools:visibility="visible" />
-
-            <Button
-                android:id="@+id/btnFinalizar"
-                style="@style/ButtonCustom"
-                android:layout_marginTop="48dp"
-                android:text="Finalizar"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvBack"
-                tools:visibility="gone" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/mProgressView"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnSiguiente"
+        style="@style/ButtonCustom"
+        android:layout_margin="16dp"
+        android:layout_marginTop="48dp"
+        android:text="Siguiente"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
+    <Button
+        android:id="@+id/btnFinalizar"
+        style="@style/ButtonCustom"
+        android:layout_margin="16dp"
+        android:layout_marginTop="48dp"
+        android:text="Finalizar"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="gone" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

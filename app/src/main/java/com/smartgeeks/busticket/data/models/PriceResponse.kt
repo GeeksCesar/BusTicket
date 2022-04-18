@@ -11,10 +11,19 @@ data class PriceResponse(
     val origen: String,
     val destino: String,
     @SerializedName("id_tipo_pasajero") val idTipoPasajero: String,
-    val dia: String
+    val dia: String,
+    val fecha: String
 ) {
     fun toDomain() = PriceByDate(
-        horario, tarifa, tarifaIdayvuelta, idRuta, origen, destino, idTipoPasajero, dia
+        horario,
+        tarifa,
+        tarifaIdayvuelta,
+        idRuta.toInt(),
+        origen,
+        destino,
+        idTipoPasajero,
+        dia,
+        fecha
     )
 }
 

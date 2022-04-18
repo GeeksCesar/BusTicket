@@ -28,7 +28,10 @@ class TicketRepositoryImpl @Inject constructor(
         totalCost: Double,
         seatsList: String,
         companyId: Int,
-        vehicleId: Int
+        vehicleId: Int,
+        date: String,
+        idService: Int,
+        tipoTicket : String
     ): ResponseSendSeatTicket = ticketApi.saveSeatTicket(
         idStartRoute,
         idEndRoute,
@@ -39,7 +42,10 @@ class TicketRepositoryImpl @Inject constructor(
         totalCost,
         seatsList,
         companyId,
-        vehicleId
+        vehicleId,
+        date,
+        idService,
+        tipoTicket
     )
 
     override suspend fun saveTicketLocally(ticketEntity: TicketEntity) {

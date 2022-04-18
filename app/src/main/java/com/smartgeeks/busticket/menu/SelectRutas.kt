@@ -16,7 +16,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.orm.query.Select
 import com.smartgeeks.busticket.MainActivity
@@ -32,12 +31,17 @@ import com.smartgeeks.busticket.domain.models.PriceByDate
 import com.smartgeeks.busticket.presentation.PriceViewModel
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.ui.dialogs.DatePickerDialog
+import com.smartgeeks.busticket.presentation.ui.dialogs.DialogSingleChoice
 import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.DialogAlert
 import com.smartgeeks.busticket.utils.InternetCheck
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.Utilities.formatCurrency
+import com.smartgeeks.busticket.utils.Utilities.formatDate
+import com.smartgeeks.busticket.utils.hide
+import com.smartgeeks.busticket.utils.visible
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.util.Locale
@@ -55,9 +59,9 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     private var paraderosList: List<Paradero> = ArrayList()
     private var tipoUsuariosList: ArrayList<TipoUsuario> = ArrayList()
     var countPasajes = 1
-    var precio_sum_pasaje = 0
+    var precioSumPasaje = 0
     var precioPasaje = 0
-    var valor_pasaje = 0
+    var precioPasajeInicial = 0
     var id_tipo_usuario = 0
     var id_paradero_inicio = 0
     var id_paradero_fin = 0
@@ -77,7 +81,6 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     var id_ruta_disponible = 0
     var id_empresa = 0
     var nameUsuario: String = ""
-    var getPrecioPasaje: String? = null
     var preferences: SharedPreferences? = null
     var estadoRuta = false
     var estadoPrint = false
@@ -90,6 +93,8 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
 
     private var dateOneWay = ""
     private var dateBack = ""
+    private var ticketOneWay: PriceByDate? = null
+    private var ticketBack: PriceByDate? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,8 +127,9 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                         id_tipo_usuario
                     ).toInt()
                     Log.e(TAG, "Precio del pasaje: $precioPasaje")
-                    valor_pasaje = precioPasaje * countPasajes
-                    formatPrecio(valor_pasaje)
+                    precioPasajeInicial = precioPasaje
+
+                    formatPrecio()
                 } catch (e: Exception) {
                     Log.e(TAG, "Error al obtener precio del pasaje")
                     e.message
@@ -180,8 +186,8 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                         id_paradero_fin,
                         id_tipo_usuario
                     ).toInt()
-                    valor_pasaje = precioPasaje * countPasajes
-                    formatPrecio(valor_pasaje)
+                    precioPasajeInicial = precioPasaje
+                    formatPrecio()
                 } catch (e: Exception) {
                     e.message
                 }
@@ -203,15 +209,13 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         }
         binding.btnSumar.setOnClickListener {
             countPasajes++
-            precio_sum_pasaje = precioPasaje * countPasajes
-            formatPrecio(precio_sum_pasaje)
+            formatPrecio()
             binding.textCount.text = "" + countPasajes
         }
         binding.btnRestar.setOnClickListener {
             if (countPasajes > 1) {
                 countPasajes--
-                precio_sum_pasaje = precioPasaje * countPasajes
-                formatPrecio(precio_sum_pasaje)
+                formatPrecio()
                 binding.textCount.text = "" + countPasajes
             }
         }
@@ -225,7 +229,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         }
 
         binding.btnFinalizar.setOnClickListener {
-            precio_sum_pasaje = precioPasaje * countPasajes
+            precioSumPasaje = precioPasaje * countPasajes
 
             if (ruta_inicio == ruta_fin) {
                 DialogAlert.showDialogFailed(
@@ -234,7 +238,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                     "Las opciones de paradero deben ser distintas",
                     SweetAlertDialog.NORMAL_TYPE
                 )
-            } else if (precio_sum_pasaje == 0) {
+            } else if (precioSumPasaje == 0) {
                 DialogAlert.showDialogFailed(
                     context,
                     "Error",
@@ -259,7 +263,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                     id_tipo_usuario,
                     fecha, hora,
                     1,
-                    precio_sum_pasaje.toDouble(),
+                    precioSumPasaje.toDouble(),
                     id_vehiculo,
                     numVoucher
                 )
@@ -276,7 +280,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         }
 
         binding.btnSiguiente.setOnClickListener(View.OnClickListener {
-            precio_sum_pasaje = precioPasaje * countPasajes
+            precioSumPasaje = precioPasaje * countPasajes
 
             if (ruta_inicio === ruta_fin) {
                 DialogAlert.showDialogFailed(
@@ -286,7 +290,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                     SweetAlertDialog.NORMAL_TYPE
                 )
                 return@OnClickListener
-            } else if (precio_sum_pasaje == 0) {
+            } else if (precioSumPasaje == 0) {
                 DialogAlert.showDialogFailed(
                     context,
                     "Error",
@@ -361,7 +365,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     private fun startSelectSillasActivity() {
         val intent = Intent(context, SelectSillas::class.java)
         intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes)
-        intent.putExtra(SelectSillas.PRECIO_PASAJE, precio_sum_pasaje)
+        intent.putExtra(SelectSillas.PRECIO_PASAJE, precioSumPasaje)
         intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo)
         intent.putExtra(SelectSillas.ID_RUTA, id_ruta)
         intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible)
@@ -372,6 +376,12 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         intent.putExtra(SelectSillas.TIPO_USUARIO, id_tipo_usuario)
         intent.putExtra(SelectSillas.NAME_TIPO_PASAJERO, nameUsuario)
         intent.putExtra(INFO, "$info,$ruta_inicio,$ruta_fin")
+
+        val saleByDate = ticketOneWay != null
+        intent.putExtra(SelectSillas.SALE_BY_DATE, saleByDate)
+        intent.putExtra(SelectSillas.TICKET_ONE_WAY, ticketOneWay)
+        intent.putExtra(SelectSillas.TICKET_BACK, ticketBack)
+
         startActivity(intent)
     }
 
@@ -422,31 +432,13 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
 
     private fun setupSelectDate() = with(binding) {
 
-        val priceObserver: Observer<Resource<List<PriceByDate>>> = Observer { result ->
-            when (result) {
-                is Resource.Failure -> {}
-                is Resource.Loading -> {
-                    Log.e(TAG, "loading")
-                }
-                is Resource.Success -> {
-                    Log.e(TAG, "setupSelectDate: ${result.data}")
-                }
-            }
-        }
-
         tvOneWay.setOnClickListener {
             DatePickerDialog(tvOneWay.text.toString()) { day, month, year ->
                 dateOneWay = "$day/$month/$year"
                 tvOneWay.text = dateOneWay
                 removeDateOneWay.isVisible = true
 
-                // TODO: Fetch hours by date
-                priceViewModel.getPriceByDate(
-                    id_paradero_inicio,
-                    id_paradero_fin,
-                    id_tipo_usuario,
-                    dateOneWay
-                ).observe(this@SelectRutas, priceObserver)
+                getPriceTicketOneWay(dateOneWay)
 
             }.show(supportFragmentManager, "datePicker")
         }
@@ -457,29 +449,166 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 tvBack.text = dateBack
                 removeDateBack.isVisible = true
 
-                // TODO: Fetch hours by date
-                priceViewModel.getPriceByDate(
-                    id_paradero_inicio,
-                    id_paradero_fin,
-                    id_tipo_usuario,
-                    dateBack
-                ).observe(this@SelectRutas, priceObserver)
+                getPriceTicketBack(dateBack)
 
             }.show(supportFragmentManager, "datePicker")
         }
 
         removeDateOneWay.setOnClickListener {
             dateOneWay = ""
+            ticketOneWay = null
             removeDateOneWay.isVisible = false
             tvOneWay.text = getString(R.string.one_way)
+            tvHourOneDay.text = ""
+
+            precioPasaje = precioPasajeInicial
+            formatPrecio()
         }
 
         removeDateBack.setOnClickListener {
             dateBack = ""
+            ticketBack = null
             removeDateBack.isVisible = false
             tvBack.text = getString(R.string.back)
-        }
+            tvHourBack.text = ""
 
+            ticketOneWay?.let {
+                precioPasaje = it.tarifa.toInt()
+                formatPrecio()
+            }
+        }
+    }
+
+    private fun getPriceTicketOneWay(dateOneWay: String) {
+        priceViewModel.getPriceByDate(
+            id_paradero_inicio,
+            id_paradero_fin,
+            id_tipo_usuario,
+            dateOneWay
+        ).observe(this@SelectRutas) { result ->
+
+            when (result) {
+                is Resource.Failure -> {
+                    binding.progressOneWay.hide()
+                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is Resource.Loading -> {
+                    binding.progressOneWay.visible()
+                    Toast.makeText(this, getString(R.string.loading_hours), Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is Resource.Success -> {
+                    binding.progressOneWay.hide()
+
+                    if (result.data.isEmpty()) {
+                        DialogAlert.showDialogFailed(
+                            this,
+                            "Sin horarios",
+                            getString(R.string.no_hours_defined_msg),
+                            SweetAlertDialog.NORMAL_TYPE
+                        )
+                        binding.tvHourOneDay.text = getString(R.string.no_hours_available)
+                    } else {
+                        showDialogOneWay(result.data)
+                    }
+                }
+            }
+
+        }
+    }
+
+    private fun getPriceTicketBack(dateBack: String) {
+        priceViewModel.getPriceByDate(
+            id_paradero_inicio,
+            id_paradero_fin,
+            id_tipo_usuario,
+            dateBack
+        ).observe(this@SelectRutas) { result ->
+            when (result) {
+                is Resource.Failure -> {
+                    binding.progressBack.hide()
+                    Toast.makeText(this, "${result.exception.message}", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Loading -> {
+                    binding.progressBack.visible()
+                    Toast.makeText(this, getString(R.string.loading_hours), Toast.LENGTH_SHORT)
+                        .show()
+                }
+                is Resource.Success -> {
+                    binding.progressBack.hide()
+                    if (result.data.isEmpty()) {
+                        DialogAlert.showDialogFailed(
+                            this,
+                            "Sin horarios",
+                            getString(R.string.no_hours_defined_msg),
+                            SweetAlertDialog.NORMAL_TYPE
+                        )
+                        binding.tvHourBack.text = getString(R.string.no_hours_available)
+                    } else {
+                        showDialogBack(result.data)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showDialogOneWay(data: List<PriceByDate>) {
+        val items = data.mapIndexed { index, priceByDate ->
+            DialogSingleChoice.SingleItem(
+                index,
+                "${priceByDate.horario} \t\t-\t\t ${priceByDate.tarifa.formatCurrency()}",
+                false
+            )
+        }
+        val dialog = DialogSingleChoice(
+            "Horarios ida\n${dateOneWay.formatDate(outputFormat = "EEE, MMM d")}",
+            items = items
+        )
+        dialog.setOnItemClick {
+            val selected = data[it.id]
+            Log.e(TAG, "getPriceTicketOneWay: $selected")
+            binding.tvHourOneDay.text = selected.horario
+
+            ticketOneWay = selected
+            precioPasaje = selected.tarifa.toInt()
+            formatPrecio()
+        }
+        dialog.show(supportFragmentManager, "Hours")
+
+        binding.tvHourOneDay.setOnClickListener {
+            dialog.show(supportFragmentManager, "Hours")
+        }
+    }
+
+    private fun showDialogBack(data: List<PriceByDate>) {
+        val items = data.mapIndexed { index, priceByDate ->
+            DialogSingleChoice.SingleItem(
+                index,
+                "${priceByDate.horario} \t\t-\t\t ${priceByDate.tarifa.formatCurrency()}",
+                false
+            )
+        }
+        val dialog = DialogSingleChoice(
+            "Horarios vuelta\n${dateBack.formatDate(outputFormat = "EEE, MMM d")}",
+            items = items
+        )
+        dialog.setOnItemClick {
+            val selected = data[it.id]
+            Log.e(TAG, "getPriceTicketBack: $selected")
+            binding.tvHourBack.text = selected.horario
+
+            val price = selected.tarifaIdayvuelta.toInt()
+
+            ticketBack = selected
+            precioPasaje = if (price != 0) price else ticketOneWay?.tarifa?.toInt()?.times(2) ?: 0
+            formatPrecio()
+        }
+        dialog.show(supportFragmentManager, "Hours")
+
+        binding.tvHourBack.setOnClickListener {
+            dialog.show(supportFragmentManager, "Hours")
+        }
     }
 
     val dataPrint: Unit
@@ -494,11 +623,11 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         contenedorPrecio.visibility = if (show) View.VISIBLE else View.GONE
     }
 
-    private fun formatPrecio(precio: Int) {
-        var formatPrecio = formatea.format(precio.toLong())
+    private fun formatPrecio() {
+        precioSumPasaje = precioPasaje * countPasajes
+        var formatPrecio = formatea.format(precioSumPasaje)
         formatPrecio = formatPrecio.replace(',', '.')
         binding.tvPrecio.text = "$ $formatPrecio"
-        getPrecioPasaje = "$ $formatPrecio"
     }
 
     private fun validarCheckBox() = with(binding) {

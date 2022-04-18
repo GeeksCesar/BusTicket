@@ -13,5 +13,8 @@
     <string name="remove_date">Remove Date</string>
     <string name="remember_route">Recordar ruta</string>
     <string name="forget_route">Olvidar ruta</string>
+    <string name="loading_hours">Cargando horarios...</string>
+    <string name="no_hours_defined_msg">No hay horarios definidos para esta fecha</string>
+    <string name="no_hours_available">No hay horarios disponibles</string>
 
 </resources>

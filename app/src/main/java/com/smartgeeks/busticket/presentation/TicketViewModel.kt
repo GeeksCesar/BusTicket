@@ -29,7 +29,10 @@ class TicketViewModel @Inject constructor(
         totalCost: Double,
         seatsList: String,
         companyId: Int,
-        vehicleId: Int
+        vehicleId: Int,
+        date: String = "",
+        tipoTicket : String = "SoloIda",
+        idService: Int = 0,
     ) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
         try {
@@ -45,7 +48,9 @@ class TicketViewModel @Inject constructor(
                         totalCost,
                         seatsList,
                         companyId,
-                        vehicleId
+                        vehicleId,
+                        date, idService,
+                        tipoTicket
                     )
                 )
             )
@@ -93,6 +98,4 @@ class TicketViewModel @Inject constructor(
     fun getCountTickets() = liveData(Dispatchers.IO) {
         emit(ticketRepository.getCountTickets())
     }
-
-
 }

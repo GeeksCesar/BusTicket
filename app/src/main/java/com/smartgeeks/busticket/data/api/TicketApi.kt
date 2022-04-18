@@ -22,7 +22,10 @@ interface TicketApi {
         @Field("total_pagar") totalCost: Double,
         @Field("sillas") seatsList: String,
         @Field("id_empresa") companyId: Int,
-        @Field("id_vehiculo") vehicleId: Int,
+        @Field("id_vehiculo") vehicleId: Int, // Only necessary for voucher
+        @Field("fecha") fecha : String = "",
+        @Field("id_servicio") idServicio : Int = 0,
+        @Field("tipo_ticket") tipoTicket : String = "SoloIda"
     ): ResponseSendSeatTicket
 
     @POST("apisync/saveTicketV2")

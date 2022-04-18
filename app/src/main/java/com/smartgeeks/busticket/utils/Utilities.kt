@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import pub.devrel.easypermissions.EasyPermissions
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -105,4 +106,23 @@ object Utilities {
         }
         return calendar
     }
+
+    fun String.formatCurrency(): String {
+        val currencyType = NumberFormat.getCurrencyInstance(Locale.getDefault())
+        currencyType.maximumFractionDigits = 0
+        return currencyType.format(this.toDouble()).replace(",",".")
+    }
+
+
+    fun String.formatDate(inputFormat : String = "dd/MM/yyyy", outputFormat : String = "yyyy-MM-dd"): String {
+        val inputFormatter = SimpleDateFormat(inputFormat, Locale.getDefault())
+        val outputFormatter = SimpleDateFormat(outputFormat, Locale.getDefault())
+        return try {
+            inputFormatter.parse(this)?.let { outputFormatter.format(it) } ?: this
+        } catch (e: ParseException) {
+            e.printStackTrace()
+            this
+        }
+    }
+
 }
