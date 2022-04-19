@@ -11,8 +11,9 @@ class VehicleRepositoryImpl @Inject constructor(
 
     override suspend fun getOccupiedSeats(
         availableRouteId: Int,
-        hour: String
-    ): ResponseOccupiedSeats = vehicleApi.getOccupiedSeats(availableRouteId, hour)
+        hour: String,
+        date : String
+    ): ResponseOccupiedSeats = vehicleApi.getOccupiedSeats(availableRouteId, hour, date)
 
     override suspend fun getVehicleInfo(vehicleId: Int): ResponseVehicleInfo =
         vehicleApi.getVehicleInfo(vehicleId)

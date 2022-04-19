@@ -363,12 +363,17 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     }
 
     private fun startSelectSillasActivity() {
+
+        val routeId = ticketOneWay?.let {
+            it.idRuta
+        } ?: id_ruta_disponible
+
         val intent = Intent(context, SelectSillas::class.java)
         intent.putExtra(SelectSillas.CANT_PUESTOS, countPasajes)
         intent.putExtra(SelectSillas.PRECIO_PASAJE, precioSumPasaje)
         intent.putExtra(SelectSillas.ID_VEHICULO, id_vehiculo)
         intent.putExtra(SelectSillas.ID_RUTA, id_ruta)
-        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, id_ruta_disponible)
+        intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, routeId)
         intent.putExtra(SelectSillas.ID_HORARIO, id_horario)
         intent.putExtra(SelectSillas.HORARIO, horario)
         intent.putExtra(SelectSillas.ID_PARADERO_INICIO, id_paradero_inicio)

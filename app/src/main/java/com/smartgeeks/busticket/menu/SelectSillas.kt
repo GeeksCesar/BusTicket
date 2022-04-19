@@ -108,6 +108,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private var saleByDate: Boolean = false
     private var ticketOneWay: PriceByDate? = null
     private var ticketBack: PriceByDate? = null
+    private var ticketDate: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -196,32 +197,38 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
         //Input
         showDataTextView()
-        // remoteSync()
+        ticketDate = ticketOneWay?.fecha ?: Utilities.getDate("yyyy-MM-dd")
+
+        // remoteSync() - Utilities.getDate("dd-MM-yy")
     }
 
     /**
      * Request to Service
      */
     private fun fetchData() {
-        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario).observe(this) { result ->
-            when (result) {
-                is Resource.Failure -> progress?.dismiss()
-                is Resource.Loading -> showProgressDialog()
-                is Resource.Success -> {
-                    val data = result.data
+        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate)
+            .observe(this) { result ->
+                when (result) {
+                    is Resource.Failure -> progress?.dismiss()
+                    is Resource.Loading -> showProgressDialog()
+                    is Resource.Success -> {
+                        val data = result.data
 
-                    when (data.estado) {
-                        Constants.SUCCESS_RESPONSE -> {
-                            listSillasOcupadas = data.sillas_ocupadas
-                            Log.e(TAG, "Se encontraron ${listSillasOcupadas.size} sillas ocupadas.")
+                        when (data.estado) {
+                            Constants.SUCCESS_RESPONSE -> {
+                                listSillasOcupadas = data.sillas_ocupadas
+                                Log.e(
+                                    TAG,
+                                    "Se encontraron ${listSillasOcupadas.size} sillas ocupadas."
+                                )
+                            }
+                            Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
                         }
-                        Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
+                        fetchVehicleInfo()
+                        checkBluetoothStatus()
                     }
-                    fetchVehicleInfo()
-                    checkBluetoothStatus()
                 }
             }
-        }
     }
 
     private fun fetchVehicleInfo() {
@@ -459,7 +466,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         ticketViewModel.saveSeatTicket(
             id_paradero_inicio,
             id_paradero_final,
-            ticketOneWay?.idRuta ?: id_ruta,
+            id_ruta,
             id_operador,
             horario,
             id_tipo_usuario,
@@ -718,9 +725,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         val companyName =
             UsuarioPreferences.getInstance(context).nombreEmpresa.uppercase(Locale.getDefault())
 
-        val ticketDate =
-            ticketOneWay?.fecha?.formatDate(inputFormat = "yyyy-MM-dd", outputFormat = "dd-MM-yy")
-                ?: Utilities.getDate("dd-MM-yy")
+        val dateToPrint =
+            ticketDate.formatDate(inputFormat = "yyyy-MM-dd", outputFormat = "dd-MM-yy")
 
         var textToPrint = """
             [C]<font size='big'>$companyName</font>
@@ -734,7 +740,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             [L]
             [C]--------------------------------
             [C]Fecha[C]Salida[C]Asiento
-            [C]${ticketDate}[C]${split[2]}[C]$listSillas
+            [C]${dateToPrint}[C]${split[2]}[C]$listSillas
             [C]--------------------------------
             [L]
             [C]${desc_empresa}
