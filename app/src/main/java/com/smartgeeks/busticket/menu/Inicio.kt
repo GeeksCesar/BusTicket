@@ -11,7 +11,9 @@ import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.MenuInicioBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.utils.*
+import com.smartgeeks.busticket.utils.DialogAlert
+import com.smartgeeks.busticket.utils.InternetCheck
+import com.smartgeeks.busticket.utils.UsuarioPreferences
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -57,16 +59,20 @@ class Inicio : Fragment(R.layout.menu_inicio) {
     private fun initViews() = with(binding) {
 
         nameUsuario = UsuarioPreferences.getInstance(getActivity()).nombre
+        activity = requireActivity() as MainActivity
         btnNameUsuario.text = nameUsuario
         ivLogo.setOnClickListener {
-            activity = getActivity() as MainActivity?
-            activity!!.setFragment(2)
+            activity?.setFragment(2)
         }
+
+        contentInterUrbanos.setOnClickListener {
+            activity?.setFragment(3)
+        }
+
         btnNameUsuario.setOnClickListener {
-            activity = getActivity() as MainActivity?
-            activity!!.setFragment(0)
+            activity?.setFragment(0)
         }
-        btnSync.setOnClickListener { view ->
+        btnSync.setOnClickListener {
             InternetCheck { internet ->
                 if (internet) {
                     remoteSync()

@@ -11,6 +11,7 @@
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_arrow_back.xml" value="0.290625" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_arrow_back_ios.xml" value="0.1575" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_close.xml" value="0.2195" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_confirmation_number.xml" value="0.1575" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/drawable/ic_one_way.xml" value="0.1575" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_login.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/activity_main.xml" value="0.27447916666666666" />
@@ -23,9 +24,11 @@
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/adapter_tarifa.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/common_toolbar.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner_inicio.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner_rutas.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/custom_spinner_tipo_pasajero.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/dialog_single_choise.xml" value="0.27447916666666666" />
+        <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/fragment_intercity.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_inicio.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_perfil.xml" value="0.27447916666666666" />
         <entry key="..\:/AndroidStudioProjects/BusTicket/app/src/main/res/layout/menu_ticket.xml" value="0.27447916666666666" />

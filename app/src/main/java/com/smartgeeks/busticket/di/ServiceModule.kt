@@ -1,6 +1,7 @@
 package com.smartgeeks.busticket.di
 
 import com.smartgeeks.busticket.data.api.AuthApi
+import com.smartgeeks.busticket.data.api.InterCitiesApi
 import com.smartgeeks.busticket.data.api.PriceApi
 import com.smartgeeks.busticket.data.api.TicketApi
 import com.smartgeeks.busticket.data.api.VehicleApi
@@ -31,4 +32,8 @@ class ServiceModule {
 
     @Provides
     fun providePriceApi(retrofit: Retrofit): PriceApi = retrofit.create(PriceApi::class.java)
+
+    @Provides
+    fun provideInterCityApi(retrofit: Retrofit): InterCitiesApi =
+        retrofit.create(InterCitiesApi::class.java)
 }

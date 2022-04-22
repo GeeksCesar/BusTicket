@@ -10,7 +10,7 @@ data class PriceResponse(
     @SerializedName("id_ruta") val idRuta: String,
     val origen: String,
     val destino: String,
-    @SerializedName("id_tipo_pasajero") val idTipoPasajero: String,
+    @SerializedName("id_tipo_pasajero") val idTipoPasajero: Int,
     val dia: String,
     val fecha: String
 ) {

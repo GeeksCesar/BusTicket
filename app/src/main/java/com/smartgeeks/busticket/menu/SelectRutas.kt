@@ -302,7 +302,6 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 if (binding.cbAsientos.isChecked) {
                     InternetCheck { internet ->
                         if (internet) {
-                            // TODO: Create request to know bus that for this date
                             Log.e(TAG, "Hay conexión a Internet")
                             startSelectSillasActivity()
                         } else {

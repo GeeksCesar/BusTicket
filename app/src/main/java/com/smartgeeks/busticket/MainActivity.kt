@@ -10,17 +10,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
-import com.smartgeeks.busticket.menu.Inicio
-import com.smartgeeks.busticket.menu.Perfil
-import com.smartgeeks.busticket.menu.Ticket
-import com.smartgeeks.busticket.Modelo.*
+import com.smartgeeks.busticket.Modelo.Horario
+import com.smartgeeks.busticket.Modelo.Paradero
+import com.smartgeeks.busticket.Modelo.Ruta
+import com.smartgeeks.busticket.Modelo.SubRuta
+import com.smartgeeks.busticket.Modelo.TarifaParadero
+import com.smartgeeks.busticket.Modelo.TipoUsuario
+import com.smartgeeks.busticket.Modelo.Vehiculo
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.databinding.ActivityMainBinding
+import com.smartgeeks.busticket.menu.Inicio
+import com.smartgeeks.busticket.menu.IntercityFragment
+import com.smartgeeks.busticket.menu.Perfil
+import com.smartgeeks.busticket.menu.Ticket
 import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
@@ -121,7 +132,10 @@ class MainActivity : AppCompatActivity() {
                 fragment = Ticket()
                 supportFragmentManager.beginTransaction().replace(R.id.main, fragment).commit()
             }
-            3 -> {}
+            3 -> {
+                fragment = IntercityFragment()
+                supportFragmentManager.beginTransaction().replace(R.id.main, fragment).commit()
+            }
         }
     }
 

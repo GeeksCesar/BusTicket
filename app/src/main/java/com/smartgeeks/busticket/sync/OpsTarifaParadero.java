@@ -77,6 +77,8 @@ public class OpsTarifaParadero {
                     break;
                 case Constantes.FAILED: // FALLIDO
                     Log.e(TAG, "Error al traer datos");
+                    Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
                     break;
             }
 

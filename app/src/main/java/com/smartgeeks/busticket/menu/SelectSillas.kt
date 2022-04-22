@@ -107,8 +107,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     private var saleByDate: Boolean = false
     private var ticketOneWay: PriceByDate? = null
-    private var ticketBack: PriceByDate? = null
     private var ticketDate: String = ""
+    private var serviceId: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -193,7 +193,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
         saleByDate = bundle!!.getBoolean(SALE_BY_DATE)
         ticketOneWay = bundle!!.getSerializable(TICKET_ONE_WAY) as PriceByDate?
-        ticketBack = bundle!!.getSerializable(TICKET_BACK) as PriceByDate?
+        serviceId = bundle!!.getInt(SERVICE_ID, 0)
 
         //Input
         showDataTextView()
@@ -475,7 +475,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             id_empresa,
             id_vehiculo,
             ticketOneWay?.fecha ?: "",
-            if (ticketBack == null) "SoloIda" else "IdayVuelta"
+            idService = serviceId
         ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> showProgress(false)
@@ -657,6 +657,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         const val SALE_BY_DATE = "sale_by_date"
         const val TICKET_ONE_WAY = "ticket_one_way_data"
         const val TICKET_BACK = "ticket_back_data"
+        const val SERVICE_ID = "service_id"
     }
 
     /*==============================================================================================
