@@ -17,7 +17,8 @@ interface VehicleApi {
 
     @GET("Api/getInfoVehiculo")
     suspend fun getVehicleInfo(
-        @Query("id") vehicleId: Int
+        @Query("id") vehicleId: Int,
+        @Query("type") type: String = "default"
     ): ResponseVehicleInfo
 
 }

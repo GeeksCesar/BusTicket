@@ -17,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import com.smartgeeks.busticket.Modelo.Horario
@@ -37,6 +38,7 @@ import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.setTint
 import dagger.hilt.android.AndroidEntryPoint
 
 private val TAG: String = MainActivity::class.java.simpleName
@@ -73,24 +75,28 @@ class MainActivity : AppCompatActivity() {
         context = this@MainActivity
 
         //set DrawerLayout
-        binding.ivNameViewPager.setBackgroundResource(R.mipmap.img_logotipo_color)
+        // binding.ivNameViewPager.setBackgroundResource(R.mipmap.img_logotipo_color)
+        binding.ivNameViewPager.apply {
+            setTint(R.color.colorPrimary)
+            setImageResource(R.drawable.logotipo_busticket)
+        }
         binding.lvNavItems.adapter = AdapterSpinner(context, R.layout.custom_menu, MenuItems)
         binding.lvNavItems.onItemClickListener =
             AdapterView.OnItemClickListener { adapterView, view, pos, id ->
                 when (pos) {
                     0 -> {
                         binding.drawerLayout.closeDrawer(binding.lvNavItems)
-                        binding.ivNameViewPager.setBackgroundResource(R.mipmap.header_perfil)
+                        binding.ivNameViewPager.setImageResource(R.mipmap.header_perfil)
                         setFragment(0)
                     }
                     1 -> {
                         binding.drawerLayout.closeDrawer(binding.lvNavItems)
-                        binding.ivNameViewPager.setBackgroundResource(R.mipmap.header_busticket)
+                        binding.ivNameViewPager.setImageResource(R.drawable.logotipo_busticket)
                         setFragment(1)
                     }
                     2 -> {
                         binding.drawerLayout.closeDrawer(binding.lvNavItems)
-                        binding.ivNameViewPager.setBackgroundResource(R.mipmap.header_tickets)
+                        binding.ivNameViewPager.setImageResource(R.mipmap.header_tickets)
                         setFragment(2)
                     }
                     3 -> {

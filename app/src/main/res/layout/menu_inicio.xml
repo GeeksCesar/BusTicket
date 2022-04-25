@@ -10,17 +10,24 @@
     tools:context=".menu.Inicio">
 
     <RelativeLayout
-        android:id="@+id/contentTicket"
+        android:id="@+id/contentInterStops"
         android:layout_width="match_parent"
         android:layout_height="120dp"
+        android:layout_marginTop="16dp"
         android:background="@drawable/bg_blue">
 
-        <ImageView
-            android:id="@+id/ivLogo"
-            android:layout_width="match_parent"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:src="@mipmap/icon_action_tickets" />
+            android:drawablePadding="16dp"
+            android:gravity="center_vertical"
+            android:src="@mipmap/icon_action_tickets"
+            android:text="@string/tickets"
+            android:textColor="@color/md_white_1000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_local_activity" />
 
     </RelativeLayout>
 
@@ -28,21 +35,21 @@
         android:id="@+id/contentInterUrbanos"
         android:layout_width="match_parent"
         android:layout_height="120dp"
+        android:layout_below="@+id/contentInterStops"
         android:layout_marginTop="16dp"
-        android:layout_below="@+id/contentTicket"
         android:background="@drawable/bg_blue">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="@string/intercity"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/md_white_1000"
-            android:src="@mipmap/icon_action_tickets"
             android:drawablePadding="16dp"
             android:gravity="center_vertical"
+            android:src="@mipmap/icon_action_tickets"
+            android:text="@string/intercity"
+            android:textColor="@color/md_white_1000"
+            android:textSize="20sp"
+            android:textStyle="bold"
             app:drawableStartCompat="@drawable/ic_confirmation_number" />
 
     </RelativeLayout>

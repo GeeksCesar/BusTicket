@@ -61,7 +61,8 @@ class Inicio : Fragment(R.layout.menu_inicio) {
         nameUsuario = UsuarioPreferences.getInstance(getActivity()).nombre
         activity = requireActivity() as MainActivity
         btnNameUsuario.text = nameUsuario
-        ivLogo.setOnClickListener {
+
+        contentInterStops.setOnClickListener {
             activity?.setFragment(2)
         }
 

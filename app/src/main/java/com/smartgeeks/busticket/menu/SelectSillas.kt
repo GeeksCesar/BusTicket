@@ -232,7 +232,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     }
 
     private fun fetchVehicleInfo() {
-        vehicleViewModel.getVehicleInfo(id_vehiculo).observe(this) { result ->
+        vehicleViewModel.getVehicleInfo(id_vehiculo, saleByDate).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
                     progress?.dismiss()

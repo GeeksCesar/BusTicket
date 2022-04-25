@@ -26,10 +26,11 @@ class VehicleViewModel @Inject constructor(
         }
     }
 
-    fun getVehicleInfo(vehicleId: Int) = liveData(Dispatchers.IO) {
+    fun getVehicleInfo(vehicleId: Int, saleByDate : Boolean) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
         try {
-            emit(Resource.Success(vehicleRepository.getVehicleInfo(vehicleId)))
+            val type = if (saleByDate) "date" else "default"
+            emit(Resource.Success(vehicleRepository.getVehicleInfo(vehicleId, type)))
         } catch (e: Exception) {
             Log.e(TAG, "getVehicleInfo: ${e.message}")
             emit(Resource.Failure(e))
