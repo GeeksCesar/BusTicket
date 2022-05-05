@@ -13,6 +13,7 @@ import androidx.fragment.app.viewModels
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
+import com.smartgeeks.busticket.data.models.intercities.HoursResponse
 import com.smartgeeks.busticket.data.models.intercities.RoutesIntercityResponse
 import com.smartgeeks.busticket.data.models.intercities.StopBusResponse
 import com.smartgeeks.busticket.databinding.FragmentIntercityBinding
@@ -46,6 +47,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
     private var date = ""
 
     private var dataPriceTicket: PriceByDate? = null
+    private var hourSelected: HoursResponse? = null
     private var price = 0
     private var quantity = 1
 
@@ -141,14 +143,37 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 tvOneWay.text = date
                 removeDateOneWay.isVisible = true
 
-                getPriceAndHours(date)
+                getHoursInterCities(date)
+                // getPriceAndHours(date)
 
             }.show(parentFragmentManager, "datePicker")
         }
     }
 
-    private fun getPriceAndHours(date: String) {
-        interCitiesViewModel.getPriceByDate(departureId, arrivalId, date)
+    private fun getHoursInterCities(date: String) {
+        interCitiesViewModel.getHoursIntercities(departureId, arrivalId, date)
+            .observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is Resource.Failure -> {
+                        binding.progressOneWay.hide()
+                        Toast.makeText(requireContext(), "${result.exception}", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    is Resource.Loading -> {
+                        binding.progressOneWay.visible()
+                    }
+                    is Resource.Success -> {
+                        binding.progressOneWay.hide()
+
+                        val data = result.data
+                        setupHours(data)
+                    }
+                }
+            }
+    }
+
+    private fun getPriceByHour(date: String, hour : String) {
+        interCitiesViewModel.getPriceByDate(departureId, arrivalId, date, hour)
             .observe(viewLifecycleOwner) { result ->
                 when (result) {
                     is Resource.Failure -> {
@@ -169,11 +194,39 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
             }
     }
 
+    private fun setupHours(data: List<HoursResponse>) = with(binding) {
+        val items = data.mapIndexed { index, hours ->
+            DialogSingleChoice.SingleItem(
+                index,
+                hours.horario,
+                false
+            )
+        }
+        val dialog = DialogSingleChoice(
+            "Horarios ida\n${date.formatDate(outputFormat = "EEE, MMM d")}",
+            items = items
+        )
+
+        dialog.setOnItemClick {
+            val selected = data[it.id]
+            Log.e(SelectRutas.TAG, "getPriceTicketOneWay: $selected")
+            tvHourOneDay.text = selected.horario
+
+            hourSelected = selected
+            getPriceByHour(date, selected.horario)
+        }
+        dialog.show(parentFragmentManager, "Hours")
+
+        tvHourOneDay.setOnClickListener {
+            dialog.show(parentFragmentManager, "Hours")
+        }
+    }
+
     private fun setupHoursAndPrice(data: List<PriceByDate>) = with(binding) {
         val items = data.mapIndexed { index, priceByDate ->
             DialogSingleChoice.SingleItem(
                 index,
-                "${priceByDate.horario} \t\t-\t\t ${priceByDate.tarifa.formatCurrency()}",
+                "${priceByDate.pasajero} \t\t-\t\t ${priceByDate.tarifa.formatCurrency()}",
                 false
             )
         }
@@ -192,11 +245,11 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
             setupPrice()
 
         }
-        dialog.show(parentFragmentManager, "Hours")
+        dialog.show(parentFragmentManager, "Price")
 
-        tvHourOneDay.setOnClickListener {
-            dialog.show(parentFragmentManager, "Hours")
-        }
+        /*tvHourOneDay.setOnClickListener {
+            dialog.show(parentFragmentManager, "Price")
+        }*/
 
         if (data.isNotEmpty()) {
             btnNext.visible()
@@ -279,7 +332,6 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
     private fun setupDataBusStopSpinners(data: List<StopBusResponse>) = with(binding) {
 
         val departureList = data.filter { it.tipo == "I" }.map { it.paradero }
-        val arrivalList = data.filter { it.tipo == "D" }.map { it.paradero }
 
         spDeparture.apply {
             adapter =
@@ -291,17 +343,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 )
         }
 
-        spArrival.apply {
-            adapter =
-                ArrayAdapter(
-                    requireContext(),
-                    R.layout.custom_spinner_fin,
-                    R.id.txtName,
-                    arrivalList
-                )
-        }
-
-        handleListenerSpinners(data)
+        handleListenerDepartureSpinner(data)
     }
 
     private fun setupBus() = with(binding) {
@@ -343,7 +385,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
         setupPrice()
     }
 
-    private fun handleListenerSpinners(data: List<StopBusResponse>) = with(binding) {
+    private fun handleListenerDepartureSpinner(data: List<StopBusResponse>) = with(binding) {
         spDeparture.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -353,9 +395,26 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
             ) {
                 departureId = data.find { it.paradero == spDeparture.selectedItem }?.idParadero ?: 0
                 Log.e(TAG, "onItemSelected: ${spDeparture.selectedItem} $departureId")
+
+                setupDataArrivalSpinner(data)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+    }
+
+    private fun setupDataArrivalSpinner(data: List<StopBusResponse>) = with(binding) {
+        val arrivalList = data.filter { it.tipo == "D" && it.idParadero != departureId }.map { it.paradero }
+
+        spArrival.apply {
+            adapter =
+                ArrayAdapter(
+                    requireContext(),
+                    R.layout.custom_spinner_fin,
+                    R.id.txtName,
+                    arrivalList
+                )
         }
 
         spArrival.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -368,12 +427,11 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 arrivalId = data.find { it.paradero == spArrival.selectedItem }?.idParadero ?: 0
                 Log.e(TAG, "onItemSelected: ${spArrival.selectedItem} $arrivalId")
 
-                setDefaultPrice(data)
+                // setDefaultPrice(data)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-
     }
 
     private fun setDefaultPrice(data: List<StopBusResponse>) {
@@ -382,7 +440,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
          */
         if (data.isNotEmpty()) {
             val date = Utilities.getDate("dd/MM/yyyy")
-            getPriceAndHours(date)
+            getHoursInterCities(date)
             binding.tvOneWay.text = date
         }
     }

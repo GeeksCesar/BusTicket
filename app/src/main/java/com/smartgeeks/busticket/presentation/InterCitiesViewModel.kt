@@ -43,6 +43,28 @@ class InterCitiesViewModel @Inject constructor(
     fun getPriceByDate(
         departureId: Int,
         arrivalId: Int,
+        date: String,
+        hour: String,
+    ) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+        try {
+
+            val formattedDate =
+                Utilities.stringToDate(date, "dd/mm/yyyy")?.toString("yyyy-mm-dd") ?: date
+
+            val response =
+                interCitiesRepository.getPriceAndHours(departureId, arrivalId, formattedDate, hour)
+            Log.e(TAG, "getPriceByDate: $response")
+            emit(Resource.Success(response))
+        } catch (e: Exception) {
+            Log.e(TAG, "getPriceByDate: ${e.message}")
+            emit(Resource.Failure(e))
+        }
+    }
+
+    fun getHoursIntercities(
+        departureId: Int,
+        arrivalId: Int,
         date: String
     ) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
@@ -52,11 +74,11 @@ class InterCitiesViewModel @Inject constructor(
                 Utilities.stringToDate(date, "dd/mm/yyyy")?.toString("yyyy-mm-dd") ?: date
 
             val response =
-                interCitiesRepository.getPriceAndHours(departureId, arrivalId, formattedDate)
-            Log.e(TAG, "getPriceByDate: $response")
+                interCitiesRepository.getHoursIntercities(departureId, arrivalId, formattedDate)
+            Log.e(TAG, "getHoursIntercities: $response")
             emit(Resource.Success(response))
         } catch (e: Exception) {
-            Log.e(TAG, "getPriceByDate: ${e.message}")
+            Log.e(TAG, "getHoursIntercities: ${e.message}")
             emit(Resource.Failure(e))
         }
     }

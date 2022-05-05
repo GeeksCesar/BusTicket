@@ -11,5 +11,6 @@ data class PriceByDate(
     val destino: String,
     val idTipoPasajero: Int,
     val dia: String,
-    val fecha: String
+    val fecha: String,
+    val pasajero : String
 ) : Serializable
