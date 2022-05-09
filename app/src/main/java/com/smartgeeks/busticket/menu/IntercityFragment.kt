@@ -144,7 +144,6 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 removeDateOneWay.isVisible = true
 
                 getHoursInterCities(date)
-                // getPriceAndHours(date)
 
             }.show(parentFragmentManager, "datePicker")
         }
@@ -231,7 +230,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
             )
         }
         val dialog = DialogSingleChoice(
-            "Horarios ida\n${date.formatDate(outputFormat = "EEE, MMM d")}",
+            "Horario ${hourSelected?.horario} \n${date.formatDate(outputFormat = "EEE, MMM d")}",
             items = items
         )
 
@@ -369,7 +368,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 id: Long
             ) {
                 serviceRoute = routes[position]
-                observeStopBus(routes[position].ruta.toInt())
+                observeStopBus(routes[position].ruta)
                 setupBus()
                 resetData()
             }
@@ -428,6 +427,8 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
                 Log.e(TAG, "onItemSelected: ${spArrival.selectedItem} $arrivalId")
 
                 // setDefaultPrice(data)
+                if (date.isNotEmpty())
+                    getHoursInterCities(date)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}

@@ -194,6 +194,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         saleByDate = bundle!!.getBoolean(SALE_BY_DATE)
         ticketOneWay = bundle!!.getSerializable(TICKET_ONE_WAY) as PriceByDate?
         serviceId = bundle!!.getInt(SERVICE_ID, 0)
+        Log.e(TAG, "serviceId: $serviceId" )
 
         //Input
         showDataTextView()
@@ -206,7 +207,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
      * Request to Service
      */
     private fun fetchData() {
-        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate)
+        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate, serviceId)
             .observe(this) { result ->
                 when (result) {
                     is Resource.Failure -> progress?.dismiss()
