@@ -11,7 +11,7 @@ import retrofit2.http.POST
 interface TicketApi {
 
     @FormUrlEncoded
-    @POST("api/setTicketAsientoNew")
+    @POST("api/saveTicketAsientoV2")
     suspend fun saveSeatTicket(
         @Field("id_paradero_inicio") idStartRoute: Int,
         @Field("id_paradero_fin") idEndRoute: Int,

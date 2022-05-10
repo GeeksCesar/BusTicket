@@ -1,5 +1,6 @@
 package com.smartgeeks.busticket.menu
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -12,6 +13,7 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -34,6 +36,7 @@ import com.smartgeeks.busticket.utils.InternetCheck
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.Utilities.formatCurrency
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.util.Locale
@@ -365,8 +368,7 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         intent.putExtra(SelectSillas.SALE_BY_DATE, saleByDate)
         intent.putExtra(SelectSillas.TICKET_ONE_WAY, ticketOneWay)
         intent.putExtra(SelectSillas.TICKET_BACK, ticketBack)
-
-        startActivity(intent)
+        resultLauncher.launch(intent)
     }
 
     private fun initWidget() = with(binding) {
@@ -571,6 +573,16 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
 
     override fun isLoading(state: Boolean) {
         showProgress(state)
+    }
+
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_CANCELED) {
+            // There are no request codes  -> val data: Intent? = result.data
+            countPasajes = 1
+            binding.textCount.text = "" + countPasajes
+            formatPrecio()
+
+        }
     }
 
     override fun onFinishPrint() {}

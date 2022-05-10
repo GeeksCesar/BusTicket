@@ -1,5 +1,6 @@
 package com.smartgeeks.busticket.menu
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -476,6 +478,19 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
         intent.putExtra(SelectSillas.TICKET_ONE_WAY, dataPriceTicket)
         intent.putExtra(SelectSillas.SERVICE_ID, serviceRoute?.id)
 
-        startActivity(intent)
+        resultLauncher.launch(intent)
+    }
+
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_CANCELED) {
+            // There are no request codes  -> val data: Intent? = result.data
+            quantity = 1
+            val totalPrice = price * quantity
+            binding.apply {
+                textCount.text = quantity.toString()
+                tvPrecio.text = totalPrice.toString().formatCurrency()
+            }
+
+        }
     }
 }
