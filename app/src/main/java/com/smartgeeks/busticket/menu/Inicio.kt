@@ -14,6 +14,7 @@ import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.DialogAlert
 import com.smartgeeks.busticket.utils.InternetCheck
 import com.smartgeeks.busticket.utils.UsuarioPreferences
+import com.smartgeeks.busticket.utils.hide
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -57,6 +58,9 @@ class Inicio : Fragment(R.layout.menu_inicio) {
     }
 
     private fun initViews() = with(binding) {
+
+        if (UsuarioPreferences.getInstance(context).roleVenta == "conductor")
+            contentInterUrbanos.hide()
 
         nameUsuario = UsuarioPreferences.getInstance(getActivity()).nombre
         activity = requireActivity() as MainActivity
