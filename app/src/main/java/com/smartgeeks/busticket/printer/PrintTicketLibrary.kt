@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -74,6 +75,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
         setPrinter()
     }
 
+    @SuppressLint("MissingPermission")
     private fun setPrinter() {
         namePrint = RutaPreferences.getInstance(context).namePrint
         printState = RutaPreferences.getInstance(context).estadoPrint
@@ -103,6 +105,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
         printBluetooth()
     }
 
+    @SuppressLint("MissingPermission")
     private fun showDialogTiquete() {
         printDialog = Dialog(context)
         printDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -177,6 +180,7 @@ class PrintTicketLibrary(private val context: Activity, var stateListener: Print
                 PERMISSION_BLUETOOTH
             )
         } else {
+            Toast.makeText(context, "${Constants.selectedDevice?.device}", Toast.LENGTH_LONG).show()
             AsyncBluetoothEscPosPrint(context).execute(this.getAsyncEscPosPrinter(Constants.selectedDevice))
         }
     }
