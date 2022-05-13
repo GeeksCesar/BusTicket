@@ -95,8 +95,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private val vehicleViewModel: VehicleViewModel by viewModels()
     private val ticketViewModel: TicketViewModel by viewModels()
 
-    @Volatile
-    var stopWorker = false
     lateinit var dialogPrint: Dialog
     lateinit var btnCancelar: Button
     lateinit var lstPrint: ListView
@@ -194,7 +192,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         saleByDate = bundle!!.getBoolean(SALE_BY_DATE)
         ticketOneWay = bundle!!.getSerializable(TICKET_ONE_WAY) as PriceByDate?
         serviceId = bundle!!.getInt(SERVICE_ID, 0)
-        Log.e(TAG, "serviceId: $serviceId" )
+        Log.e(TAG, "serviceId: $serviceId")
 
         //Input
         showDataTextView()
