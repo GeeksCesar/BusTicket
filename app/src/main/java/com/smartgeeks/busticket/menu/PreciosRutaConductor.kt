@@ -28,15 +28,15 @@ import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivityPrecioRutasConductorBinding
 import com.smartgeeks.busticket.menu.AdapterPrecios.ItemClickListener
 import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.Constantes
+import com.smartgeeks.busticket.utils.PrintTicket
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicketLibrary.PrintState {
+class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket.PrintState {
 
     var bundle: Bundle? = null
     var precio_sum_pasaje = 0
@@ -59,11 +59,14 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
     var estadoRuta = false
     private var adapterPrices: AdapterPrecios? = null
 
-    private lateinit var printTicket: PrintTicketLibrary
     private lateinit var context: Context
     private lateinit var binding: ActivityPrecioRutasConductorBinding
     private var ticketQuantity = 1
     private val ticketViewModel: TicketViewModel by viewModels()
+
+    // Printer settings
+    // private lateinit var printTicket: PrintTicketLibrary
+    private lateinit var printTicketPrev: PrintTicket
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +78,8 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
         binding = ActivityPrecioRutasConductorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        printTicket = PrintTicketLibrary(this@PreciosRutaConductor, this)
+        // printTicket = PrintTicketLibrary(this@PreciosRutaConductor, this)
+        printTicketPrev = PrintTicket(this@PreciosRutaConductor, this)
         context = this@PreciosRutaConductor
 
         initWidget()
@@ -245,13 +249,26 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
     }
 
     private fun printTicket(ticketEntity: TicketEntity) {
-        printTicket.setData(
+        printTicketPrev.setData(
+            id_paradero_inicio,
+            id_paradero_fin,
+            id_ruta_disponible,
+            horario,
+            id_tipo_usuario,
+            precio_sum_pasaje.toDouble(),
+            id_vehiculo,
+            getNameTipoPasajero ?: "",
+            info ?: "",
+            _showHeader = false
+        )
+        printTicketPrev.print()
+        /*printTicket.setData(
             ticketEntity,
             getNameTipoPasajero!!,
             info!!,
             ticketQuantity
         )
-        printTicket.print()
+        printTicket.print()*/
     }
 
     private fun sendTicket(ticketEntity: TicketEntity) {

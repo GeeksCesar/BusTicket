@@ -30,19 +30,18 @@ import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectRutasBinding
 import com.smartgeeks.busticket.domain.models.PriceByDate
 import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.printer.PrintTicketLibrary
 import com.smartgeeks.busticket.utils.DialogAlert
 import com.smartgeeks.busticket.utils.InternetCheck
+import com.smartgeeks.busticket.utils.PrintTicket
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
-import com.smartgeeks.busticket.utils.Utilities.formatCurrency
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.util.Locale
 
 @AndroidEntryPoint
-class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
+class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
     var bundle: Bundle? = null
     var formatea = DecimalFormat("###,###.##")
 
@@ -80,7 +79,9 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
     var estadoRuta = false
     var estadoPrint = false
     var namePrint: String? = null
-    private lateinit var printTicket: PrintTicketLibrary
+
+    // private lateinit var printTicket: PrintTicketLibrary
+    private lateinit var printTicketPrev: PrintTicket
 
     private val ticketViewModel: TicketViewModel by viewModels()
     private lateinit var binding: ActivitySelectRutasBinding
@@ -100,7 +101,8 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         initWidget()
         setupBackButton()
 
-        printTicket = PrintTicketLibrary(this@SelectRutas, this)
+        // printTicket = PrintTicketLibrary(this@SelectRutas, this)
+        printTicketPrev = PrintTicket(this@SelectRutas, this)
 
         binding.spUsuarios.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
@@ -262,12 +264,24 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
                 saveTicket(ticketEntity)
 
                 val ticketInfo = "$info,$ruta_inicio,$ruta_fin"
-                printTicket.setData(
+                /*printTicket.setData(
                     ticketEntity,
                     nameUsuario,
                     ticketInfo
                 )
-                printTicket.print()
+                printTicket.print()*/
+                printTicketPrev.setData(
+                    id_paradero_inicio,
+                    id_paradero_fin,
+                    id_ruta_disponible,
+                    horario,
+                    id_tipo_usuario,
+                    precioSumPasaje.toDouble(),
+                    id_vehiculo,
+                    nameUsuario,
+                    info
+                )
+                printTicketPrev.print()
             }
         }
 
@@ -575,15 +589,15 @@ class SelectRutas : AppCompatActivity(), PrintTicketLibrary.PrintState {
         showProgress(state)
     }
 
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_CANCELED) {
-            // There are no request codes  -> val data: Intent? = result.data
-            countPasajes = 1
-            binding.textCount.text = "" + countPasajes
-            formatPrecio()
-
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_CANCELED) {
+                // There are no request codes  -> val data: Intent? = result.data
+                countPasajes = 1
+                binding.textCount.text = "" + countPasajes
+                formatPrecio()
+            }
         }
-    }
 
     override fun onFinishPrint() {}
 

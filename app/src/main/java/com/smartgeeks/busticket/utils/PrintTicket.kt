@@ -1,5 +1,6 @@
 package com.smartgeeks.busticket.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
@@ -70,6 +71,8 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     private var idVehiculo: Int = 0
     private var namePassengerType: String = ""
     private var info: String = ""
+    private var sillas: String = ""
+    private var showHeader: Boolean = true
 
     // Preferences
     private var idEmpresa: Int = 0
@@ -91,7 +94,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     fun setData(
         idStartBusStop: Int, idEndBusStop: Int, idEnabledRoute: Int, time: String,
         idPassengerType: Int, ticketPrice: Double, idVehicle: Int, passengerType: String,
-        info: String = "", ticketQuantity: Int = 1
+        info: String = "", ticketQuantity: Int = 1, seats: String = "", _showHeader : Boolean = true
     ) {
         idParaderoInicio = idStartBusStop
         idParaderoFin = idEndBusStop
@@ -103,8 +106,11 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         namePassengerType = passengerType
         countPasajes = ticketQuantity
         this.info = info
+        sillas = seats
+        showHeader = _showHeader
     }
 
+    @SuppressLint("MissingPermission")
     fun print() {
         try {
             stateListener.isLoading(false)
@@ -156,6 +162,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         }
         // No convertir a lambda
         lstPrint.onItemClickListener = object : AdapterView.OnItemClickListener {
+            @SuppressLint("MissingPermission")
             override fun onItemClick(
                 parent: AdapterView<*>?,
                 view: View?,
@@ -194,6 +201,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun encontrarDispositivoBlue() {
         try {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -232,6 +240,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         return "$ $formattedPrice"
     }
 
+    @SuppressLint("MissingPermission")
     private fun abrirImpresoraBlue() {
         try {
             Log.e(TAG, "Abriendo impresora $bluetoothDevice   - ${bluetoothDevice.name}")
@@ -314,7 +323,16 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
 
     private fun printData() {
         Log.d(TAG, "entro a printdata")
-        val split: Array<String> = info.split(",").toTypedArray()
+
+        /**
+         * ticketInformation => vehiculo,ruta,horario
+         * Example: FLCZ 79,CHAÑARAL - DIEGO DE ALMAGRO,14:15:00,CHAÑARAL,DIEGO DE ALMAGRO
+         */
+        val ticketInformation: Array<String> = info.split(",").toTypedArray()
+
+        val headerToShow = if (sillas.isNotEmpty()) "Asiento" else "Cantidad"
+        val seatsOrQuantity = if (sillas.isNotEmpty()) sillas else countPasajes.toString()
+
         try {
             val arrayOfByte1 = byteArrayOf(27, 33, 0)
             var format = byteArrayOf(27, 33, 0)
@@ -340,19 +358,31 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             )
             outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
             outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+
+            // Información de la ruta | Inicio - Termino
+            if (showHeader){
+                format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+                outputStream!!.write(izq)
+                outputStream!!.write(format)
+                var route = "Inicio: \n${ticketInformation[1].split("-")[0]}"
+                route += "\nTermino: \n${ticketInformation[1].split("-")[1]}"
+                outputStream!!.write(route.toByteArray(), 0, route.toByteArray().size)
+            }
+
             // Width
             format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
-            var strPayment = "Usted pago:\n"
+            var strPayment = "\n\nUsted pago:\n"
             strPayment = strPayment.replace("(", "")
             outputStream!!.write(strPayment.toByteArray(), 0, strPayment.toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+
             format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
             val strPrice = "${priceFormat(precioSumPasaje)} \n"
             outputStream!!.write(strPrice.toByteArray(), 0, strPrice.toByteArray().size)
+
             format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
@@ -376,11 +406,11 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
                 printThreeData(
                     "Fecha",
                     "Salida",
-                    "Cantidad",
+                    headerToShow,
                     "One"
                 ).toByteArray(),
                 0,
-                printThreeData("Fecha", "Salida", "Cantidad", "One")
+                printThreeData("Fecha", "Salida", headerToShow, "One")
                     .toByteArray().size
             )
             format = byteArrayOf(27, 33, 0)
@@ -400,14 +430,14 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
                 printThreeData(
                     fechaCodi,
                     horaSalidaStr,
-                    countPasajes.toString(),
+                    seatsOrQuantity,
                     "Two"
                 ).toByteArray(),
                 0,
                 printThreeData(
                     fechaCodi,
                     horaSalidaStr,
-                    countPasajes.toString(),
+                    seatsOrQuantity,
                     "Two"
                 ).toByteArray().size
             )
@@ -430,30 +460,31 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
                 0,
                 (companyDesc + "\n\n").toByteArray().size
             )
+
             format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(izq)
             outputStream!!.write(format)
             var str = ""
             str += "$numVoucher \n"
             outputStream!!.write(str.toByteArray(), 0, str.toByteArray().size)
+
             format = byteArrayOf(27, 33, 0)
             outputStream!!.write(izq)
             outputStream!!.write(format)
-            var strEmision = "Emision: $fechaCodi\n"
-            strEmision += """${Helpers.getTime()} ${split[0]} ${
-                UsuarioPreferences.getInstance(
-                    context
-                ).nombre
-            }"""
+            var strEmision = "Emision: $fechaCodi"
+            strEmision += "\n${Helpers.getTime()}"
+            strEmision += "\n${ticketInformation[0]} "
+            strEmision += "\n${UsuarioPreferences.getInstance(context).nombre}"
             outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
+
             format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(centrado)
             outputStream!!.write(format)
             var strTwo = ""
-            strTwo += "www.busticket.cl\n"
+            strTwo += "\nwww.busticket.cl\n"
             strTwo += "Copia Cliente"
             outputStream!!.write(strTwo.toByteArray(), 0, strTwo.toByteArray().size)
-            //no serive desde abajo
+
             format = byteArrayOf(27, 33, 0)
             outputStream!!.write(format)
             outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)

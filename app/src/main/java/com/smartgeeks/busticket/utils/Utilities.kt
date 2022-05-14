@@ -108,7 +108,7 @@ object Utilities {
     }
 
     fun String.formatCurrency(): String {
-        val currencyType = NumberFormat.getCurrencyInstance(Locale.getDefault())
+        val currencyType = NumberFormat.getCurrencyInstance(Locale.US)
         currencyType.maximumFractionDigits = 0
         return currencyType.format(this.toDouble()).replace(",",".")
     }

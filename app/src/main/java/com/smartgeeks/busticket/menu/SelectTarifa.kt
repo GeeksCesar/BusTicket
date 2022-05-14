@@ -25,7 +25,7 @@ import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.databinding.ActivitySelectTarifaBinding
 import com.smartgeeks.busticket.presentation.TicketViewModel
-import com.smartgeeks.busticket.printer.PrintTicketLibrary
+import com.smartgeeks.busticket.utils.PrintTicket
 import com.smartgeeks.busticket.utils.RecyclerItemClickListener
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
@@ -33,7 +33,7 @@ import com.smartgeeks.busticket.utils.Utilities
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
+class SelectTarifa : AppCompatActivity(), PrintTicket.PrintState {
     var context: Context? = null
     var bundle: Bundle? = null
     var id_horario = 0
@@ -48,7 +48,8 @@ class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
     var layoutManager: RecyclerView.LayoutManager? = null
     var adapterListTarifas: AdapterTarifas? = null
 
-    private lateinit var printTicketLibrary: PrintTicketLibrary
+    // private lateinit var printTicketLibrary: PrintTicketLibrary
+    private lateinit var printTicketPrev: PrintTicket
 
     private lateinit var binding: ActivitySelectTarifaBinding
     private val ticketViewModel: TicketViewModel by viewModels()
@@ -65,7 +66,8 @@ class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
         context = this@SelectTarifa
         initWidgets()
         setupOnBackButton()
-        printTicketLibrary = PrintTicketLibrary(this@SelectTarifa, this)
+        // printTicketLibrary = PrintTicketLibrary(this@SelectTarifa, this)
+        printTicketPrev = PrintTicket(this@SelectTarifa, this)
     }
 
     private fun setupOnBackButton() {
@@ -216,8 +218,21 @@ class SelectTarifa : AppCompatActivity(), PrintTicketLibrary.PrintState {
          * This method printTicket.
          */
 
-        printTicketLibrary.setData(ticketEntity, passengerTypeName, companyInfo ?: "")
-        printTicketLibrary.print()
+        /*printTicketLibrary.setData(ticketEntity, passengerTypeName, companyInfo ?: "")
+        printTicketLibrary.print()*/
+        printTicketPrev.setData(
+            departureId,
+            arrivalId,
+            routeAvailableId,
+            schedule,
+            passengerTypeId,
+            ticketPrice,
+            vehicleId,
+            passengerTypeName,
+            companyInfo ?: "",
+            _showHeader = false
+        )
+        printTicketPrev.print()
     }
 
     private fun saveTicket(ticketEntity: TicketEntity) {

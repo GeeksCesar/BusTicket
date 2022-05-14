@@ -37,6 +37,7 @@ import androidx.core.content.edit
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
+import com.google.android.material.snackbar.Snackbar
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
@@ -51,11 +52,13 @@ import com.smartgeeks.busticket.printer.AsyncBluetoothEscPosPrint
 import com.smartgeeks.busticket.printer.AsyncEscPosPrinter
 import com.smartgeeks.busticket.utils.Constants
 import com.smartgeeks.busticket.utils.DialogAlert
+import com.smartgeeks.busticket.utils.PrintTicket
 import com.smartgeeks.busticket.utils.RutaPreferences
 import com.smartgeeks.busticket.utils.UsuarioPreferences
 import com.smartgeeks.busticket.utils.Utilities
 import com.smartgeeks.busticket.utils.Utilities.formatDate
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.SocketTimeoutException
 import java.text.DecimalFormat
 import java.util.Locale
 import kotlin.math.ceil
@@ -63,7 +66,8 @@ import kotlin.math.ceil
 private const val PERMISSION_BLUETOOTH = 1
 
 @AndroidEntryPoint
-class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener {
+class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener,
+    PrintTicket.PrintState {
 
     private var listSillasOcupadas: List<SillaOcupada> = ArrayList()
     private val sillasSeleccionadas: MutableList<Int> = ArrayList()
@@ -108,6 +112,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     private var ticketDate: String = ""
     private var serviceId: Int = 0
 
+    private lateinit var printTicketPrev: PrintTicket
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -117,6 +123,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         )
         binding = ActivitySelectSillasBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        printTicketPrev = PrintTicket(this@SelectSillas, this)
         initWidgets()
         getDataPrint()
         fetchData()
@@ -208,7 +216,19 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate, serviceId)
             .observe(this) { result ->
                 when (result) {
-                    is Resource.Failure -> progress?.dismiss()
+                    is Resource.Failure -> {
+
+                        Snackbar.make(binding.root, result.exception.message ?: "Se ha producido un error", Snackbar.LENGTH_SHORT).show()
+                        Log.e(TAG, "fetchData: ${result.exception}")
+
+                        when (result.exception) {
+                            is SocketTimeoutException -> {
+                                fetchData()
+                            }
+                        }
+
+                        progress?.dismiss()
+                    }
                     is Resource.Loading -> showProgressDialog()
                     is Resource.Success -> {
                         val data = result.data
@@ -249,6 +269,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun getDataPrint() {
         namePrint = RutaPreferences.getInstance(context).namePrint
         estadoPrint = RutaPreferences.getInstance(context).estadoPrint
@@ -477,7 +498,17 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             idService = serviceId
         ).observe(this) { result ->
             when (result) {
-                is Resource.Failure -> showProgress(false)
+                is Resource.Failure -> {
+                    Snackbar.make(binding.root, result.exception.message ?: "Se ha producido un error", Snackbar.LENGTH_SHORT).show()
+                    Log.e(TAG, "registerTicket: ${result.exception}")
+
+                    when (result.exception) {
+                        is SocketTimeoutException -> {
+                            showDialogPrintTicket(id_paradero_inicio)
+                        }
+                    }
+                    showProgress(false)
+                }
                 is Resource.Loading -> showProgress(true)
                 is Resource.Success -> {
                     val data = result.data
@@ -486,27 +517,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         numVoucher = data.num_voucher
                         Log.e(TAG, "Num Voucher: $numVoucher")
 
-                        val alertDialog = SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE)
-                        alertDialog.setTitleText("Exito")
-                            .setContentText("Guardo el ticket")
-                            .show()
-                        val button = alertDialog.findViewById<Button>(R.id.confirm_button)
-
-                        button.setBackgroundResource(R.drawable.bg_button_main)
-                        button.setPadding(15, 5, 15, 5)
-                        button.text = "Imprimir Ticket"
-
-                        /**
-                         * Print Ticket
-                         */
-                        button.setOnClickListener {
-                            try {
-                                alertDialog.dismiss()
-                                printBluetooth()
-                            } catch (ex: Exception) {
-                                ex.printStackTrace()
-                            }
-                        }
+                        showDialogPrintTicket(id_paradero_inicio)
                     } else {
                         DialogAlert.showDialogFailed(
                             context,
@@ -523,6 +534,45 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
+    private fun showDialogPrintTicket(id_paradero_inicio: Int) {
+        val alertDialog = SweetAlertDialog(context, SweetAlertDialog.SUCCESS_TYPE)
+        alertDialog.setTitleText("Exito")
+            .setContentText("Guardo el ticket")
+            .show()
+        val button = alertDialog.findViewById<Button>(R.id.confirm_button)
+
+        button.setBackgroundResource(R.drawable.bg_button_main)
+        button.setPadding(15, 5, 15, 5)
+        button.text = "Imprimir Ticket"
+
+        /**
+         * Print Ticket
+         */
+        button.setOnClickListener {
+            try {
+                Log.e(TAG, "registerTicket: $info_ruta")
+                printTicketPrev.setData(
+                    id_paradero_inicio,
+                    id_paradero_final,
+                    id_ruta_disponible,
+                    horario,
+                    id_tipo_usuario,
+                    precio_pasaje.toDouble(),
+                    id_vehiculo,
+                    nombreUsuario,
+                    info_ruta,
+                    seats = listSillas
+                )
+                printTicketPrev.print()
+                alertDialog.dismiss()
+                // printBluetooth()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     private fun checkBluetoothStatus() {
         if (!Utilities.isBluetoothEnabled(this)) {
             val alertDialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
@@ -544,6 +594,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun showDialogTicketLibrary() {
         dialogPrint = Dialog(context!!)
         dialogPrint.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -758,5 +809,12 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         Log.e(TAG, textToPrint)
 
         return printer.setTextToPrint(textToPrint)
+    }
+
+    override fun isLoading(state: Boolean) {
+    }
+
+    override fun onFinishPrint() {
+        finish()
     }
 }
