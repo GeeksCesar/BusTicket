@@ -3,7 +3,6 @@ package com.smartgeeks.busticket.core
 import android.content.Context
 import android.content.SharedPreferences
 import com.smartgeeks.busticket.utils.Constants
-import javax.inject.Inject
 
 object AppPreferences {
 

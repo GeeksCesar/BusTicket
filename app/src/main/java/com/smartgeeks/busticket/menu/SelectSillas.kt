@@ -327,7 +327,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 if (silla > cant_sillas) {
                     break
                 }
-                if (cant_sillas % 2 == 1 && silla >= cant_sillas - 5) {
+                if (cant_sillas % 2 == 1 && silla >= cant_sillas) {
                     val puesto = ToggleButton(this)
                     puesto.layoutParams = silla_params
                     puesto.setPadding(0, 10, 0, 10)

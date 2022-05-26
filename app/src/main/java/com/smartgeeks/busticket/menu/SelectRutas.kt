@@ -261,7 +261,7 @@ class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
                     id_vehiculo,
                     numVoucher
                 )
-                saveTicket(ticketEntity)
+                sendTicket(ticketEntity)
 
                 val ticketInfo = "$info,$ruta_inicio,$ruta_fin"
                 /*printTicket.setData(
@@ -279,7 +279,8 @@ class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
                     precioSumPasaje.toDouble(),
                     id_vehiculo,
                     nameUsuario,
-                    info
+                    info,
+                    countPasajes
                 )
                 printTicketPrev.print()
             }
@@ -331,10 +332,10 @@ class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
         }
     }
 
-    private fun saveTicket(ticketEntity: TicketEntity) {
+    private fun sendTicket(ticketEntity: TicketEntity) {
         ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
             when (result) {
-                is Resource.Failure -> Log.e(TAG, "Failue: ${result.exception.message}")
+                is Resource.Failure -> Log.e(TAG, "Failure: ${result.exception.message}")
                 is Resource.Loading -> Log.e(TAG, "Loading")
                 is Resource.Success -> {
                     when (result.data) {
@@ -352,7 +353,6 @@ class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
                         }
 
                     }
-                    Log.e(TAG, "Success ${result.data}")
                 }
             }
         }

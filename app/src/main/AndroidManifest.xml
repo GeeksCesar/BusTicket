@@ -32,9 +32,7 @@
         <service
             android:name=".sync.SyncServiceLocal"
             android:exported="false" /> <!-- SERVICIO DE SINCRONIZACION REMOTA -->
-        <service
-            android:name=".sync.SyncServiceRemote"
-            android:exported="false" /> <!-- Sugar Atribbutes -->
+
         <meta-data
             android:name="DATABASE"
             android:value="busticket.db" />

@@ -1,7 +1,6 @@
 package com.smartgeeks.busticket.printer;
 
 import android.content.Context;
-
 import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;

@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-
 import com.smartgeeks.busticket.utils.Constantes;
 
 

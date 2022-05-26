@@ -1,16 +1,10 @@
 package com.smartgeeks.busticket.core;
 
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnections;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
-
-import java.io.IOException;
-import java.util.UUID;
 
 public class MyBluetoothPrintersConnections extends BluetoothConnections {
 

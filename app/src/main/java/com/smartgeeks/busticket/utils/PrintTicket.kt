@@ -14,13 +14,18 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ListView
+import android.widget.TextView
+import android.widget.Toast
 import com.smartgeeks.busticket.R
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.*
+import java.util.UUID
 
 private const val LEFT_LENGTH = 16
 private const val RIGHT_LENGTH = 16
@@ -112,6 +117,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
 
     @SuppressLint("MissingPermission")
     fun print() {
+        Log.e(TAG, "Printing Ticket: $countPasajes -- Asientos $sillas")
         try {
             stateListener.isLoading(false)
 

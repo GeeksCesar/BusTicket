@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.pedant.SweetAlert.SweetAlertDialog
+import com.google.android.material.snackbar.Snackbar
 import com.orm.query.Select
 import com.smartgeeks.busticket.Modelo.Paradero
 import com.smartgeeks.busticket.Modelo.TarifaParadero
@@ -148,6 +149,12 @@ class SelectTarifa : AppCompatActivity(), PrintTicket.PrintState {
                 val arrivalId = destinationsList[destinationsList.size - 1].idRemoto
                 val ticketPrice = listPrices[0].monto
                 showDialogPrintTicket(departureId, arrivalId, ticketPrice, tipoUsuario)
+            } else {
+                Snackbar.make(
+                    binding.root,
+                    "No hay precios asignados",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         })
     }
@@ -212,7 +219,7 @@ class SelectTarifa : AppCompatActivity(), PrintTicket.PrintState {
             vehicleId,
             numVoucher
         )
-        saveTicket(ticketEntity)
+        sendTicket(ticketEntity)
 
         /**
          * This method printTicket.
@@ -230,12 +237,13 @@ class SelectTarifa : AppCompatActivity(), PrintTicket.PrintState {
             vehicleId,
             passengerTypeName,
             companyInfo ?: "",
+            1,
             _showHeader = false
         )
         printTicketPrev.print()
     }
 
-    private fun saveTicket(ticketEntity: TicketEntity) {
+    private fun sendTicket(ticketEntity: TicketEntity) {
         ticketViewModel.saveTicket(ticketEntity).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> Unit

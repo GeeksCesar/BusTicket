@@ -1,9 +1,7 @@
 package com.smartgeeks.busticket.core
 
 import android.app.Application
-import android.util.Log
 import com.orm.SugarContext
-import com.smartgeeks.busticket.core.AppPreferences
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

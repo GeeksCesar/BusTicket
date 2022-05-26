@@ -1,6 +1,10 @@
 package com.smartgeeks.busticket
 
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
