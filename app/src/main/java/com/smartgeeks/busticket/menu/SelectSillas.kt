@@ -561,7 +561,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     id_vehiculo,
                     nombreUsuario,
                     info_ruta,
-                    seats = listSillas
+                    seats = listSillas,
+                    isMultiTicket = saleByDate,
+                    travelDate = ticketDate,
+                    numVoucher = numVoucher
                 )
                 printTicketPrev.print()
                 alertDialog.dismiss()

@@ -238,7 +238,8 @@ class SelectTarifa : AppCompatActivity(), PrintTicket.PrintState {
             passengerTypeName,
             companyInfo ?: "",
             1,
-            _showHeader = false
+            _showHeader = false,
+            numVoucher = ticketEntity.voucher
         )
         printTicketPrev.print()
     }

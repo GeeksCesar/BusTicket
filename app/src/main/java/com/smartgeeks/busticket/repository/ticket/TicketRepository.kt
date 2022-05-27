@@ -21,8 +21,6 @@ interface TicketRepository {
         tipoTicket : String
     ): ResponseSendSeatTicket
 
-    suspend fun saveTicketLocally(ticketEntity: TicketEntity)
-
     suspend fun saveTicket(ticketEntity: TicketEntity) : Any
 
     /**

@@ -48,10 +48,6 @@ class TicketRepositoryImpl @Inject constructor(
         tipoTicket
     )
 
-    override suspend fun saveTicketLocally(ticketEntity: TicketEntity) {
-        ticketDAO.insert(ticketEntity)
-    }
-
     override suspend fun saveTicket(ticketEntity: TicketEntity): Any {
 
         return if (InternetChecker.checkForInternetConnection(context)) {

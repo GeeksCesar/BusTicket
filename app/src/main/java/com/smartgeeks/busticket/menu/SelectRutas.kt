@@ -280,7 +280,8 @@ class SelectRutas : AppCompatActivity(), PrintTicket.PrintState {
                     id_vehiculo,
                     nameUsuario,
                     info,
-                    countPasajes
+                    countPasajes,
+                    numVoucher = ticketEntity.voucher
                 )
                 printTicketPrev.print()
             }

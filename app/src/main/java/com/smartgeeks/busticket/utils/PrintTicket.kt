@@ -21,6 +21,7 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import com.smartgeeks.busticket.R
+import com.smartgeeks.busticket.utils.Utilities.formatDate
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -78,6 +79,8 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     private var info: String = ""
     private var sillas: String = ""
     private var showHeader: Boolean = true
+    private var isMultipleTicket: Boolean = false
+    private var dateTicket: String = ""
 
     // Preferences
     private var idEmpresa: Int = 0
@@ -97,9 +100,21 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     fun setData(
-        idStartBusStop: Int, idEndBusStop: Int, idEnabledRoute: Int, time: String,
-        idPassengerType: Int, ticketPrice: Double, idVehicle: Int, passengerType: String,
-        info: String = "", ticketQuantity: Int = 1, seats: String = "", _showHeader : Boolean = true
+        idStartBusStop: Int,
+        idEndBusStop: Int,
+        idEnabledRoute: Int,
+        time: String,
+        idPassengerType: Int,
+        ticketPrice: Double,
+        idVehicle: Int,
+        passengerType: String,
+        info: String = "",
+        ticketQuantity: Int = 1,
+        seats: String = "",
+        _showHeader: Boolean = true,
+        isMultiTicket: Boolean = false,
+        travelDate: String = "default",
+        numVoucher: String = ""
     ) {
         idParaderoInicio = idStartBusStop
         idParaderoFin = idEndBusStop
@@ -113,11 +128,19 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         this.info = info
         sillas = seats
         showHeader = _showHeader
+        this.isMultipleTicket = isMultiTicket
+        this.numVoucher = numVoucher
+
+        if (travelDate == "default") {
+            dateTicket = Helpers.getDateTicket()
+        } else {
+            dateTicket = travelDate.formatDate("yyyy-MM-dd", "dd-M-YY")
+        }
+        Log.e(TAG, "Fecha Ticket: $dateTicket")
     }
 
     @SuppressLint("MissingPermission")
     fun print() {
-        Log.e(TAG, "Printing Ticket: $countPasajes -- Asientos $sillas")
         try {
             stateListener.isLoading(false)
 
@@ -340,164 +363,180 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         val seatsOrQuantity = if (sillas.isNotEmpty()) sillas else countPasajes.toString()
 
         try {
-            val arrayOfByte1 = byteArrayOf(27, 33, 0)
-            var format = byteArrayOf(27, 33, 0)
-            val centrado = byteArrayOf(0x1B, 'a'.code.toByte(), 0x01)
-            // val der = byteArrayOf(0x1B, 'a'.code.toByte(), 0x02)
-            val izq = byteArrayOf(0x1B, 'a'.code.toByte(), 0x00)
-
-            // Espacio superior
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            val nomEmpre = "$companyName \n"
-            outputStream!!.write(nomEmpre.toByteArray(), 0, nomEmpre.toByteArray().size)
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                "================================".toByteArray(),
-                0,
-                "================================".toByteArray().size
-            )
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-
-            // Información de la ruta | Inicio - Termino
-            if (showHeader){
-                format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-                outputStream!!.write(izq)
-                outputStream!!.write(format)
-                var route = "Inicio: \n${ticketInformation[1].split("-")[0]}"
-                route += "\nTermino: \n${ticketInformation[1].split("-")[1]}"
-                outputStream!!.write(route.toByteArray(), 0, route.toByteArray().size)
+            if (isMultipleTicket && sillas.isNotEmpty()) {
+                for (seat in sillas.split("-")) {
+                    layoutSingleTicket(ticketInformation, headerToShow, seat)
+                }
+            } else {
+                layoutSingleTicket(ticketInformation, headerToShow, seatsOrQuantity)
             }
-
-            // Width
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var strPayment = "\n\nUsted pago:\n"
-            strPayment = strPayment.replace("(", "")
-            outputStream!!.write(strPayment.toByteArray(), 0, strPayment.toByteArray().size)
-
-            format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            val strPrice = "${priceFormat(precioSumPasaje)} \n"
-            outputStream!!.write(strPrice.toByteArray(), 0, strPrice.toByteArray().size)
-
-            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var strTipoPasajero: String = namePassengerType + "\n"
-            strTipoPasajero = strTipoPasajero.replace("(", "")
-            outputStream!!.write(
-                strTipoPasajero.toByteArray(),
-                0,
-                strTipoPasajero.toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                ("--------------------------------").toByteArray(), 0,
-                ("--------------------------------").toByteArray().size
-            )
-            format[2] = 0x8.toByte()
-            outputStream!!.write(format)
-            outputStream!!.write(
-                printThreeData(
-                    "Fecha",
-                    "Salida",
-                    headerToShow,
-                    "One"
-                ).toByteArray(),
-                0,
-                printThreeData("Fecha", "Salida", headerToShow, "One")
-                    .toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            format[2] = (0x10 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(format)
-            var fechaCodi = Helpers.getDate()
-            val arrayFecha = fechaCodi.split("-").toTypedArray()
-            fechaCodi = arrayFecha[2] + "-" + arrayFecha[1] + "-" + arrayFecha[0].substring(
-                arrayFecha[0].length - 2
-            )
-            val horaSalidaS: Array<String> = horario.trim { it <= ' ' }.split(":").toTypedArray()
-            val horaSalidaStr = horaSalidaS[0] + ":" + horaSalidaS[1]
-            outputStream!!.write(
-                printThreeData(
-                    fechaCodi,
-                    horaSalidaStr,
-                    seatsOrQuantity,
-                    "Two"
-                ).toByteArray(),
-                0,
-                printThreeData(
-                    fechaCodi,
-                    horaSalidaStr,
-                    seatsOrQuantity,
-                    "Two"
-                ).toByteArray().size
-            )
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                ("--------------------------------").toByteArray(), 0,
-                ("--------------------------------").toByteArray().size
-            )
-            outputStream!!.write(format)
-            outputStream!!.write("\n\n".toByteArray(), 0, "\n\n".toByteArray().size)
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            outputStream!!.write(
-                (companyDesc + "\n\n").toByteArray(),
-                0,
-                (companyDesc + "\n\n").toByteArray().size
-            )
-
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(izq)
-            outputStream!!.write(format)
-            var str = ""
-            str += "$numVoucher \n"
-            outputStream!!.write(str.toByteArray(), 0, str.toByteArray().size)
-
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(izq)
-            outputStream!!.write(format)
-            var strEmision = "Emision: $fechaCodi"
-            strEmision += "\n${Helpers.getTime()}"
-            strEmision += "\n${ticketInformation[0]} "
-            strEmision += "\n${UsuarioPreferences.getInstance(context).nombre}"
-            outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
-
-            format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
-            outputStream!!.write(centrado)
-            outputStream!!.write(format)
-            var strTwo = ""
-            strTwo += "\nwww.busticket.cl\n"
-            strTwo += "Copia Cliente"
-            outputStream!!.write(strTwo.toByteArray(), 0, strTwo.toByteArray().size)
-
-            format = byteArrayOf(27, 33, 0)
-            outputStream!!.write(format)
-            outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
             Log.e(TAG, "error in printdata")
         }
+    }
+
+    private fun layoutSingleTicket(
+        ticketInformation: Array<String>,
+        headerToShow: String,
+        seatsOrQuantity: String
+    ) {
+        val arrayOfByte1 = byteArrayOf(27, 33, 0)
+        var format = byteArrayOf(27, 33, 0)
+        val centrado = byteArrayOf(0x1B, 'a'.code.toByte(), 0x01)
+        // val der = byteArrayOf(0x1B, 'a'.code.toByte(), 0x02)
+        val izq = byteArrayOf(0x1B, 'a'.code.toByte(), 0x00)
+
+        // Espacio superior
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+        format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+        format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        val nomEmpre = "$companyName \n"
+        outputStream!!.write(nomEmpre.toByteArray(), 0, nomEmpre.toByteArray().size)
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        outputStream!!.write(
+            "================================".toByteArray(),
+            0,
+            "================================".toByteArray().size
+        )
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+
+        // Información de la ruta | Inicio - Termino
+        if (showHeader) {
+            format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+            outputStream!!.write(izq)
+            outputStream!!.write(format)
+            var route = "Inicio: \n${ticketInformation[1].split("-")[0]}"
+            route += "\nTermino: \n${ticketInformation[1].split("-")[1]}"
+            outputStream!!.write(route.toByteArray(), 0, route.toByteArray().size)
+        }
+
+        // Width
+        format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        var strPayment = "\n\nUsted pago:\n"
+        strPayment = strPayment.replace("(", "")
+        outputStream!!.write(strPayment.toByteArray(), 0, strPayment.toByteArray().size)
+
+        format[2] = (0x21 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        val strPrice = "${priceFormat(precioSumPasaje)} \n"
+        outputStream!!.write(strPrice.toByteArray(), 0, strPrice.toByteArray().size)
+
+        format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        var strTipoPasajero: String = namePassengerType + "\n"
+        strTipoPasajero = strTipoPasajero.replace("(", "")
+        outputStream!!.write(
+            strTipoPasajero.toByteArray(),
+            0,
+            strTipoPasajero.toByteArray().size
+        )
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        outputStream!!.write(
+            ("--------------------------------").toByteArray(), 0,
+            ("--------------------------------").toByteArray().size
+        )
+        format[2] = 0x8.toByte()
+        outputStream!!.write(format)
+        outputStream!!.write(
+            printThreeData(
+                "Fecha",
+                "Salida",
+                headerToShow,
+                "One"
+            ).toByteArray(),
+            0,
+            printThreeData("Fecha", "Salida", headerToShow, "One")
+                .toByteArray().size
+        )
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(format)
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+        format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
+        format[2] = (0x10 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(format)
+        var fechaCodi = Helpers.getDate()
+        val arrayFecha = fechaCodi.split("-").toTypedArray()
+        fechaCodi = arrayFecha[2] + "-" + arrayFecha[1] + "-" + arrayFecha[0].substring(
+            arrayFecha[0].length - 2
+        )
+        val horaSalidaS: Array<String> =
+            horario.trim { it <= ' ' }.split(":").toTypedArray()
+        val horaSalidaStr = horaSalidaS[0] + ":" + horaSalidaS[1]
+        outputStream!!.write(
+            printThreeData(
+                dateTicket,
+                horaSalidaStr,
+                seatsOrQuantity,
+                "Two"
+            ).toByteArray(),
+            0,
+            printThreeData(
+                dateTicket,
+                horaSalidaStr,
+                seatsOrQuantity,
+                "Two"
+            ).toByteArray().size
+        )
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(format)
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        outputStream!!.write(
+            ("--------------------------------").toByteArray(), 0,
+            ("--------------------------------").toByteArray().size
+        )
+        outputStream!!.write(format)
+        outputStream!!.write("\n\n".toByteArray(), 0, "\n\n".toByteArray().size)
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        outputStream!!.write(
+            (companyDesc + "\n\n").toByteArray(),
+            0,
+            (companyDesc + "\n\n").toByteArray().size
+        )
+
+        /*format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(izq)
+        outputStream!!.write(format)
+        var str = ""
+        str += "$numVoucher \n"
+        outputStream!!.write(str.toByteArray(), 0, str.toByteArray().size)*/
+
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(izq)
+        outputStream!!.write(format)
+        var strEmision = "\n$numVoucher"
+        strEmision += "\nEmision: $fechaCodi"
+        strEmision += "\n${Helpers.getTime()}"
+        strEmision += "\n${ticketInformation[0]} "
+        strEmision += "\n${UsuarioPreferences.getInstance(context).nombre}"
+        outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
+
+        format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        var strTwo = ""
+        strTwo += "\nwww.busticket.cl\n"
+        strTwo += "Copia Cliente"
+        outputStream!!.write(strTwo.toByteArray(), 0, strTwo.toByteArray().size)
+
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(format)
+        outputStream!!.write("\n\n\n\n".toByteArray(), 0, "\n\n\n\n".toByteArray().size)
     }
 
     fun printThreeData(

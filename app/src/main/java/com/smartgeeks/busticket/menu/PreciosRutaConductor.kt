@@ -260,7 +260,8 @@ class PreciosRutaConductor : AppCompatActivity(), ItemClickListener, PrintTicket
             getNameTipoPasajero ?: "",
             info ?: "",
             ticketQuantity,
-            _showHeader = false
+            _showHeader = false,
+            numVoucher = ticketEntity.voucher
         )
         printTicketPrev.print()
         /*printTicket.setData(

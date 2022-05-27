@@ -82,9 +82,9 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         setContentView(binding.root)
 
         // Location Permissions
-        fusedLocationProviderClient =
+        /*fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(this)
-        requestPermissionEasy()
+        requestPermissionEasy()*/
 
         // Filtro de acciones que serán alertadas
         val filter = IntentFilter(Constantes.ACTION_FINISH_LOCAL_SYNC)
@@ -93,7 +93,7 @@ class Login : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
         binding.btnIniciarSession.setOnClickListener {
 
-            getLastLocation()
+            // getLastLocation()
             checkLockedDevice()
 
             val email = binding.edUsuario.text.toString().trim { it <= ' ' }

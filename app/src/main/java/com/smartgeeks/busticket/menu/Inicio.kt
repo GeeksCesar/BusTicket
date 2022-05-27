@@ -44,7 +44,8 @@ class Inicio : Fragment(R.layout.menu_inicio) {
                         binding.btnSync.visibility = View.GONE
                         binding.tvTicketToSync.visibility = View.GONE
                     } else {
-                        binding.tvTicketToSync.text = "${result.data.size} Tickets por sincronizar"
+                        val ticketToSync = "${result.data.sumOf { it.cantPasajes }} Tickets por sincronizar"
+                        binding.tvTicketToSync.text = ticketToSync
                         binding.tvTicketToSync.visibility = View.VISIBLE
                         binding.btnSync.visibility = View.VISIBLE
                     }
