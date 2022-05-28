@@ -2,7 +2,7 @@ package com.smartgeeks.busticket.data.api
 
 import com.smartgeeks.busticket.data.models.PriceResponse
 import com.smartgeeks.busticket.data.models.intercities.HoursResponse
-import com.smartgeeks.busticket.data.models.intercities.RoutesIntercityResponse
+import com.smartgeeks.busticket.data.models.intercities.RouteIntercityResponse
 import com.smartgeeks.busticket.data.models.intercities.StopBusResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -12,10 +12,10 @@ import retrofit2.http.Path
 
 interface InterCitiesApi {
 
-    @GET("api/getRoutesIntercities/{companyId}")
+    @GET("api/getRoutesIntercitiesAllBuses/{companyId}")
     suspend fun getRoutesInterCities(
         @Path("companyId") companyId: Int
-    ): List<RoutesIntercityResponse>
+    ): List<RouteIntercityResponse>
 
     @GET("api/getStopBusIntercities/{routeId}")
     suspend fun getStopBusInterCities(

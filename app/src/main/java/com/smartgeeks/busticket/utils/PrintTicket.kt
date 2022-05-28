@@ -134,9 +134,10 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         if (travelDate == "default") {
             dateTicket = Helpers.getDateTicket()
         } else {
-            dateTicket = travelDate.formatDate("yyyy-MM-dd", "dd-M-YY")
+            dateTicket = travelDate.formatDate("yyyy-MM-dd", "dd-M-yy")
         }
-        Log.e(TAG, "Fecha Ticket: $dateTicket")
+        Log.e(TAG, "Fecha Ticket: $dateTicket - ${this.numVoucher} - multiple $isMultiTicket - Sillas $sillas")
+
     }
 
     @SuppressLint("MissingPermission")

@@ -1,13 +1,13 @@
 package com.smartgeeks.busticket.repository.intercities
 
 import com.smartgeeks.busticket.data.models.intercities.HoursResponse
-import com.smartgeeks.busticket.data.models.intercities.RoutesIntercityResponse
+import com.smartgeeks.busticket.data.models.intercities.RouteIntercityResponse
 import com.smartgeeks.busticket.data.models.intercities.StopBusResponse
 import com.smartgeeks.busticket.domain.models.PriceByDate
 
 interface InterCitiesRepository {
 
-    suspend fun getRoutesInterCities(companyId: Int): List<RoutesIntercityResponse>
+    suspend fun getRoutesInterCities(companyId: Int): List<RouteIntercityResponse>
 
     suspend fun getStopBusInterCities(routeId: Int): List<StopBusResponse>
 
@@ -15,7 +15,7 @@ interface InterCitiesRepository {
         departureId: Int,
         arrivalId: Int,
         date: String,
-        hour : String
+        hour: String
     ): List<PriceByDate>
 
     suspend fun getHoursIntercities(

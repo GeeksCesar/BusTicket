@@ -16,15 +16,15 @@ import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.models.intercities.HoursResponse
-import com.smartgeeks.busticket.data.models.intercities.RoutesIntercityResponse
+import com.smartgeeks.busticket.data.models.intercities.RouteIntercityResponse
 import com.smartgeeks.busticket.data.models.intercities.StopBusResponse
+import com.smartgeeks.busticket.data.models.intercities.Vehiculo
 import com.smartgeeks.busticket.databinding.FragmentIntercityBinding
 import com.smartgeeks.busticket.domain.models.PriceByDate
 import com.smartgeeks.busticket.presentation.InterCitiesViewModel
 import com.smartgeeks.busticket.presentation.ui.dialogs.DatePickerDialog
 import com.smartgeeks.busticket.presentation.ui.dialogs.DialogSingleChoice
 import com.smartgeeks.busticket.utils.UsuarioPreferences
-import com.smartgeeks.busticket.utils.Utilities
 import com.smartgeeks.busticket.utils.Utilities.formatCurrency
 import com.smartgeeks.busticket.utils.Utilities.formatDate
 import com.smartgeeks.busticket.utils.hide
@@ -39,13 +39,14 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
     private lateinit var binding: FragmentIntercityBinding
     private val interCitiesViewModel: InterCitiesViewModel by viewModels()
 
-    var routes: List<RoutesIntercityResponse> = emptyList()
+    var routes: List<RouteIntercityResponse> = emptyList()
     var stopBusList: List<StopBusResponse> = emptyList()
 
     // Data selected
-    var serviceRoute: RoutesIntercityResponse? = null
+    var serviceRoute: RouteIntercityResponse? = null
     var departureId: Int = 0
     var arrivalId: Int = 0
+    var vehicle: Vehiculo? = null
     private var date = ""
 
     private var dataPriceTicket: PriceByDate? = null
@@ -173,7 +174,7 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
             }
     }
 
-    private fun getPriceByHour(date: String, hour : String) {
+    private fun getPriceByHour(date: String, hour: String) {
         interCitiesViewModel.getPriceByDate(departureId, arrivalId, date, hour)
             .observe(viewLifecycleOwner) { result ->
                 when (result) {
@@ -348,16 +349,33 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
     }
 
     private fun setupBus() = with(binding) {
-        serviceRoute?.let {
+        serviceRoute?.let { route ->
             spBus.apply {
                 adapter =
                     ArrayAdapter(
                         requireContext(),
                         R.layout.custom_spinner_placa,
                         R.id.txtName,
-                        listOf(it.vehiculo)
+                        route.vehiculos.map { it.vehiculo }
                     )
             }
+        }
+
+        spBus.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                serviceRoute?.let { route ->
+                    vehicle = route.vehiculos.find { it.vehiculo == spBus.selectedItem }
+                    Log.e(TAG, "onItemSelected: ${spBus.selectedItem} $vehicle")
+                }
+
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
@@ -406,7 +424,8 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
     }
 
     private fun setupDataArrivalSpinner(data: List<StopBusResponse>) = with(binding) {
-        val arrivalList = data.filter { it.tipo == "D" && it.idParadero != departureId }.map { it.paradero }
+        val arrivalList =
+            data.filter { it.tipo == "D" && it.idParadero != departureId }.map { it.paradero }
 
         spArrival.apply {
             adapter =
@@ -437,29 +456,19 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
         }
     }
 
-    private fun setDefaultPrice(data: List<StopBusResponse>) {
-        /**
-         * Get default date
-         */
-        if (data.isNotEmpty()) {
-            val date = Utilities.getDate("dd/MM/yyyy")
-            getHoursInterCities(date)
-            binding.tvOneWay.text = date
-        }
-    }
-
     private fun startSelectSillasActivity() = with(binding) {
 
         Log.e(TAG, "startSelectSillasActivity: $serviceRoute")
         Log.e(TAG, "startSelectSillasActivity: $dataPriceTicket")
 
         val totalPrice = price * quantity
-        val info = serviceRoute?.vehiculo + "," + spRoute.selectedItem + "," + dataPriceTicket?.horario
+        val info =
+            vehicle?.vehiculo + "," + spRoute.selectedItem + "," + dataPriceTicket?.horario
 
         val intent = Intent(context, SelectSillas::class.java)
         intent.putExtra(SelectSillas.CANT_PUESTOS, quantity)
         intent.putExtra(SelectSillas.PRECIO_PASAJE, totalPrice)
-        intent.putExtra(SelectSillas.ID_VEHICULO, serviceRoute?.IdVehiculo)
+        intent.putExtra(SelectSillas.ID_VEHICULO, vehicle?.idVehiculo)
         intent.putExtra(SelectSillas.ID_RUTA, serviceRoute?.ruta)
         intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, serviceRoute?.ruta)
         intent.putExtra(SelectSillas.ID_HORARIO, 0)
@@ -481,16 +490,16 @@ class IntercityFragment : Fragment(R.layout.fragment_intercity) {
         resultLauncher.launch(intent)
     }
 
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_CANCELED) {
-            // There are no request codes  -> val data: Intent? = result.data
-            quantity = 1
-            val totalPrice = price * quantity
-            binding.apply {
-                textCount.text = quantity.toString()
-                tvPrecio.text = totalPrice.toString().formatCurrency()
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_CANCELED) {
+                // There are no request codes  -> val data: Intent? = result.data
+                quantity = 1
+                val totalPrice = price * quantity
+                binding.apply {
+                    textCount.text = quantity.toString()
+                    tvPrecio.text = totalPrice.toString().formatCurrency()
+                }
             }
-
         }
-    }
 }
