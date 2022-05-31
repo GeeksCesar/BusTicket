@@ -109,7 +109,6 @@ class SplashScreen : AppCompatActivity() {
                     }
                     Log.e(TAG, "checkLockedDevice: ${result.exception}")
                     binding.progresBar.visibility = View.GONE
-
                 }
                 is Resource.Loading -> binding.progresBar.visibility = View.VISIBLE
                 is Resource.Success -> {
@@ -123,7 +122,6 @@ class SplashScreen : AppCompatActivity() {
     private fun goNextScreen() {
         if (session == "SessionSuccess" && !AppPreferences.isLockedDevice) {
 
-            remoteSync()
             // Execute JOB on coroutines
             syncJob = scope.launch(Dispatchers.Main) {
                 setInformationLoading()
@@ -201,16 +199,6 @@ class SplashScreen : AppCompatActivity() {
         val sync = Intent(this, SyncServiceLocal::class.java)
         sync.action = Constantes.ACTION_RUN_LOCAL_SYNC
         startService(sync)
-    }
-
-    private fun remoteSync() {
-        ticketViewModel.syncTickets().observe(this) { result ->
-            when (result) {
-                is Resource.Failure -> Unit
-                is Resource.Loading -> Unit
-                is Resource.Success -> Unit
-            }
-        }
     }
 
     override fun onDestroy() {

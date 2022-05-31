@@ -89,6 +89,9 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     private var companyDesc: String = ""
 
     private var numVoucher = ""
+    private var paraderoInicio = ""
+    private var paraderoDestino = ""
+    private var bus = ""
 
     init {
         idOperador = UsuarioPreferences.getInstance(context).idUser
@@ -136,8 +139,23 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         } else {
             dateTicket = travelDate.formatDate("yyyy-MM-dd", "dd-M-yy")
         }
-        Log.e(TAG, "Fecha Ticket: $dateTicket - ${this.numVoucher} - multiple $isMultiTicket - Sillas $sillas")
+        Log.e(
+            TAG,
+            "Fecha Ticket: $dateTicket - ${this.numVoucher} - multiple $isMultiTicket - Sillas $sillas"
+        )
 
+        val ticketInformation: Array<String> = info.split(",").toTypedArray()
+
+        bus = ticketInformation[0]
+        if (ticketInformation.size > 3) {
+            paraderoInicio = ticketInformation[3]
+            paraderoDestino = ticketInformation[4]
+        } else {
+            paraderoInicio = ticketInformation[1].split("-")[0]
+            paraderoDestino = ticketInformation[1].split("-")[1]
+        }
+
+        Log.e(TAG, "Inicio: $paraderoInicio - Destino $paraderoDestino - Bus $bus")
     }
 
     @SuppressLint("MissingPermission")
@@ -354,22 +372,23 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     private fun printData() {
         Log.d(TAG, "entro a printdata")
 
-        /**
-         * ticketInformation => vehiculo,ruta,horario
-         * Example: FLCZ 79,CHAÑARAL - DIEGO DE ALMAGRO,14:15:00,CHAÑARAL,DIEGO DE ALMAGRO
-         */
-        val ticketInformation: Array<String> = info.split(",").toTypedArray()
-
         val headerToShow = if (sillas.isNotEmpty()) "Asiento" else "Cantidad"
         val seatsOrQuantity = if (sillas.isNotEmpty()) sillas else countPasajes.toString()
 
         try {
             if (isMultipleTicket && sillas.isNotEmpty()) {
+                precioSumPasaje = precioSumPasaje / countPasajes
                 for (seat in sillas.split("-")) {
-                    layoutSingleTicket(ticketInformation, headerToShow, seat)
+                    layoutSingleTicket(paraderoInicio, paraderoDestino, bus, headerToShow, seat)
                 }
             } else {
-                layoutSingleTicket(ticketInformation, headerToShow, seatsOrQuantity)
+                layoutSingleTicket(
+                    paraderoInicio,
+                    paraderoDestino,
+                    bus,
+                    headerToShow,
+                    seatsOrQuantity
+                )
             }
         } catch (ex: java.lang.Exception) {
             ex.printStackTrace()
@@ -378,7 +397,9 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     }
 
     private fun layoutSingleTicket(
-        ticketInformation: Array<String>,
+        startStop: String,
+        endStop: String,
+        bus: String,
         headerToShow: String,
         seatsOrQuantity: String
     ) {
@@ -412,8 +433,8 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             format[2] = (0x20 or arrayOfByte1[2].toInt()).toByte()
             outputStream!!.write(izq)
             outputStream!!.write(format)
-            var route = "Inicio: \n${ticketInformation[1].split("-")[0]}"
-            route += "\nTermino: \n${ticketInformation[1].split("-")[1]}"
+            var route = "Inicio: \n$startStop"
+            route += "\nTermino: \n$endStop"
             outputStream!!.write(route.toByteArray(), 0, route.toByteArray().size)
         }
 
@@ -523,7 +544,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         var strEmision = "\n$numVoucher"
         strEmision += "\nEmision: $fechaCodi"
         strEmision += "\n${Helpers.getTime()}"
-        strEmision += "\n${ticketInformation[0]} "
+        strEmision += "\n$bus "
         strEmision += "\n${UsuarioPreferences.getInstance(context).nombre}"
         outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
 

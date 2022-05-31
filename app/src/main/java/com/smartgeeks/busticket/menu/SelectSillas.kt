@@ -27,7 +27,6 @@ import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
-import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -38,7 +37,6 @@ import cn.pedant.SweetAlert.SweetAlertDialog
 import com.dantsu.escposprinter.connection.DeviceConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg
 import com.google.android.material.snackbar.Snackbar
-import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.MyBluetoothPrintersConnections
 import com.smartgeeks.busticket.core.Resource
@@ -205,8 +203,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         //Input
         showDataTextView()
         ticketDate = ticketOneWay?.fecha ?: Utilities.getDate("yyyy-MM-dd")
-
-        // remoteSync() - Utilities.getDate("dd-MM-yy")
     }
 
     /**
@@ -218,7 +214,11 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 when (result) {
                     is Resource.Failure -> {
 
-                        Snackbar.make(binding.root, result.exception.message ?: "Se ha producido un error", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            binding.root,
+                            result.exception.message ?: "Se ha producido un error",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
                         Log.e(TAG, "fetchData: ${result.exception}")
 
                         when (result.exception) {
@@ -499,7 +499,11 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Snackbar.make(binding.root, result.exception.message ?: "Se ha producido un error", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        binding.root,
+                        result.exception.message ?: "Se ha producido un error",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     Log.e(TAG, "registerTicket: ${result.exception}")
 
                     when (result.exception) {
@@ -561,6 +565,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     id_vehiculo,
                     nombreUsuario,
                     info_ruta,
+                    ticketQuantity = cant_puestos,
                     seats = listSillas,
                     isMultiTicket = saleByDate,
                     travelDate = ticketDate,
@@ -660,27 +665,6 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         var formatPrecio = formatea.format(precio.toLong())
         formatPrecio = formatPrecio.replace(',', '.')
         return formatPrecio
-    }
-
-    private fun goIntentMain() {
-        val intent = Intent(context, MainActivity::class.java)
-        intent.putExtra(MainActivity.BACK, true)
-        startActivity(intent)
-        finish()
-    }
-
-    private fun remoteSync() {
-        ticketViewModel.syncTickets().observe(this) { result ->
-            when (result) {
-                is Resource.Failure -> Unit
-                is Resource.Loading -> Unit
-                is Resource.Success -> {
-                    if (result.data.estado == 1) {
-                        Toast.makeText(this, "Datos sincronizados", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
     }
 
     fun getScreenWidth(activity: Activity): Int {
