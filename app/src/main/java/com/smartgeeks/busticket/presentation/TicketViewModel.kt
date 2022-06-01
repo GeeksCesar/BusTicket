@@ -1,6 +1,7 @@
 package com.smartgeeks.busticket.presentation
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
@@ -18,6 +19,8 @@ private val TAG: String = VehicleViewModel::class.java.simpleName
 class TicketViewModel @Inject constructor(
     private val ticketRepository: TicketRepository
 ) : ViewModel() {
+
+    var isSyncing : Boolean = false
 
     fun saveSeatTicket(
         idStartRoute: Int,
@@ -73,11 +76,14 @@ class TicketViewModel @Inject constructor(
     }
 
     fun syncTickets() = liveData(Dispatchers.IO) {
+        isSyncing = true
         emit(Resource.Loading())
-        try {
+        isSyncing = try {
             emit(Resource.Success(ticketRepository.syncTickets()))
+            false
         } catch (e: Exception) {
             emit(Resource.Failure(e))
+            false
         }
     }
 

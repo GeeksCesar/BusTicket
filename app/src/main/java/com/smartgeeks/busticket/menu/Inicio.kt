@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.smartgeeks.busticket.MainActivity
@@ -24,7 +25,7 @@ class Inicio : Fragment(R.layout.menu_inicio) {
     var nameUsuario: String? = null
 
     private lateinit var binding: MenuInicioBinding
-    private val ticketViewModel: TicketViewModel by viewModels()
+    private val ticketViewModel: TicketViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -97,6 +98,7 @@ class Inicio : Fragment(R.layout.menu_inicio) {
      * Ejecutar el servicio de Sincronización Remota
      */
     private fun remoteSync() {
+        if (ticketViewModel.isSyncing) return
         ticketViewModel.syncTickets().observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Resource.Failure -> {

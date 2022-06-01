@@ -245,8 +245,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeRemoteSync() {
         ticketViewModel.getCountTickets().observe(this) { count ->
-            Log.e(TAG, "observeRemoteSync: $count")
-            if (count > 0) {
+            Log.e(TAG, "observeRemoteSync: $count  ${ticketViewModel.isSyncing}")
+            if (count > 0 && !ticketViewModel.isSyncing) {
                 handleSendLocalTickets()
             }
         }
