@@ -129,7 +129,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         namePassengerType = passengerType
         countPasajes = ticketQuantity
         this.info = info
-        sillas = seats
+        this.sillas = seats
         showHeader = _showHeader
         this.isMultipleTicket = isMultiTicket
         this.numVoucher = numVoucher

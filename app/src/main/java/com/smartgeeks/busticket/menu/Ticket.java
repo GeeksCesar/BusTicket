@@ -392,7 +392,7 @@ public class Ticket extends Fragment {
 
                     if (respuesta.equals("success")) {
                         showProgress(false);
-                        btnFinalizarRuta.setEnabled(false);
+                        btnFinalizarRuta.setEnabled(true);
                         DialogAlert.showDialogFailed(context, "Exito", "Finalizo la ruta con exito", SweetAlertDialog.SUCCESS_TYPE);
                     } else {
                         showProgress(false);
