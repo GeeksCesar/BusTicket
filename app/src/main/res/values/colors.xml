@@ -4,6 +4,11 @@
     <color name="colorPrimaryDark">#0959aa</color>
     <color name="colorAccent">#7b7b7b</color>
 
+    <color name="text_color">#7b7b7b</color>
+    <color name="blue_button">#0085FE</color>
+
+    <color name="brandColor">#004ad6</color>
+
     <color name="colorBlue">#B30959aa</color>
     <color name="colorLightBlue">#BF0096ff</color>
     <color name="colorGray">#CC7b7b7b</color>

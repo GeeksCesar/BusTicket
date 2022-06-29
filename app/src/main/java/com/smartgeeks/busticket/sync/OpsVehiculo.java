@@ -2,7 +2,6 @@ package com.smartgeeks.busticket.sync;
 
 import android.content.Context;
 import android.util.Log;
-
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -12,7 +11,6 @@ import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Modelo.Vehiculo;
 import com.smartgeeks.busticket.utils.Constantes;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

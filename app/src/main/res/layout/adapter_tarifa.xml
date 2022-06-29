@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="10dp">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tvNameTarifa"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_margin="5dp"
-        android:gravity="center"
-        android:textStyle="bold"
+        android:layout_height="120dp"
+        android:layout_margin="6dp"
         android:fontFamily="@font/font_main"
+        android:gravity="center"
+        android:background="@drawable/bg_tarifa_blue"
         android:textColor="@android:color/white"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:textStyle="bold"
+        tools:text="1 Normal" />
 
 </LinearLayout>

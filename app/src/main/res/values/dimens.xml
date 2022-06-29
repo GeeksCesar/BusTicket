@@ -24,7 +24,7 @@
     <dimen name="text_size_button_count">20sp</dimen>
     <dimen name="text_info_perfil">24sp</dimen>
     <dimen name="size_img_perfil">150dp</dimen>
-
+    <dimen name="size_button_rounded">45dp</dimen>
 
 
 </resources>

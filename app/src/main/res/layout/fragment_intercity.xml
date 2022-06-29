@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background_blanco"
+    android:paddingTop="16dp"
+    tools:context=".menu.IntercityFragment">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnNext"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintVertical_bias="0.0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <Spinner
+                android:id="@+id/spRoute"
+                style="@style/SpnnerCustom"
+                android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
+                tools:listitem="@layout/custom_spinner_rutas" />
+
+            <Spinner
+                android:id="@+id/spDeparture"
+                style="@style/SpnnerCustom"
+                android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
+                android:layout_marginTop="16dp"
+                tools:listitem="@layout/custom_spinner_inicio" />
+
+            <Spinner
+                android:id="@+id/spArrival"
+                style="@style/SpnnerCustom"
+                android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
+                android:layout_marginTop="16dp"
+                tools:listitem="@layout/custom_spinner_fin" />
+
+            <Spinner
+                android:id="@+id/spBus"
+                style="@style/SpnnerCustom"
+                android:layout_marginHorizontal="@dimen/margin_horizontal_spinner"
+                android:layout_marginTop="16dp"
+                tools:listitem="@layout/custom_spinner_placa" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/selectorOneWay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_button_main"
+                android:elevation="5dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp">
+
+                <TextView
+                    android:id="@+id/tvOneWay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:padding="4dp"
+                    android:text="@string/one_way"
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="16sp"
+                    app:drawableStartCompat="@drawable/ic_one_way"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvHourOneDay"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvHourOneDay"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:textAlignment="center"
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateOneWay"
+                    app:layout_constraintHorizontal_weight=".4"
+                    app:layout_constraintStart_toEndOf="@+id/tvOneWay"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="13:00:00" />
+
+                <ProgressBar
+                    android:id="@+id/progressOneWay"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:indeterminateTint="@color/colorPrimary"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/removeDateOneWay"
+                    app:layout_constraintStart_toEndOf="@+id/tvOneWay"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/removeDateOneWay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/remove_date"
+                    android:padding="2dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_weight=".2"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/contenedorPrecio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="32dp"
+                android:layout_marginTop="32dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/selectorOneWay">
+
+                <Button
+                    android:id="@+id/btnRestar"
+                    android:layout_width="@dimen/size_button_rounded"
+                    android:layout_height="@dimen/size_button_rounded"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/bg_button_rounded"
+                    android:text="-"
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/textCount"
+                    app:layout_constraintHorizontal_chainStyle="spread_inside"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/textCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:text="1"
+                    android:textColor="@color/text_color"
+                    android:textSize="@dimen/text_size_price"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btnSumar"
+                    app:layout_constraintStart_toEndOf="@+id/btnRestar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/btnSumar"
+                    android:layout_width="@dimen/size_button_rounded"
+                    android:layout_height="@dimen/size_button_rounded"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/bg_button_rounded"
+                    android:text="+"
+                    android:textColor="@color/md_white_1000"
+                    android:textSize="28sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvPrecio"
+                    app:layout_constraintStart_toEndOf="@+id/textCount"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvPrecio"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="0"
+                    android:textColor="@color/text_color"
+                    android:textSize="@dimen/text_size_price"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/btnSumar"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnNext"
+        style="@style/ButtonCustom"
+        android:layout_margin="16dp"
+        android:layout_marginTop="48dp"
+        android:text="@string/next"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
