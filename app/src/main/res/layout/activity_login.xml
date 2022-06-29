@@ -21,9 +21,9 @@
             <ImageView
                 android:id="@+id/ivLogoPrincipal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:src="@mipmap/logo"/>
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/imagotipo_busticket" />
 
         </RelativeLayout>
 
@@ -49,18 +49,19 @@
                 style="@style/Editext"
                 android:drawableLeft="@mipmap/icon_usuario"
                 android:drawablePadding="20dp"
-                android:hint="Usuario"/>
+                android:hint="Usuario" />
 
 
             <EditText
                 android:id="@+id/edPassword"
                 style="@style/Editext"
-                android:drawableLeft="@mipmap/icon_pass"
-                android:layout_marginTop="15dp"
                 android:layout_below="@+id/edUsuario"
+                android:layout_marginTop="15dp"
+                android:drawableLeft="@mipmap/icon_pass"
                 android:drawablePadding="20dp"
-                android:inputType="textPassword"
-                android:hint="Contraseña"/>
+                android:hint="Contraseña"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword" />
 
 
             <Button
@@ -68,7 +69,7 @@
                 style="@style/ButtonCustom"
                 android:layout_alignParentBottom="true"
                 android:paddingHorizontal="20dp"
-                android:text="Iniciar Sesión"/>
+                android:text="Iniciar Sesión" />
 
 
         </RelativeLayout>

@@ -2,8 +2,7 @@ package com.smartgeeks.busticket.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import com.smartgeeks.busticket.Objects.User;
+import com.smartgeeks.busticket.data.models.auth.User;
 
 public class UsuarioPreferences {
 
@@ -40,7 +39,7 @@ public class UsuarioPreferences {
         editor.putInt(KEY_ROL, user.getIdRol());
         editor.putInt(KEY_ID_USER, user.getIdUsuario());
         editor.putString(KEY_NAME, user.getNombre());
-        editor.putInt(KEY_ID_EMPRESA, user.getId_empresa());
+        editor.putInt(KEY_ID_EMPRESA, user.getIdEmpresa());
         editor.putString(KEY_RUT, user.getRut());
         editor.putString(KEY_NAME_EMPRESA, user.getNombreEmpresa());
         editor.putString(KEY_DESC_EMPRESA, user.getDescEmpresa());

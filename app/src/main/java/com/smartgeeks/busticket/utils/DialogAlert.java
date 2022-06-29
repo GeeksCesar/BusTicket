@@ -3,12 +3,10 @@ package com.smartgeeks.busticket.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import androidx.core.content.ContextCompat;
 import android.widget.Button;
-
-import com.smartgeeks.busticket.R;
-
+import androidx.core.content.ContextCompat;
 import cn.pedant.SweetAlert.SweetAlertDialog;
+import com.smartgeeks.busticket.R;
 
 public class DialogAlert {
 

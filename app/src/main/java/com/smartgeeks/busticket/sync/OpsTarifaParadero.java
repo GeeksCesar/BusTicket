@@ -2,9 +2,8 @@ package com.smartgeeks.busticket.sync;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -14,7 +13,6 @@ import com.orm.SugarRecord;
 import com.smartgeeks.busticket.Modelo.TarifaParadero;
 import com.smartgeeks.busticket.utils.Constantes;
 import com.smartgeeks.busticket.utils.UsuarioPreferences;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +49,7 @@ public class OpsTarifaParadero {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e(TAG, "" + error);
+                                Log.e(TAG, " ------Tarifa Paradero---- " + error);
                                 // Emisión para avisar que se terminó el servicio
                                 Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
@@ -77,6 +75,8 @@ public class OpsTarifaParadero {
                     break;
                 case Constantes.FAILED: // FALLIDO
                     Log.e(TAG, "Error al traer datos");
+                    Intent localIntent = new Intent(Constantes.ACTION_FINISH_LOCAL_SYNC);
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(localIntent);
                     break;
             }
 

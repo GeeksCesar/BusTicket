@@ -12,13 +12,13 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class Helpers {
 
     public static String getCurrentDate() {
         Calendar calendar = Calendar.getInstance();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//        String fecha = calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
         return df.format(calendar.getTime());
     }
 
@@ -60,9 +60,10 @@ public class Helpers {
 
     public static String getDateTicket() {
         Calendar calendar = Calendar.getInstance();
-        String date = String.format("%d%d%d",
-                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR));
-        return date;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR) - 2000;
+        return String.format(Locale.getDefault(), "%d-%d-%d", day,month, year);
     }
 
     public static String getTimeTicket() {
@@ -89,53 +90,6 @@ public class Helpers {
         }
 
         return time;
-    }
-
-    public static boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        }
-        catch (IOException e)          { e.printStackTrace(); }
-        catch (InterruptedException e) { e.printStackTrace(); }
-
-        return false;
-    }
-
-    public static void isConectedIntenet(){
-        new InternetCheck(new InternetCheck.Consumer() {
-            @Override
-            public void accept(Boolean internet) {
-                if (internet) {
-                    Log.d("TAG", "Internet is connected");
-                    //doSomethingOnConnected();
-                } else {
-                    Log.d("TAG", "Internet is not connected");
-                    //doSomethingOnNoInternet();
-                }
-            }
-        }).execute();
-    }
-
-    public static boolean isConnectedToNetwork(Context context) {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        boolean isConnected = false;
-        if (connectivityManager != null) {
-            NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
-        }
-
-        return isConnected;
-    }
-
-    public static boolean isNetworkConnected(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        return cm.getActiveNetworkInfo() != null;
     }
 
     public static String setString2DateVoucher(String str_date) {

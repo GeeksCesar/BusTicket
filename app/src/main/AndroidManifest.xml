@@ -3,14 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.smartgeeks.busticket">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
-        android:name="com.orm.SugarApp"
+        android:name=".core.BusTicketApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -20,16 +24,15 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:icon">
 
-        <activity android:name=".Menu.SelectTarifa"
+        <activity
+            android:name=".menu.SelectTarifa"
             android:screenOrientation="portrait" />
 
         <!-- SERVICIO DE SINCRONIZACION LOCAL -->
         <service
             android:name=".sync.SyncServiceLocal"
             android:exported="false" /> <!-- SERVICIO DE SINCRONIZACION REMOTA -->
-        <service
-            android:name=".sync.SyncServiceRemote"
-            android:exported="false" /> <!-- Sugar Atribbutes -->
+
         <meta-data
             android:name="DATABASE"
             android:value="busticket.db" />
@@ -45,8 +48,8 @@
 
         <activity
             android:name=".SplashScreen"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -62,7 +65,7 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".Menu.SelectRutas"
+            android:name=".menu.SelectRutas"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -70,7 +73,7 @@
                 android:value=".MainActivity" />
         </activity>
         <activity
-            android:name=".Menu.PreciosRutaConductor"
+            android:name=".menu.PreciosRutaConductor"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait">
             <meta-data
@@ -78,7 +81,7 @@
                 android:value=".MainActivity" />
         </activity>
         <activity
-            android:name=".Menu.SelectSillas"
+            android:name=".menu.SelectSillas"
             android:screenOrientation="portrait" />
     </application>
 

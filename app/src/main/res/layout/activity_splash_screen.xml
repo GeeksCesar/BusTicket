@@ -19,11 +19,34 @@
 
             <ImageView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@mipmap/logo"
-                android:layout_centerInParent="true"/>
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/imagotipo_busticket" />
 
         </RelativeLayout>
+
+        <TextSwitcher
+            android:id="@+id/tvInformation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/md_white_1000"
+            android:layout_gravity="center"
+            android:textSize="20sp"
+            android:inAnimation="@android:anim/slide_in_left"
+            android:outAnimation="@android:anim/slide_out_right"
+            tools:text="Cargando datos"/>
+
+        <Button
+            android:id="@+id/btnCancelSync"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorLightBlue"
+            android:paddingHorizontal="50dp"
+            android:text="Cancelar"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            android:layout_gravity="center"/>
+
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -34,7 +57,9 @@
                 android:id="@+id/progresBar"
                 android:layout_width="@dimen/size_progress"
                 android:layout_height="@dimen/size_progress"
-                android:layout_centerInParent="true" />
+                android:layout_centerInParent="true"
+                android:visibility="gone"
+                android:indeterminateTint="@color/md_white_1000" />
 
         </RelativeLayout>
 

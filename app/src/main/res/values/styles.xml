@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="AppTheme.NoActionBar">
@@ -14,7 +14,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/md_pink_50</item>
-        <item name="android:textColorPrimary">@color/md_white_1000</item>
+        <item name="android:textColorPrimary">@color/md_black_1000</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
@@ -96,7 +97,7 @@
         <item name="colorAccent">@color/md_white_1000</item>
         <item name="android:typeface">monospace</item>
         <item name="android:background">@color/colorBlue</item>
-        <item name="android:textColor">@color/md_blue_900</item>
+        <item name="android:textColor">@color/md_white_1000</item>
         <item name="android:textColorPrimary">@color/md_white_1000</item>
         <item name="android:windowTitleStyle">@style/WindowTitleStyle</item>
     </style>
@@ -104,5 +105,19 @@
     <style name="WindowTitleStyle"
         parent="TextAppearance.AppCompat.Title">
         <item name="android:textColor">@color/md_white_1000</item>
+    </style>
+
+    <style name="tv_select_date">
+        <item name="android:background">@drawable/bg_white_rounded</item>
+        <item name="android:drawablePadding">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="datePickerTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorPrimary">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorPrimary</item>
     </style>
 </resources>

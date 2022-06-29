@@ -20,11 +20,11 @@
         android:id="@+id/txtName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10dp"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/md_white_1000"
+        android:padding="10dp"
         android:text="Placa"
-        android:textSize="@dimen/size_text_spinner"/>
+        android:textColor="@color/md_white_1000"
+        android:textSize="@dimen/size_text_spinner" />
 
     <ImageView
         android:id="@+id/ivArrow"

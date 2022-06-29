@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/activity_horizontal_margin"
-    tools:context=".Menu.Perfil">
+    tools:context=".menu.Perfil">
 
 
     <ImageView
@@ -31,9 +31,9 @@
     <Button
         android:id="@+id/btnChangePrint"
         style="@style/ButtonCustomEnable"
-        android:text="Cambiar Impresora"
         android:layout_above="@+id/btnCerrarSession"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="10dp"
+        android:text="Cambiar Impresora" />
 
     <Button
         android:id="@+id/btnCerrarSession"
