@@ -5,8 +5,11 @@ import android.util.Log
 import com.smartgeeks.busticket.data.api.TicketApi
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.models.DefaultResponse
+import com.smartgeeks.busticket.data.models.ticket.ResponseGetTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSendSeatTicket
+import com.smartgeeks.busticket.data.models.ticket.UpdateTicketPayload
 import com.smartgeeks.busticket.utils.InternetChecker
 import javax.inject.Inject
 
@@ -31,7 +34,7 @@ class TicketRepositoryImpl @Inject constructor(
         vehicleId: Int,
         date: String,
         idService: Int,
-        tipoTicket : String
+        tipoTicket: String
     ): ResponseSendSeatTicket = ticketApi.saveSeatTicket(
         idStartRoute,
         idEndRoute,
@@ -87,4 +90,12 @@ class TicketRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCountTickets(): Int = ticketDAO.getCountTickets()
+
+    override suspend fun searchTicketByVoucher(string: String): ResponseGetTicket {
+        return ticketApi.searchTicketByVoucher(string)
+    }
+
+    override suspend fun updateTicket(ticketPayload: UpdateTicketPayload): DefaultResponse {
+        return ticketApi.updateTicket(ticketPayload)
+    }
 }

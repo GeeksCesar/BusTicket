@@ -7,6 +7,7 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
+import com.smartgeeks.busticket.data.models.ticket.UpdateTicketPayload
 import com.smartgeeks.busticket.repository.ticket.TicketRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -98,5 +99,25 @@ class TicketViewModel @Inject constructor(
 
     fun getCountTickets() = liveData(Dispatchers.IO) {
         emit(ticketRepository.getCountTickets())
+    }
+
+    fun updateTicket(ticket: UpdateTicketPayload) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+
+        try {
+            emit(Resource.Success(ticketRepository.updateTicket(ticket)))
+        } catch (e : Exception) {
+            emit(Resource.Failure(e))
+        }
+    }
+
+    fun searchTicketByVoucher(voucher : String) = liveData(Dispatchers.IO) {
+        emit(Resource.Loading())
+
+        try {
+            emit(Resource.Success(ticketRepository.searchTicketByVoucher(voucher)))
+        } catch (e : Exception) {
+            emit(Resource.Failure(e))
+        }
     }
 }
