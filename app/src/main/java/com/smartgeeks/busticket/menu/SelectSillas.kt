@@ -12,6 +12,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Point
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -269,13 +270,28 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun getDataPrint() {
         namePrint = RutaPreferences.getInstance(context).namePrint
         estadoPrint = RutaPreferences.getInstance(context).estadoPrint
-        Constants.selectedDevice =
-            MyBluetoothPrintersConnections().list?.find { it.device.name == namePrint }
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Log.e(TAG, "getDataPrint: Request Permission")
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.BLUETOOTH_SCAN,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ),
+                    PERMISSION_BLUETOOTH
+                )
+            }
+            return
+        } else {
+            Log.e(TAG, "getDataPrint: Permission Granted")
+            Constants.selectedDevice =
+                MyBluetoothPrintersConnections().list?.find { it.device.name == namePrint }
+        }
         Log.e(
             TAG,
             "Printer name: $namePrint - ${Constants.selectedDevice?.device?.name}  ${Constants.selectedDevice?.isConnected}"
@@ -697,9 +713,9 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         const val SERVICE_ID = "service_id"
     }
 
-    /*==============================================================================================
-    ======================================BLUETOOTH PART============================================
-    ==============================================================================================*/
+/*==============================================================================================
+======================================BLUETOOTH PART============================================
+==============================================================================================*/
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
