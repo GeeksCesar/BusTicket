@@ -2,6 +2,7 @@ package com.smartgeeks.busticket.repository.ticket
 
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.models.DefaultResponse
+import com.smartgeeks.busticket.data.models.ticket.RefundTicketPayload
 import com.smartgeeks.busticket.data.models.ticket.ResponseGetTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSendSeatTicket
@@ -38,4 +39,6 @@ interface TicketRepository {
     suspend fun searchTicketByVoucher(string: String): ResponseGetTicket
 
     suspend fun updateTicket(ticketPayload: UpdateTicketPayload): DefaultResponse
+
+    suspend fun refundTicket(refundTicketPayload: RefundTicketPayload): DefaultResponse
 }

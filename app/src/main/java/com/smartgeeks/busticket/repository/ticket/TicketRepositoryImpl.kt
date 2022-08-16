@@ -6,6 +6,7 @@ import com.smartgeeks.busticket.data.api.TicketApi
 import com.smartgeeks.busticket.data.local.TicketDAO
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.models.DefaultResponse
+import com.smartgeeks.busticket.data.models.ticket.RefundTicketPayload
 import com.smartgeeks.busticket.data.models.ticket.ResponseGetTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSendSeatTicket
@@ -97,5 +98,9 @@ class TicketRepositoryImpl @Inject constructor(
 
     override suspend fun updateTicket(ticketPayload: UpdateTicketPayload): DefaultResponse {
         return ticketApi.updateTicket(ticketPayload)
+    }
+
+    override suspend fun refundTicket(refundTicketPayload: RefundTicketPayload): DefaultResponse {
+        return ticketApi.refundTicket(refundTicketPayload)
     }
 }

@@ -68,8 +68,8 @@ private const val PERMISSION_BLUETOOTH = 1
 class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener,
     PrintTicket.PrintState {
 
-    private var listSillasOcupadas: List<SillaOcupada> = ArrayList()
-    private val sillasSeleccionadas: MutableList<Int> = ArrayList()
+    private var listSillasOcupadas: ArrayList<SillaOcupada> = ArrayList()
+    private val sillasSeleccionadas: ArrayList<Int> = ArrayList()
     var bundle: Bundle? = null
     var cant_puestos = 0
     var precio_pasaje = 0
@@ -113,6 +113,9 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     private lateinit var printTicketPrev: PrintTicket
 
+    private var isFromEditTicket : Boolean = false
+    private var chairsEditTicket : String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -148,6 +151,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                 )
                 return@OnClickListener
             } else {
+
                 for (i in sillasSeleccionadas.indices) {
                     val silla = sillasSeleccionadas[i]
                     Log.d(Service.TAG, "sillas: $silla")
@@ -157,6 +161,28 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
                 /*printBluetooth()
                 return@OnClickListener*/
+
+                // Check if is come edit ticket, for only select chair
+                if (isFromEditTicket) {
+                    // Show native dialog to confirm
+                    SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE).apply {
+                        titleText = "Confirmar"
+                        contentText = "¿Deseas escoger el asiento ${listSillas}?"
+                        confirmText = "Confirmar"
+                        cancelText = "Cancelar"
+                        setConfirmClickListener {
+                            // Return to previous activity with result list of chair
+                            val intent = Intent()
+                            intent.putExtra("listSillas", listSillas)
+                            setResult(Activity.RESULT_OK, intent)
+                            finish()
+                        }
+                        setCancelClickListener {
+                            it.dismissWithAnimation()
+                        }
+                    }.show()
+                    return@OnClickListener
+                }
 
                 binding.btnConfirmarTicket.isEnabled = false
                 binding.btnConfirmarTicket.visibility = View.GONE
@@ -199,11 +225,15 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         saleByDate = bundle!!.getBoolean(SALE_BY_DATE)
         ticketOneWay = bundle!!.getSerializable(TICKET_ONE_WAY) as PriceByDate?
         serviceId = bundle!!.getInt(SERVICE_ID, 0)
+        isFromEditTicket = bundle!!.getBoolean(IS_EDIT_TICKET, false)
+        chairsEditTicket = bundle!!.getString(CHAIRS_EDIT_TICKET, "")
         Log.e(TAG, "serviceId: $serviceId")
 
         //Input
         showDataTextView()
         ticketDate = ticketOneWay?.fecha ?: Utilities.getDate("yyyy-MM-dd")
+
+        setChairsToEdit()
     }
 
     /**
@@ -217,7 +247,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
                         Snackbar.make(
                             binding.root,
-                            result.exception.message ?: "Se ha producido un error",
+                            "Se ha producido un error al cargar los datos",
                             Snackbar.LENGTH_SHORT
                         ).show()
                         Log.e(TAG, "fetchData: ${result.exception}")
@@ -236,11 +266,15 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
                         when (data.estado) {
                             Constants.SUCCESS_RESPONSE -> {
-                                listSillasOcupadas = data.sillas_ocupadas
+                                listSillasOcupadas = data.sillas_ocupadas as ArrayList<SillaOcupada>
                                 Log.e(
                                     TAG,
                                     "Se encontraron ${listSillasOcupadas.size} sillas ocupadas."
                                 )
+
+                                // Remove chairs already selected
+                                removeSelectedChairs()
+
                             }
                             Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
                         }
@@ -249,6 +283,17 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                     }
                 }
             }
+    }
+
+    private fun removeSelectedChairs() {
+        for (selected in sillasSeleccionadas) {
+            for (ocupada in listSillasOcupadas) {
+                if (selected == ocupada.numeroSilla) {
+                    listSillasOcupadas.remove(ocupada)
+                    break
+                }
+            }
+        }
     }
 
     private fun fetchVehicleInfo() {
@@ -297,6 +342,18 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             "Printer name: $namePrint - ${Constants.selectedDevice?.device?.name}  ${Constants.selectedDevice?.isConnected}"
         )
         Log.d(TAG, "boolen print: $estadoPrint")
+    }
+
+    private fun setChairsToEdit() {
+        chairsEditTicket.let {
+            if (it.isNotEmpty()) {
+                val chairs = it.split(",")
+                for (chair in chairs) {
+                    sillasSeleccionadas.add(chair.toInt())
+                }
+                Log.e(TAG, "Sillas seleccionadas: $sillasSeleccionadas")
+            }
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -432,6 +489,15 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
      * @param puesto
      */
     private fun drawSillaOcupada(silla: Int, puesto: ToggleButton) {
+
+        // Draw selected seats
+        for (seat in sillasSeleccionadas) {
+            if (seat == silla) {
+                puesto.isChecked = true
+                puesto.setTextColor(ContextCompat.getColor(context!!, R.color.md_white_1000))
+            }
+        }
+
         // Verificar si la silla está ocupada
         for (ocupada in listSillasOcupadas) {
             if (ocupada.numeroSilla == silla && ocupada.destino > id_paradero_incio) {
@@ -448,9 +514,10 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
      * @param silId
      */
     private fun removeSillaFromArray(silId: Int) {
-        for (i in sillasSeleccionadas.indices) {
-            if (sillasSeleccionadas[i] == silId) {
-                sillasSeleccionadas.removeAt(i)
+        val copySelectedSeats = sillasSeleccionadas.toMutableList()
+        for (seat in copySelectedSeats) {
+            if (seat == silId) {
+                sillasSeleccionadas.remove(seat)
             }
         }
     }
@@ -468,7 +535,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         val silla_seleccionda = buttonView.id
         // Guardo o elimino la silla
-        if (isChecked == true) {
+        if (isChecked) {
             sillasSeleccionadas.add(silla_seleccionda)
             if (sillasSeleccionadas.size > cant_puestos) {
                 DialogAlert.showDialogFailed(
@@ -483,7 +550,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             } else {
                 buttonView.setTextColor(ContextCompat.getColor(context!!, R.color.md_white_1000))
             }
-        } else if (isChecked == false) {
+        } else if (!isChecked) {
             removeSillaFromArray(silla_seleccionda)
             buttonView.setTextColor(ContextCompat.getColor(context!!, R.color.md_black_1000))
         }
@@ -515,19 +582,28 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         ).observe(this) { result ->
             when (result) {
                 is Resource.Failure -> {
-                    Snackbar.make(
-                        binding.root,
-                        result.exception.message ?: "Se ha producido un error",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+
                     Log.e(TAG, "registerTicket: ${result.exception}")
+                    showProgress(false)
 
                     when (result.exception) {
                         is SocketTimeoutException -> {
-                            showDialogPrintTicket(id_paradero_inicio)
+                            //showDialogPrintTicket(id_paradero_inicio)
+                            Snackbar.make(
+                                binding.contenedorBus,
+                                "Error de conexión, intente nuevamente",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                        else -> {
+                            Snackbar.make(
+                                binding.root,
+                                "Se ha producido un error registrando el ticket",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
                         }
                     }
-                    showProgress(false)
+
                 }
                 is Resource.Loading -> showProgress(true)
                 is Resource.Success -> {
@@ -536,6 +612,11 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                         showProgress(false)
                         numVoucher = data.num_voucher
                         Log.e(TAG, "Num Voucher: $numVoucher")
+                        Snackbar.make(
+                            binding.root,
+                            "Ticket registrado con éxito",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
 
                         showDialogPrintTicket(id_paradero_inicio)
                     } else {
@@ -711,6 +792,8 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         const val TICKET_ONE_WAY = "ticket_one_way_data"
         const val TICKET_BACK = "ticket_back_data"
         const val SERVICE_ID = "service_id"
+        const val IS_EDIT_TICKET = "edit_ticket"
+        const val CHAIRS_EDIT_TICKET = "chairs_edit_ticket"
     }
 
 /*==============================================================================================

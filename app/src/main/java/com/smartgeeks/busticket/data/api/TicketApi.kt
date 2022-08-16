@@ -2,6 +2,7 @@ package com.smartgeeks.busticket.data.api
 
 import com.smartgeeks.busticket.data.local.entities.TicketEntity
 import com.smartgeeks.busticket.data.models.DefaultResponse
+import com.smartgeeks.busticket.data.models.ticket.RefundTicketPayload
 import com.smartgeeks.busticket.data.models.ticket.ResponseGetTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSaveTicket
 import com.smartgeeks.busticket.data.models.ticket.ResponseSendSeatTicket
@@ -47,4 +48,9 @@ interface TicketApi {
     suspend fun searchTicketByVoucher(
         @Query("voucher_code") voucher: String
     ): ResponseGetTicket
+
+    @POST("apisync/refundTicket")
+    suspend fun refundTicket(
+        @Body refundTicket: RefundTicketPayload
+    ): DefaultResponse
 }

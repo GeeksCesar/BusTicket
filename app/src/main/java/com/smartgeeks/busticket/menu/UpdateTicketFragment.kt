@@ -1,20 +1,25 @@
 package com.smartgeeks.busticket.menu
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.text.HtmlCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.google.android.material.snackbar.Snackbar
 import com.smartgeeks.busticket.MainActivity
 import com.smartgeeks.busticket.R
 import com.smartgeeks.busticket.core.Resource
 import com.smartgeeks.busticket.data.models.intercities.HoursResponse
+import com.smartgeeks.busticket.data.models.ticket.RefundTicketPayload
 import com.smartgeeks.busticket.data.models.ticket.Ticket
 import com.smartgeeks.busticket.data.models.ticket.UpdateTicketPayload
 import com.smartgeeks.busticket.databinding.FragmentUpdateTicketBinding
@@ -54,15 +59,39 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
 
         setupDateSelector()
         handleSearch()
-        handleUpdateTicket()
+        handleSelectChair()
+        handleRefundTicket()
     }
 
     private fun handleSearch() = with(binding) {
+
+        // Observe when is writing in search field and put - each 6 characters
+        etVoucher.addTextChangedListener(object : TextWatcher {
+            var lengthText = 0
+            var second = 0
+
+            override fun afterTextChanged(s: Editable?) {
+                second = lengthText
+                lengthText = s?.length ?: 0
+                if ( (s?.length == 6 || s?.length == 13) && lengthText > second) {
+                    s.append("-")
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         btnSearchTicket.setOnClickListener {
+
             if (!validateFields())
                 return@setOnClickListener
 
-            observeSearch(etVoucher.text.toString())
+            (activity as MainActivity).hideKeyboard()
+
+            val voucher = etVoucher.text.toString().trim()
+            observeSearch(voucher)
+            etVoucher.setText(voucher)
         }
     }
 
@@ -82,6 +111,8 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
 
                     if (result.data.estado == 1) {
                         ticket = result.data.ticket
+                        btnSelectChair.isVisible = true
+                        btnRefundTicket.isVisible = true
 
                         ticket?.let { ticket ->
                             showTicketInfo(ticket)
@@ -98,6 +129,55 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
         }
     }
 
+    private fun handleRefundTicket() {
+        binding.btnRefundTicket.setOnClickListener {
+            SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
+                .setTitleText("¿Está seguro de que desea reembolsar el ticket?")
+                .setContentText("El ticket será reembolsado y no se podrá volver a utilizar. Se retendra el 15% del valor del ticket.")
+                .setConfirmText("Si")
+                .setCancelText("No")
+                .setConfirmClickListener {
+                    it.dismissWithAnimation()
+                    refundTicket()
+                }
+                .show()
+        }
+    }
+
+    private fun refundTicket() = with(binding){
+        ticket?.let {
+
+            val refundTicketPayload = RefundTicketPayload(
+                id = it.id.toLong(),
+                numVoucher = it.numVoucher
+            )
+
+            viewModel.refundTicket(refundTicketPayload).observe(viewLifecycleOwner) { result ->
+                when (result) {
+                    is Resource.Failure -> {
+                        progressBar.isVisible = false
+                    }
+                    is Resource.Loading -> {
+                        progressBar.isVisible = true
+                    }
+                    is Resource.Success -> {
+                        progressBar.isVisible = false
+                        Snackbar.make(root, result.data.mensaje, Snackbar.LENGTH_LONG)
+                            .show()
+
+                        ticket = null
+                        btnSelectChair.isVisible = false
+                        btnRefundTicket.isVisible = false
+
+                        // Set Fragment Inicio
+                        (activity as MainActivity).setFragment(1)
+                    }
+                }
+
+            }
+        }
+    }
+
     private fun showTicketInfo(ticket: Ticket) {
         val infoTicket = """
             <b>Empresa:</b> ${ticket.empresa}<br/>
@@ -109,7 +189,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
             <b>Hora:</b> ${ticket.horaSalida}<br/>
             <b>Tipo pasajero:</b> ${ticket.nombreTipoUsuario}<br/>
             <b>Cantidad pasajes</b> ${ticket.cantPasajes}<br/>
-            <b>Sillas:</b> ${ticket.sillas}<br/>
+            <b>Asiento:</b> ${ticket.sillas}<br/>
         """.trimIndent()
         binding.tvTicketInfo.text =
             HtmlCompat.fromHtml(infoTicket, HtmlCompat.FROM_HTML_MODE_LEGACY)
@@ -118,7 +198,6 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
     private fun setDateData(ticket: Ticket) = with(binding) {
         tvOneWay.text = ticket.fecha.formatDate("yyyy-MM-dd", "dd/MM/yyyy")
         tvHourOneDay.text = ticket.horaSalida
-        handleDateChange()
     }
 
     private fun validateFields(): Boolean = with(binding) {
@@ -142,6 +221,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                 date = "$day/$month/$year"
                 tvOneWay.text = date
                 removeDateOneWay.isVisible = true
+                ticket?.fecha = date.formatDate()
 
                 getHoursInterCities(date)
 
@@ -199,6 +279,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
             val selected = data[it.id]
             Log.e(SelectRutas.TAG, "getPriceTicketOneWay: $selected")
             tvHourOneDay.text = selected.horario
+            ticket?.horaSalida = selected.horario
         }
 
         if (showDialog) dialog.show(parentFragmentManager, "Hours")
@@ -208,36 +289,13 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
         }
     }
 
-    private fun handleDateChange() = with(binding) {
-        // If tvOneWay or tvHourOneDay change, then enable button
-        val watcherListener = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                btnUpdateTicket.isVisible =
-                    tvOneWay.text.isNotEmpty() && tvHourOneDay.text.isNotEmpty()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-        }
-        tvOneWay.addTextChangedListener(watcherListener)
-        tvHourOneDay.addTextChangedListener(watcherListener)
-    }
-
-    private fun handleUpdateTicket() = with(binding) {
-        btnUpdateTicket.setOnClickListener {
-            updateTicket()
-        }
-    }
-
     private fun updateTicket() {
         ticket?.let { ticket ->
             val ticketPayload = UpdateTicketPayload(
                 numVoucher = ticket.numVoucher,
                 horaSalida = binding.tvHourOneDay.text.toString(),
-                fecha = binding.tvOneWay.text.toString().formatDate()
+                fecha = binding.tvOneWay.text.toString().formatDate(),
+                sillas = ticket.sillas,
             )
             viewModel.updateTicket(ticketPayload).observe(viewLifecycleOwner) { result ->
                 when (result) {
@@ -261,10 +319,10 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                                 "Se actualizó el voucher",
                                 Snackbar.LENGTH_SHORT
                             ).show()
-                            binding.btnUpdateTicket.isVisible = false
+                            binding.btnSelectChair.isVisible = false
 
-                            ticket.horaSalida = binding.tvHourOneDay.text.toString()
-                            ticket.fecha = binding.tvOneWay.text.toString().formatDate()
+                            //ticket.horaSalida = binding.tvHourOneDay.text.toString()
+                            //ticket.fecha = binding.tvOneWay.text.toString().formatDate()
 
                             showTicketInfo(ticket)
                             // Print ticket
@@ -307,6 +365,72 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
         )
         printerTicketLibrary.print()
     }
+
+    private fun handleSelectChair() {
+        binding.btnSelectChair.setOnClickListener {
+
+            // Open Select Chair Activity and wait for result
+            // Caller
+            ticket?.let { ticket ->
+
+                val intent = Intent(requireContext(), SelectSillas::class.java)
+
+                Log.e(TAG, "$ticket")
+
+                intent.putExtra(SelectSillas.CANT_PUESTOS, ticket.cantPasajes.toInt())
+                intent.putExtra(SelectSillas.PRECIO_PASAJE, ticket.totalPagar.toDouble()/ticket.cantPasajes.toInt())
+                intent.putExtra(SelectSillas.ID_VEHICULO, ticket.idVehiculo.toInt())
+                intent.putExtra(SelectSillas.ID_RUTA, ticket.idRutaDisponible.toInt())
+                intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, ticket.idRutaDisponible.toInt())
+                intent.putExtra(SelectSillas.ID_HORARIO, 0)
+                intent.putExtra(SelectSillas.HORARIO, ticket.horaSalida)
+                intent.putExtra(SelectSillas.ID_PARADERO_INICIO, ticket.paradaInicio)
+                intent.putExtra(SelectSillas.ID_PARADERO_FIN, ticket.paradaDestino)
+                intent.putExtra(SelectSillas.TIPO_USUARIO, ticket.tipoUsuario)
+                intent.putExtra(SelectSillas.NAME_TIPO_PASAJERO, ticket.nombreTipoUsuario)
+                intent.putExtra(
+                    SelectRutas.INFO,
+                    "${ticket.placa},${ticket.nombreRuta},${ticket.horaSalida},${ticket.nombreParadaInicio},${ticket.nombreParadaDestino}"
+                )
+                intent.putExtra(SelectSillas.SERVICE_ID, ticket.idServicio.toInt())
+
+                val ticketOneWay = PriceByDate(
+                    horario = ticket.horaSalida,
+                    tarifa = ticket.totalPagar,
+                    fecha = ticket.fecha,
+                )
+                intent.putExtra(SelectSillas.SALE_BY_DATE, true)
+                intent.putExtra(SelectSillas.TICKET_ONE_WAY, ticketOneWay)
+                intent.putExtra(SelectSillas.IS_EDIT_TICKET, true)
+                intent.putExtra(SelectSillas.CHAIRS_EDIT_TICKET, ticket.sillas)
+
+                getResult.launch(intent)
+
+            }
+
+        }
+    }
+
+    // Receiver
+    private val getResult =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()) {
+            if(it.resultCode == Activity.RESULT_OK){
+                var sillas = it.data?.getStringExtra("listSillas")
+
+                if(sillas != null){
+                    sillas = sillas.replace("-", ",").trim()
+                    ticket?.sillas = sillas
+                    ticket?.let { data -> showTicketInfo(data) }
+                    //binding.btnUpdateTicket.isVisible = true
+                    Log.e(TAG, "Result: $sillas")
+
+                    updateTicket()
+                }
+
+
+            }
+        }
 
     override fun isLoading(state: Boolean) {
     }

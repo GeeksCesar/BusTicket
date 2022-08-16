@@ -55,7 +55,7 @@ data class Ticket(
     @SerializedName("IdDetallePago")
     val idDetallePago: String,
     @SerializedName("Sillas")
-    val sillas: String,
+    var sillas: String,
     @SerializedName("Tipo_Ticket")
     val tipoTicket: String,
     @SerializedName("Origen")
