@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.text.HtmlCompat
@@ -29,6 +32,8 @@ import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.presentation.ui.dialogs.DatePickerDialog
 import com.smartgeeks.busticket.presentation.ui.dialogs.DialogSingleChoice
 import com.smartgeeks.busticket.utils.PrintTicket
+import com.smartgeeks.busticket.utils.Utilities
+import com.smartgeeks.busticket.utils.Utilities.formatCurrency
 import com.smartgeeks.busticket.utils.Utilities.formatDate
 import com.smartgeeks.busticket.utils.hide
 import com.smartgeeks.busticket.utils.visible
@@ -51,6 +56,10 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
     private var quantity = 1
 
     private var ticket: Ticket? = null
+    private var ticketDateRegistered: String = ""
+
+    private var seatsToModify = mutableListOf<String>()
+    private var priceTicketIndividual = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -73,7 +82,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
             override fun afterTextChanged(s: Editable?) {
                 second = lengthText
                 lengthText = s?.length ?: 0
-                if ( (s?.length == 6 || s?.length == 13) && lengthText > second) {
+                if ((s?.length == 6 || s?.length == 13) && lengthText > second) {
                     s.append("-")
                 }
             }
@@ -113,14 +122,23 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                         ticket = result.data.ticket
                         btnSelectChair.isVisible = true
                         btnRefundTicket.isVisible = true
+                        selectorOneWay.isVisible = true
+                        tvTitleModifySeats.isVisible = true
 
                         ticket?.let { ticket ->
+                            ticketDateRegistered = ticket.fecha
+                            priceTicketIndividual =
+                                (ticket.totalPagar.toDouble() / ticket.cantPasajes.toInt()).toInt()
                             showTicketInfo(ticket)
                             setDateData(ticket)
-                            getHoursInterCities(ticket.fecha.formatDate("yyyy-MM-dd", "dd/MM/yyyy"), false)
+                            getHoursInterCities(
+                                ticket.fecha.formatDate("yyyy-MM-dd", "dd/MM/yyyy"),
+                                false
+                            )
+                            setSeatsToModify(ticket.sillas)
                         }
                     } else {
-                        Snackbar.make(root, "No se encontró el voucher", Snackbar.LENGTH_LONG)
+                        Snackbar.make(root, result.data.mensaje, Snackbar.LENGTH_LONG)
                             .show()
                     }
                 }
@@ -129,27 +147,102 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
         }
     }
 
+    private fun setSeatsToModify(seats: String) {
+        val seatsArray = seats.split(",")
+        // Clear view
+        binding.containerSelectSeats.removeAllViews()
+        seatsToModify.clear()
+
+        // Create a list of CheckBoxes and put them in the LinearLayout containerSelectSeats
+        for (seat in seatsArray) {
+            val checkBox = CheckBox(context)
+            checkBox.text = seat
+
+            // Set wrap_content to the width and height of the CheckBox
+            checkBox.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            // Add margin horizontally to the checkbox on dp
+            val marginValue = Utilities.dpToPx(binding.root.context, 10)
+            checkBox.setPadding(marginValue, 0, marginValue, 0)
+
+            // Add event listener to the CheckBox
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    // Save the seat in the list of seats to modify
+                    seatsToModify.add(seat)
+                } else {
+                    seatsToModify.remove(seat)
+                }
+            }
+
+            binding.containerSelectSeats.addView(checkBox)
+        }
+
+        // Set center_horizontal gravity to the LinearLayout containerSelectSeats
+        binding.containerSelectSeats.gravity = Gravity.CENTER_HORIZONTAL
+    }
+
     private fun handleRefundTicket() {
+
         binding.btnRefundTicket.setOnClickListener {
+
+            if (!validateFieldsToRefund())
+                return@setOnClickListener
+
+            // Calculate the total price to refund
+            val totalPriceToRefund = priceTicketIndividual * seatsToModify.size
+            val priceRetentionFormatted = ((totalPriceToRefund * 0.15).toInt()).formatCurrency()
+            val priceToRefundFormatted = ((totalPriceToRefund * 0.85).toInt()).formatCurrency()
+
             SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("¿Está seguro de que desea reembolsar el ticket?")
-                .setContentText("El ticket será reembolsado y no se podrá volver a utilizar. Se retendra el 15% del valor del ticket.")
-                .setConfirmText("Si")
-                .setCancelText("No")
+                .setContentText("El ticket será reembolsado y no se podrá volver a utilizar. " +
+                    "\n\nSe retendra el 15% del valor del ticket" +
+                    " equivalente a $priceRetentionFormatted" +
+                    "\n\nDevolución de $priceToRefundFormatted")
+                .setConfirmText("Confirmar")
+                .setCancelText("Volver")
                 .setConfirmClickListener {
                     it.dismissWithAnimation()
-                    refundTicket()
+                    refundTicket(seatsToModify)
                 }
                 .show()
         }
     }
 
-    private fun refundTicket() = with(binding){
+    private fun validateFieldsToRefund() : Boolean {
+        if (seatsToModify.isEmpty()) {
+            Snackbar.make(binding.root, "Seleccione las sillas a devolver", Snackbar.LENGTH_LONG)
+                .show()
+            return false
+        }
+        if (priceTicketIndividual == 0) {
+            Snackbar.make(binding.root, "No se puede devolver el boleto", Snackbar.LENGTH_LONG)
+                .show()
+            return false
+        }
+        return true
+    }
+
+    private fun refundTicket(seatsToRefund: MutableList<String>) = with(binding) {
+
         ticket?.let {
+
+            val seatsToUpdate = it.sillas.split(",").toMutableList()
+
+            // Remove the seats to refund from the list of seats to modify
+            seatsToRefund.forEach { seat ->
+                seatsToUpdate.remove(seat)
+            }
 
             val refundTicketPayload = RefundTicketPayload(
                 id = it.id.toLong(),
-                numVoucher = it.numVoucher
+                numVoucher = it.numVoucher,
+                seatsToRefund = seatsToRefund.joinToString(","),
+                seatsToMaintain = seatsToUpdate.joinToString(","),
             )
 
             viewModel.refundTicket(refundTicketPayload).observe(viewLifecycleOwner) { result ->
@@ -229,7 +322,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
         }
     }
 
-    private fun getHoursInterCities(date: String, showDialog : Boolean = true) {
+    private fun getHoursInterCities(date: String, showDialog: Boolean = true) {
 
         ticket?.let { ticket ->
             interCitiesViewModel.getHoursIntercities(
@@ -378,7 +471,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                 Log.e(TAG, "$ticket")
 
                 intent.putExtra(SelectSillas.CANT_PUESTOS, ticket.cantPasajes.toInt())
-                intent.putExtra(SelectSillas.PRECIO_PASAJE, ticket.totalPagar.toDouble()/ticket.cantPasajes.toInt())
+                intent.putExtra(SelectSillas.PRECIO_PASAJE, priceTicketIndividual)
                 intent.putExtra(SelectSillas.ID_VEHICULO, ticket.idVehiculo.toInt())
                 intent.putExtra(SelectSillas.ID_RUTA, ticket.idRutaDisponible.toInt())
                 intent.putExtra(SelectSillas.ID_RUTA_DISPONIBLE, ticket.idRutaDisponible.toInt())
@@ -403,6 +496,7 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                 intent.putExtra(SelectSillas.TICKET_ONE_WAY, ticketOneWay)
                 intent.putExtra(SelectSillas.IS_EDIT_TICKET, true)
                 intent.putExtra(SelectSillas.CHAIRS_EDIT_TICKET, ticket.sillas)
+                intent.putExtra(SelectSillas.DATE_TICKET_REGISTERED, ticketDateRegistered)
 
                 getResult.launch(intent)
 
@@ -414,11 +508,12 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
     // Receiver
     private val getResult =
         registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()) {
-            if(it.resultCode == Activity.RESULT_OK){
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            if (it.resultCode == Activity.RESULT_OK) {
                 var sillas = it.data?.getStringExtra("listSillas")
 
-                if(sillas != null){
+                if (sillas != null) {
                     sillas = sillas.replace("-", ",").trim()
                     ticket?.sillas = sillas
                     ticket?.let { data -> showTicketInfo(data) }
@@ -426,9 +521,10 @@ class UpdateTicketFragment : Fragment(R.layout.fragment_update_ticket), PrintTic
                     Log.e(TAG, "Result: $sillas")
 
                     updateTicket()
+                    // Clear view
+                    binding.containerSelectSeats.removeAllViews()
+                    seatsToModify.clear()
                 }
-
-
             }
         }
 

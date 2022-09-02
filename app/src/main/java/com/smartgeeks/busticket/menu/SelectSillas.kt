@@ -115,6 +115,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
 
     private var isFromEditTicket : Boolean = false
     private var chairsEditTicket : String = ""
+    private var dateTicketToEdit : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -227,6 +228,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         serviceId = bundle!!.getInt(SERVICE_ID, 0)
         isFromEditTicket = bundle!!.getBoolean(IS_EDIT_TICKET, false)
         chairsEditTicket = bundle!!.getString(CHAIRS_EDIT_TICKET, "")
+        dateTicketToEdit = bundle!!.getString(DATE_TICKET_REGISTERED, "")
         Log.e(TAG, "serviceId: $serviceId")
 
         //Input
@@ -273,7 +275,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
                                 )
 
                                 // Remove chairs already selected
-                                removeSelectedChairs()
+                                removeOccupiedChairs()
 
                             }
                             Constants.FAILED_RESPONSE -> Log.e(TAG, "Error al traer datos")
@@ -285,12 +287,20 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
             }
     }
 
-    private fun removeSelectedChairs() {
-        for (selected in sillasSeleccionadas) {
-            for (ocupada in listSillasOcupadas) {
-                if (selected == ocupada.numeroSilla) {
+    private fun removeOccupiedChairs() {
+        /*// Check if the date of the ticket to update is the same of the date of the ticket to edit
+        Log.e(TAG, "dateTicketToEdit: $ticketDate == $dateTicketToEdit")
+        if (ticketDate != dateTicketToEdit)
+            return*/
+        // Make copy of list of chairs to edit
+        val sillasSeleccionadasCopy = sillasSeleccionadas.toMutableList()
+        val listSillasOcupadasCopy = listSillasOcupadas.toMutableList()
+        for (selected in sillasSeleccionadasCopy) {
+            for (ocupada in listSillasOcupadasCopy) {
+                if (selected == ocupada.numeroSilla && dateTicketToEdit == ticketDate) {
                     listSillasOcupadas.remove(ocupada)
-                    break
+                } else if (selected == ocupada.numeroSilla && dateTicketToEdit != ticketDate) {
+                    sillasSeleccionadas.remove(selected)
                 }
             }
         }
@@ -794,6 +804,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
         const val SERVICE_ID = "service_id"
         const val IS_EDIT_TICKET = "edit_ticket"
         const val CHAIRS_EDIT_TICKET = "chairs_edit_ticket"
+        const val DATE_TICKET_REGISTERED = "date_ticket_to_edit"
     }
 
 /*==============================================================================================

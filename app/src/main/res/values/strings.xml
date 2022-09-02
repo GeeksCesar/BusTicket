@@ -28,5 +28,8 @@
     <string name="select_chair">Seleccionar Silla</string>
     <string name="devolution">Devolución</string>
     <string name="update">Modificar</string>
+    <string name="enter_ticket_number">Ingresa el número de Ticket</string>
+    <string name="ticket_number">Número de ticket</string>
+    <string name="select_seats">Seleccione los asientos para hacer la devolución</string>
 
 </resources>
