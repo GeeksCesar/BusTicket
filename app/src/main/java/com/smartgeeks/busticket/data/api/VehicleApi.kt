@@ -8,12 +8,13 @@ import retrofit2.http.Query
 
 interface VehicleApi {
 
-    @GET("apisync/getSillasOcupadasV2/{availableRouteId}/{hour}/{date}/{serviceId}")
+    @GET("apisync/getSillasOcupadasV2/{availableRouteId}/{hour}/{date}/{serviceId}/{vehicleId}")
     suspend fun getOccupiedSeats(
         @Path("availableRouteId") availableRouteId: Int,
         @Path("hour") hour: String,
         @Path("date") date: String,
         @Path("serviceId") serviceId: Int = 0,
+        @Path("vehicleId") vehicleId: Int = 0
     ): ResponseOccupiedSeats
 
     @GET("Api/getInfoVehiculo")

@@ -209,7 +209,7 @@ class SelectSillas : AppCompatActivity(), CompoundButton.OnCheckedChangeListener
      * Request to Service
      */
     private fun fetchData() {
-        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate, serviceId)
+        vehicleViewModel.getOccupiedSeats(id_ruta_disponible, horario, ticketDate, serviceId, id_vehiculo)
             .observe(this) { result ->
                 when (result) {
                     is Resource.Failure -> {
