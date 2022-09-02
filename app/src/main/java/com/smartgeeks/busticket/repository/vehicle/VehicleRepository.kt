@@ -4,6 +4,6 @@ import com.smartgeeks.busticket.data.models.vehicle.ResponseOccupiedSeats
 import com.smartgeeks.busticket.data.models.vehicle.ResponseVehicleInfo
 
 interface VehicleRepository {
-    suspend fun getOccupiedSeats(availableRouteId: Int, hour: String, date : String, serviceId : Int) : ResponseOccupiedSeats
+    suspend fun getOccupiedSeats(availableRouteId: Int, hour: String, date : String, serviceId : Int, vehicleId : Int) : ResponseOccupiedSeats
     suspend fun getVehicleInfo(vehicleId: Int, type : String) : ResponseVehicleInfo
 }
