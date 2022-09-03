@@ -22,6 +22,7 @@ class VehicleViewModel @Inject constructor(
             emit(Resource.Success(vehicleRepository.getOccupiedSeats(availableRouteId, hour, date, serviceId, vehicleId)))
         } catch (e: Exception) {
             Log.e(TAG, "getOccupiedSeats: ${e.message}")
+            e.printStackTrace()
             emit(Resource.Failure(e))
         }
     }
@@ -32,7 +33,7 @@ class VehicleViewModel @Inject constructor(
             val type = if (saleByDate) "date" else "default"
             emit(Resource.Success(vehicleRepository.getVehicleInfo(vehicleId, type)))
         } catch (e: Exception) {
-            Log.e(TAG, "getVehicleInfo: ${e.message}")
+            Log.e(TAG, "getVehicleInfo: ${e.printStackTrace()}")
             emit(Resource.Failure(e))
         }
     }

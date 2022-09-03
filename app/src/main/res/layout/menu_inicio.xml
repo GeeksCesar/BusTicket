@@ -54,6 +54,29 @@
 
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/contentUpdateTicket"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_below="@+id/contentInterUrbanos"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_blue">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:drawablePadding="16dp"
+            android:gravity="center_vertical"
+            android:src="@mipmap/icon_action_tickets"
+            android:text="@string/update_ticket"
+            android:textColor="@color/md_white_1000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_edit_calendar" />
+
+    </RelativeLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

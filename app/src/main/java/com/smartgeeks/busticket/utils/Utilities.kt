@@ -15,6 +15,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.roundToInt
 
 object Utilities {
 
@@ -113,6 +114,12 @@ object Utilities {
         return currencyType.format(this.toDouble()).replace(",",".")
     }
 
+    fun Int.formatCurrency(): String {
+        val currencyType = NumberFormat.getCurrencyInstance(Locale.US)
+        currencyType.maximumFractionDigits = 0
+        return currencyType.format(this.toDouble()).replace(",",".")
+    }
+
 
     fun String.formatDate(inputFormat : String = "dd/MM/yyyy", outputFormat : String = "yyyy-MM-dd"): String {
         val inputFormatter = SimpleDateFormat(inputFormat, Locale.getDefault())
@@ -123,6 +130,11 @@ object Utilities {
             e.printStackTrace()
             this
         }
+    }
+
+    fun dpToPx(context: Context, dp: Int): Int {
+        val density = context.resources.displayMetrics.density
+        return (dp.toFloat() * density).roundToInt()
     }
 
 }

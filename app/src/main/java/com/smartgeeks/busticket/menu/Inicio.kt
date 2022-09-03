@@ -76,6 +76,10 @@ class Inicio : Fragment(R.layout.menu_inicio) {
             activity?.setFragment(3)
         }
 
+        contentUpdateTicket.setOnClickListener {
+            activity?.setFragment(4)
+        }
+
         btnNameUsuario.setOnClickListener {
             activity?.setFragment(0)
         }

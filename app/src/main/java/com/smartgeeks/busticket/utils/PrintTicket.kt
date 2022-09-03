@@ -92,6 +92,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
     private var paraderoInicio = ""
     private var paraderoDestino = ""
     private var bus = ""
+    private var printedTicketHour = ""
 
     init {
         idOperador = UsuarioPreferences.getInstance(context).idUser
@@ -156,6 +157,18 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         }
 
         Log.e(TAG, "Inicio: $paraderoInicio - Destino $paraderoDestino - Bus $bus")
+
+
+        try {
+            printedTicketHour = numVoucher.split("-")[2]
+            // Regex to add : to each 2 digits on the string -> 082033 -> 08:20:33
+            printedTicketHour = printedTicketHour.replace(Regex("(.{2})"), "$1:").removeSuffix(":")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            printedTicketHour = Helpers.getTime()
+        }
+
+        Log.e(TAG, "Hora: $printedTicketHour")
     }
 
     @SuppressLint("MissingPermission")
@@ -379,7 +392,13 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
             if (isMultipleTicket && sillas.isNotEmpty()) {
                 precioSumPasaje = precioSumPasaje / countPasajes
                 for (seat in sillas.split("-")) {
-                    layoutSingleTicket(paraderoInicio, paraderoDestino, bus, headerToShow, seat)
+                    layoutSingleTicket(
+                        paraderoInicio,
+                        paraderoDestino,
+                        bus,
+                        headerToShow,
+                        seat
+                    )
                 }
             } else {
                 layoutSingleTicket(
@@ -543,7 +562,7 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         outputStream!!.write(format)
         var strEmision = "\n$numVoucher"
         strEmision += "\nEmision: $fechaCodi"
-        strEmision += "\n${Helpers.getTime()}"
+        strEmision += "\n${printedTicketHour}"
         strEmision += "\n$bus "
         strEmision += "\n${UsuarioPreferences.getInstance(context).nombre}"
         outputStream!!.write(strEmision.toByteArray(), 0, strEmision.toByteArray().size)
@@ -551,10 +570,36 @@ class PrintTicket(private val context: Activity, var stateListener: PrintState) 
         format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
         outputStream!!.write(centrado)
         outputStream!!.write(format)
-        var strTwo = ""
-        strTwo += "\nwww.busticket.cl\n"
-        strTwo += "Copia Cliente"
+        var strTwo = "\nCopia cliente"
+        strTwo += "\nwww.busticket.cl"
         outputStream!!.write(strTwo.toByteArray(), 0, strTwo.toByteArray().size)
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(format)
+        outputStream!!.write("\n".toByteArray(), 0, "\n".toByteArray().size)
+        outputStream!!.write(centrado)
+        outputStream!!.write(format)
+        outputStream!!.write(
+            ("--------------------------------").toByteArray(), 0,
+            ("--------------------------------").toByteArray().size
+        )
+        format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(izq)
+        outputStream!!.write(format)
+        val strCoUso = "\n\nCopia Uso Interno"
+        outputStream!!.write(strCoUso.toByteArray(), 0, strCoUso.toByteArray().size)
+        format = byteArrayOf(27, 33, 0)
+        outputStream!!.write(izq)
+        outputStream!!.write(format)
+        var strInfoTicket = "\nN: $numVoucher"
+        strInfoTicket += "\nSalida: $dateTicket $horaSalidaStr"
+        strInfoTicket += "\n$headerToShow: $seatsOrQuantity"
+        outputStream!!.write(strInfoTicket.toByteArray(), 0, strInfoTicket.toByteArray().size)
+        format[2] = (0x8 or arrayOfByte1[2].toInt()).toByte()
+        outputStream!!.write(izq)
+        outputStream!!.write(format)
+        var strOpeTot = ""
+        strOpeTot += "\nValor: $strPrice - ${UsuarioPreferences.getInstance(context).nombre}"
+        outputStream!!.write(strOpeTot.toByteArray(), 0, strOpeTot.toByteArray().size)
 
         format = byteArrayOf(27, 33, 0)
         outputStream!!.write(format)

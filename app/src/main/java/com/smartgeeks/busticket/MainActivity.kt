@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
@@ -32,6 +33,7 @@ import com.smartgeeks.busticket.menu.Inicio
 import com.smartgeeks.busticket.menu.IntercityFragment
 import com.smartgeeks.busticket.menu.Perfil
 import com.smartgeeks.busticket.menu.Ticket
+import com.smartgeeks.busticket.menu.UpdateTicketFragment
 import com.smartgeeks.busticket.presentation.AuthViewModel
 import com.smartgeeks.busticket.presentation.TicketViewModel
 import com.smartgeeks.busticket.utils.RutaPreferences
@@ -139,6 +141,10 @@ class MainActivity : AppCompatActivity() {
             }
             3 -> {
                 fragment = IntercityFragment()
+                supportFragmentManager.beginTransaction().replace(R.id.main, fragment).commit()
+            }
+            4 -> {
+                fragment = UpdateTicketFragment()
                 supportFragmentManager.beginTransaction().replace(R.id.main, fragment).commit()
             }
         }
@@ -276,4 +282,13 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         Log.e(TAG, "onDestroy: ")
     }
+
+    fun hideKeyboard() {
+        val view = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
 }

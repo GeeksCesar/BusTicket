@@ -17,9 +17,19 @@
     <string name="no_hours_defined_msg">No hay horarios definidos para esta fecha</string>
     <string name="no_hours_available">No hay horarios disponibles</string>
     <string name="intercity">Interurbanos</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="next">Siguiente</string>
     <string name="tickets">Tickets</string>
+    <string name="update_ticket">Modificar Ticket</string>
+    <string name="voucher">Voucher</string>
+    <string name="date">Fecha</string>
+    <string name="search">Buscar</string>
+    <string name="ticket_info">Información del ticket</string>
+    <string name="select_chair">Seleccionar Silla</string>
+    <string name="devolution">Devolución</string>
+    <string name="update">Modificar</string>
+    <string name="enter_ticket_number">Ingresa el número de Ticket</string>
+    <string name="ticket_number">Número de ticket</string>
+    <string name="select_seats">Seleccione los asientos para hacer la devolución</string>
 
 </resources>
