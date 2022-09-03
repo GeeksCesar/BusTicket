@@ -10,9 +10,9 @@ android {
     defaultConfig {
         applicationId "com.smartgeeks.busticket"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 22
-        versionName "1.4.1"
+        targetSdkVersion 32
+        versionCode 21
+        versionName "1.4.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {

@@ -16,10 +16,10 @@ class VehicleViewModel @Inject constructor(
     private val vehicleRepository: VehicleRepository
 ) : ViewModel() {
 
-    fun getOccupiedSeats(availableRouteId: Int, hour: String, date : String, serviceId : Int) = liveData(Dispatchers.IO) {
+    fun getOccupiedSeats(availableRouteId: Int, hour: String, date : String, serviceId : Int, vehicleId : Int) = liveData(Dispatchers.IO) {
         emit(Resource.Loading())
         try {
-            emit(Resource.Success(vehicleRepository.getOccupiedSeats(availableRouteId, hour, date, serviceId)))
+            emit(Resource.Success(vehicleRepository.getOccupiedSeats(availableRouteId, hour, date, serviceId, vehicleId)))
         } catch (e: Exception) {
             Log.e(TAG, "getOccupiedSeats: ${e.message}")
             e.printStackTrace()
